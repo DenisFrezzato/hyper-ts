@@ -12,26 +12,33 @@ import {
   ResponseStateTransition,
   Handler,
   Conn,
-  Header
+  writeHeader,
+  HeadersOpen,
+  BodyOpen,
+  headers,
+  Header,
+  contentType,
+  MediaType,
+  redirect
 } from '../src'
 import { Either, right, left } from 'fp-ts/lib/Either'
 import * as task from 'fp-ts/lib/Task'
 import { Option, fromNullable } from 'fp-ts/lib/Option'
 import * as express from 'express'
+import { array } from 'fp-ts/lib/Array'
 
 function mockRequest(params: { [key: string]: string }): express.Request {
   return { params } as any
 }
 
-interface MockedResponse {
+interface MockedResponse extends express.Response {
   getStatus(): number
-  getHeaders(): Array<Header>
   getContent(): string
 }
 
-function mockResponse(): express.Response & MockedResponse {
+function mockResponse(): MockedResponse {
   let status: number
-  let headers: Array<Header> = []
+  let headers: { [key: string]: string } = {}
   let content: string
   return {
     status(s: number) {
@@ -41,7 +48,7 @@ function mockResponse(): express.Response & MockedResponse {
       return status
     },
     header(field: string, value: string) {
-      headers.push([field, value])
+      headers[field] = value
     },
     getHeaders() {
       return headers
@@ -54,6 +61,116 @@ function mockResponse(): express.Response & MockedResponse {
     }
   } as any
 }
+
+function assertResponse(
+  res: MockedResponse,
+  status: number | undefined,
+  headers: { [key: string]: string },
+  content: string | undefined
+) {
+  assert.strictEqual(res.getStatus(), status)
+  assert.deepEqual(res.getHeaders(), headers)
+  assert.strictEqual(res.getContent(), content)
+}
+
+describe('writeStatus', () => {
+  it('should write the correct status code', () => {
+    const middleware = writeStatus(200)
+    const res = mockResponse()
+    const conn = new Conn<StatusOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, 200, {}, undefined)
+      })
+  })
+})
+
+describe('writeHeader', () => {
+  it('should write the correct status code', () => {
+    const middleware = writeHeader(['name', 'value'])
+    const res = mockResponse()
+    const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, undefined, { name: 'value' }, undefined)
+      })
+  })
+})
+
+describe('send', () => {
+  it('should not add headers', () => {
+    const middleware = send('<h1>Hello world!</h1>')
+    const res = mockResponse()
+    const conn = new Conn<BodyOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, undefined, {}, '<h1>Hello world!</h1>')
+      })
+  })
+})
+
+describe('json', () => {
+  it('should add the proper header', () => {
+    const middleware = json('{}')
+    const res = mockResponse()
+    const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, undefined, { 'Content-Type': 'application/json' }, '{}')
+      })
+  })
+})
+
+describe('headers', () => {
+  it('should add the proper headers', () => {
+    const hs: Array<Header> = [['a', 'b'], ['c', 'd']]
+    const middleware = headers(array)(hs)
+    const res = mockResponse()
+    const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, undefined, { a: 'b', c: 'd' }, undefined)
+      })
+  })
+})
+
+describe('contentType', () => {
+  it('should add the proper header', () => {
+    const middleware = contentType(MediaType.applicationXML)
+    const res = mockResponse()
+    const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, undefined, { 'Content-Type': 'application/xml' }, undefined)
+      })
+  })
+})
+
+describe('redirect', () => {
+  it('should add the proper status /  header', () => {
+    const middleware = redirect('/users')
+    const res = mockResponse()
+    const conn = new Conn<StatusOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, 302, { Location: '/users' }, undefined)
+      })
+  })
+})
 
 describe('Middleware', () => {
   it('should create a request handler', () => {
@@ -102,13 +219,8 @@ describe('Middleware', () => {
     const promise2 = middleware.eval(conn2).run()
 
     return Promise.all([promise1, promise2]).then(() => {
-      assert.strictEqual(res1.getStatus(), 200)
-      assert.deepEqual(res1.getHeaders(), [['Content-Type', 'application/json']])
-      assert.strictEqual(res1.getContent(), '{"name":"Giulio"}')
-
-      assert.strictEqual(res2.getStatus(), 404)
-      assert.deepEqual(res2.getHeaders(), [])
-      assert.strictEqual(res2.getContent(), 'user not found')
+      assertResponse(res1, 200, { 'Content-Type': 'application/json' }, '{"name":"Giulio"}')
+      assertResponse(res2, 404, {}, 'user not found')
     })
   })
 })
