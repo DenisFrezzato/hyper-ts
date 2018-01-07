@@ -4,7 +4,7 @@ import {
   fromTask,
   gets,
   StatusOpen,
-  writeStatus,
+  status,
   closeHeaders,
   ResponseEnded,
   send,
@@ -12,7 +12,7 @@ import {
   ResponseStateTransition,
   Handler,
   Conn,
-  writeHeader,
+  header,
   HeadersOpen,
   BodyOpen,
   headers,
@@ -73,9 +73,9 @@ function assertResponse(
   assert.strictEqual(res.getContent(), content)
 }
 
-describe('writeStatus', () => {
+describe('status', () => {
   it('should write the correct status code', () => {
-    const middleware = writeStatus(200)
+    const middleware = status(200)
     const res = mockResponse()
     const conn = new Conn<StatusOpen>(mockRequest({}), res)
     return middleware
@@ -87,9 +87,9 @@ describe('writeStatus', () => {
   })
 })
 
-describe('writeHeader', () => {
+describe('header', () => {
   it('should write the correct status code', () => {
-    const middleware = writeHeader(['name', 'value'])
+    const middleware = header(['name', 'value'])
     const res = mockResponse()
     const conn = new Conn<HeadersOpen>(mockRequest({}), res)
     return middleware
@@ -179,7 +179,7 @@ describe('Middleware', () => {
 
     // `ResponseStateTransition<I, O>` is an alias for `Middleware<I, O, void>`
     const notFound = (message: string): ResponseStateTransition<StatusOpen, ResponseEnded> =>
-      writeStatus(404)
+      status(404)
         .ichain(() => closeHeaders)
         .ichain(() => send(message))
     interface User {
@@ -199,7 +199,7 @@ describe('Middleware', () => {
     const getUser = (api: API) => (id: string): Middleware<StatusOpen, StatusOpen, Either<string, User>> =>
       fromTask(api.fetchUser(id))
 
-    const writeUser = (u: User): Handler => writeStatus(200).ichain(() => json(JSON.stringify(u)))
+    const writeUser = (u: User): Handler => status(200).ichain(() => json(JSON.stringify(u)))
 
     const userMiddleware = (api: API): Handler =>
       param('user_id').ichain(o =>
