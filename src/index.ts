@@ -171,7 +171,7 @@ const unsafeCoerce = <A, B>(a: A): B => a as any
 const unsafeCoerceConn = <I, O>(c: Conn<I>): Promise<[void, Conn<O>]> =>
   Promise.resolve(tuple(undefined, unsafeCoerce(c)))
 
-export const writeStatus = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
+export const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
   new Middleware(
     c =>
       new Task(() => {
@@ -182,7 +182,7 @@ export const writeStatus = (status: Status): ResponseStateTransition<StatusOpen,
 
 export type Header = [string, string]
 
-export const writeHeader = ([field, value]: Header): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+export const header = ([field, value]: Header): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
   new Middleware(
     c =>
       new Task(() => {
@@ -218,10 +218,10 @@ export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = new Middlew
 export const headers = <F>(F: Foldable<F>) => (
   headers: HKT<F, Header>
 ): ResponseStateTransition<HeadersOpen, BodyOpen> =>
-  traverse_(middleware, F)(writeHeader, headers).ichain(() => closeHeaders)
+  traverse_(middleware, F)(header, headers).ichain(() => closeHeaders)
 
 export const contentType = (mediaType: MediaType): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  writeHeader(['Content-Type', mediaType])
+  header(['Content-Type', mediaType])
 
 export const redirect = (uri: string): ResponseStateTransition<StatusOpen, HeadersOpen> =>
-  writeStatus(Status.Found).ichain(() => writeHeader(['Location', uri]))
+  status(Status.Found).ichain(() => header(['Location', uri]))

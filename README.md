@@ -8,9 +8,9 @@ A partial porting of https://github.com/owickstrom/hyper to TypeScript
 
 ```ts
 import * as express from 'express'
-import { writeStatus, closeHeaders, send } from 'hyper-ts'
+import { status, closeHeaders, send } from 'hyper-ts'
 
-const hello = writeStatus(200)
+const hello = status(200)
   .ichain(() => closeHeaders)
   .ichain(() => send('Hello hyper-ts!'))
 
@@ -31,7 +31,7 @@ import {
   fromTask,
   gets,
   StatusOpen,
-  writeStatus,
+  status,
   closeHeaders,
   ResponseEnded,
   send,
@@ -53,7 +53,7 @@ const param = (name: string): Middleware<StatusOpen, StatusOpen, Option<string>>
 
 // `ResponseStateTransition<I, O>` is an alias for `Middleware<I, O, void>`
 const notFound = (message: string): ResponseStateTransition<StatusOpen, ResponseEnded> =>
-  writeStatus(404)
+  status(404)
     .ichain(() => closeHeaders)
     .ichain(() => send(message))
 
@@ -83,7 +83,7 @@ const getUser = (api: API) => (id: string): Middleware<StatusOpen, StatusOpen, E
   fromTask(api.fetchUser(id))
 
 // `Handler` is an alias for `ResponseStateTransition<StatusOpen, ResponseEnded>`
-const writeUser = (u: User): Handler => writeStatus(200).ichain(() => json(JSON.stringify(u)))
+const writeUser = (u: User): Handler => status(200).ichain(() => json(JSON.stringify(u)))
 
 const userMiddleware = (api: API): Handler =>
   param('user_id').ichain(o =>
