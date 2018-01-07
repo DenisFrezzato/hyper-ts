@@ -215,6 +215,31 @@ export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = new Middlew
     })
 )
 
+export const cookie = (
+  name: string,
+  value: string,
+  options: express.CookieOptions
+): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+  new Middleware(
+    c =>
+      new Task(() => {
+        c.res.cookie(name, value, options)
+        return unsafeCoerceConn(c)
+      })
+  )
+
+export const clearCookie = (
+  name: string,
+  options: express.CookieOptions
+): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+  new Middleware(
+    c =>
+      new Task(() => {
+        c.res.clearCookie(name, options)
+        return unsafeCoerceConn(c)
+      })
+  )
+
 export const headers = <F>(F: Foldable<F>) => (
   headers: HKT<F, Header>
 ): ResponseStateTransition<HeadersOpen, BodyOpen> =>

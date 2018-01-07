@@ -19,7 +19,9 @@ import {
   Header,
   contentType,
   MediaType,
-  redirect
+  redirect,
+  cookie,
+  clearCookie
 } from '../src'
 import { Either, right, left } from 'fp-ts/lib/Either'
 import * as task from 'fp-ts/lib/Task'
@@ -31,15 +33,20 @@ function mockRequest(params: { [key: string]: string }): express.Request {
   return { params } as any
 }
 
+type MokedHeaders = { [key: string]: string }
+type MokedCookies = { [key: string]: [string, express.CookieOptions] }
+
 interface MockedResponse extends express.Response {
   getStatus(): number
   getContent(): string
+  getCookies(): MokedCookies
 }
 
 function mockResponse(): MockedResponse {
   let status: number
-  let headers: { [key: string]: string } = {}
+  let headers: MokedHeaders = {}
   let content: string
+  let cookies: MokedCookies = {}
   return {
     status(s: number) {
       status = s
@@ -58,6 +65,15 @@ function mockResponse(): MockedResponse {
     },
     getContent() {
       return content
+    },
+    cookie(name: string, value: string, options: express.CookieOptions) {
+      cookies[name] = [value, options]
+    },
+    clearCookie(name: string, options: express.CookieOptions) {
+      delete cookies[name]
+    },
+    getCookies() {
+      return cookies
     }
   } as any
 }
@@ -65,16 +81,18 @@ function mockResponse(): MockedResponse {
 function assertResponse(
   res: MockedResponse,
   status: number | undefined,
-  headers: { [key: string]: string },
-  content: string | undefined
+  headers: MokedHeaders,
+  content: string | undefined,
+  cookies: MokedCookies
 ) {
   assert.strictEqual(res.getStatus(), status)
   assert.deepEqual(res.getHeaders(), headers)
   assert.strictEqual(res.getContent(), content)
+  assert.deepEqual(res.getCookies(), cookies)
 }
 
 describe('status', () => {
-  it('should write the correct status code', () => {
+  it('should write the status code', () => {
     const middleware = status(200)
     const res = mockResponse()
     const conn = new Conn<StatusOpen>(mockRequest({}), res)
@@ -82,13 +100,13 @@ describe('status', () => {
       .eval(conn)
       .run()
       .then(() => {
-        assertResponse(res, 200, {}, undefined)
+        assertResponse(res, 200, {}, undefined, {})
       })
   })
 })
 
 describe('header', () => {
-  it('should write the correct status code', () => {
+  it('should write the header', () => {
     const middleware = header(['name', 'value'])
     const res = mockResponse()
     const conn = new Conn<HeadersOpen>(mockRequest({}), res)
@@ -96,13 +114,13 @@ describe('header', () => {
       .eval(conn)
       .run()
       .then(() => {
-        assertResponse(res, undefined, { name: 'value' }, undefined)
+        assertResponse(res, undefined, { name: 'value' }, undefined, {})
       })
   })
 })
 
 describe('send', () => {
-  it('should not add headers', () => {
+  it('should send the content', () => {
     const middleware = send('<h1>Hello world!</h1>')
     const res = mockResponse()
     const conn = new Conn<BodyOpen>(mockRequest({}), res)
@@ -110,13 +128,13 @@ describe('send', () => {
       .eval(conn)
       .run()
       .then(() => {
-        assertResponse(res, undefined, {}, '<h1>Hello world!</h1>')
+        assertResponse(res, undefined, {}, '<h1>Hello world!</h1>', {})
       })
   })
 })
 
 describe('json', () => {
-  it('should add the proper header', () => {
+  it('should add the proper header and send the content', () => {
     const middleware = json('{}')
     const res = mockResponse()
     const conn = new Conn<HeadersOpen>(mockRequest({}), res)
@@ -124,13 +142,41 @@ describe('json', () => {
       .eval(conn)
       .run()
       .then(() => {
-        assertResponse(res, undefined, { 'Content-Type': 'application/json' }, '{}')
+        assertResponse(res, undefined, { 'Content-Type': 'application/json' }, '{}', {})
+      })
+  })
+})
+
+describe('cookie', () => {
+  it('should add the cookie', () => {
+    const middleware = cookie('name', 'value', {})
+    const res = mockResponse()
+    const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, undefined, {}, undefined, { name: ['value', {}] })
+      })
+  })
+})
+
+describe('clearCookie', () => {
+  it('should clear the cookie', () => {
+    const middleware = cookie('name', 'value', {}).ichain(() => clearCookie('name', {}))
+    const res = mockResponse()
+    const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+    return middleware
+      .eval(conn)
+      .run()
+      .then(() => {
+        assertResponse(res, undefined, {}, undefined, {})
       })
   })
 })
 
 describe('headers', () => {
-  it('should add the proper headers', () => {
+  it('should add the headers', () => {
     const hs: Array<Header> = [['a', 'b'], ['c', 'd']]
     const middleware = headers(array)(hs)
     const res = mockResponse()
@@ -139,13 +185,13 @@ describe('headers', () => {
       .eval(conn)
       .run()
       .then(() => {
-        assertResponse(res, undefined, { a: 'b', c: 'd' }, undefined)
+        assertResponse(res, undefined, { a: 'b', c: 'd' }, undefined, {})
       })
   })
 })
 
 describe('contentType', () => {
-  it('should add the proper header', () => {
+  it('should add the `Content-Type` header', () => {
     const middleware = contentType(MediaType.applicationXML)
     const res = mockResponse()
     const conn = new Conn<HeadersOpen>(mockRequest({}), res)
@@ -153,13 +199,13 @@ describe('contentType', () => {
       .eval(conn)
       .run()
       .then(() => {
-        assertResponse(res, undefined, { 'Content-Type': 'application/xml' }, undefined)
+        assertResponse(res, undefined, { 'Content-Type': 'application/xml' }, undefined, {})
       })
   })
 })
 
 describe('redirect', () => {
-  it('should add the proper status /  header', () => {
+  it('should add the correct status / header', () => {
     const middleware = redirect('/users')
     const res = mockResponse()
     const conn = new Conn<StatusOpen>(mockRequest({}), res)
@@ -167,7 +213,7 @@ describe('redirect', () => {
       .eval(conn)
       .run()
       .then(() => {
-        assertResponse(res, 302, { Location: '/users' }, undefined)
+        assertResponse(res, 302, { Location: '/users' }, undefined, {})
       })
   })
 })
@@ -219,8 +265,8 @@ describe('Middleware', () => {
     const promise2 = middleware.eval(conn2).run()
 
     return Promise.all([promise1, promise2]).then(() => {
-      assertResponse(res1, 200, { 'Content-Type': 'application/json' }, '{"name":"Giulio"}')
-      assertResponse(res2, 404, {}, 'user not found')
+      assertResponse(res1, 200, { 'Content-Type': 'application/json' }, '{"name":"Giulio"}', {})
+      assertResponse(res2, 404, {}, 'user not found', {})
     })
   })
 })
