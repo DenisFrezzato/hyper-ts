@@ -125,10 +125,6 @@ export const ichain = <I, O, Z, A, B>(
   return fa.ichain(f)
 }
 
-export const modify = <I, O>(f: (c: Conn<I>) => Conn<O>): Middleware<I, O, void> => {
-  return new Middleware(c => task.of(tuple(undefined, f(c))))
-}
-
 export const gets = <I, A>(f: (c: Conn<I>) => A): Middleware<I, I, A> => {
   return new Middleware(c => task.of(tuple(f(c), c)))
 }
@@ -166,79 +162,46 @@ export interface ResponseStateTransition<I, O> extends Middleware<I, O, void> {}
 /** A middleware representing a complete `Request` / `Response` handling */
 export interface Handler extends ResponseStateTransition<StatusOpen, ResponseEnded> {}
 
-const unsafeCoerce = <A, B>(a: A): B => a as any
-
-const unsafeCoerceConn = <I, O>(c: Conn<I>): Promise<[void, Conn<O>]> =>
-  Promise.resolve(tuple(undefined, unsafeCoerce(c)))
-
-export const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
+const transition = <I, O>(f: (c: Conn<I>) => void): ResponseStateTransition<I, O> =>
   new Middleware(
     c =>
       new Task(() => {
-        c.res.status(status)
-        return unsafeCoerceConn(c)
+        f(c)
+        return Promise.resolve([undefined, c] as any)
       })
   )
+
+export const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
+  transition(c => c.res.status(status))
 
 export type Header = [string, string]
 
 export const header = ([field, value]: Header): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  new Middleware(
-    c =>
-      new Task(() => {
-        c.res.header(field, value)
-        return unsafeCoerceConn(c)
-      })
-  )
+  transition(c => c.res.header(field, value))
 
-export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = modify(unsafeCoerce)
+export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = new Middleware(c =>
+  task.of([undefined, c] as any)
+)
 
-export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> =>
-  new Middleware(
-    c =>
-      new Task(() => {
-        c.res.send(o)
-        return unsafeCoerceConn(c)
-      })
-  )
+export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(c => c.res.send(o))
 
 export const json = (o: string): ResponseStateTransition<HeadersOpen, ResponseEnded> =>
   contentType(MediaType.applicationJSON)
     .ichain(() => closeHeaders)
     .ichain(() => send(o))
 
-export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = new Middleware(
-  c =>
-    new Task(() => {
-      c.res.end()
-      return unsafeCoerceConn(c)
-    })
-)
+export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(c => c.res.end())
 
 export const cookie = (
   name: string,
   value: string,
   options: express.CookieOptions
-): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  new Middleware(
-    c =>
-      new Task(() => {
-        c.res.cookie(name, value, options)
-        return unsafeCoerceConn(c)
-      })
-  )
+): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.res.cookie(name, value, options))
 
 export const clearCookie = (
   name: string,
   options: express.CookieOptions
-): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  new Middleware(
-    c =>
-      new Task(() => {
-        c.res.clearCookie(name, options)
-        return unsafeCoerceConn(c)
-      })
-  )
+): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.res.clearCookie(name, options))
 
 export const headers = <F>(F: Foldable<F>) => (
   headers: HKT<F, Header>
