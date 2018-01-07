@@ -85,11 +85,11 @@ export class Middleware<I, O, A> {
   }
   ap<S, B>(this: Middleware<S, S, A>, fab: Middleware<S, S, (a: A) => B>): Middleware<S, S, B> {
     return new Middleware(c => {
+      // parallel execution
       const ta = this.eval(c)
       const tab = fab.eval(c)
       return ta.ap(tab).map(b => tuple(b, c))
     })
-    // return fab.chain(f => this.map(f)) // <= derived
   }
   chain<S, B>(this: Middleware<S, S, A>, f: (a: A) => Middleware<S, S, B>): Middleware<S, S, B> {
     return this.ichain(f)
