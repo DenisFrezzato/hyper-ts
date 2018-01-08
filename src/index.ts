@@ -1,11 +1,8 @@
 import * as express from 'express'
-import * as task from 'fp-ts/lib/Task'
 import { Monad } from 'fp-ts/lib/Monad'
-import { IxMonad } from 'fp-ts/lib/IxMonad'
-import { Foldable, traverse_ } from 'fp-ts/lib/Foldable'
-import { HKT } from 'fp-ts/lib/HKT'
+import { HKT, HKTS, HKTAs, HKT3, HKT3S, HKT3As, HKT2S, HKT2As } from 'fp-ts/lib/HKT'
 import { tuple } from 'fp-ts/lib/function'
-import { Task } from 'fp-ts/lib/Task'
+import { Foldable, traverse_ } from 'fp-ts/lib/Foldable'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -47,101 +44,107 @@ export class Conn<S> {
   constructor(readonly req: express.Request, readonly res: express.Response) {}
 }
 
-declare module 'fp-ts/lib/HKT' {
-  interface URI2HKT3<U, L, A> {
-    Middleware: Middleware<U, L, A>
+export type Middleware<M, I, O, A> = (c: Conn<I>) => HKT<M, [A, Conn<O>]>
+
+export type Middleware1<M extends HKTS, I, O, A> = (c: Conn<I>) => HKTAs<M, [A, Conn<O>]>
+
+export type Middleware2<M extends HKT2S, L, I, O, A> = (c: Conn<I>) => HKT2As<M, L, [A, Conn<O>]>
+
+export interface MiddlewareT<M> {
+  map: <I, A, B>(f: (a: A) => B, fa: Middleware<M, I, I, A>) => Middleware<M, I, I, B>
+  of: <I, A>(a: A) => Middleware<M, I, I, A>
+  ap: <I, A, B>(fab: Middleware<M, I, I, (a: A) => B>, fa: Middleware<M, I, I, A>) => Middleware<M, I, I, B>
+  chain: <I, A, B>(f: (a: A) => Middleware<M, I, I, B>, fa: Middleware<M, I, I, A>) => Middleware<M, I, I, B>
+  ichain: <I, O, Z, A, B>(f: (a: A) => Middleware<M, O, Z, B>, fa: Middleware<M, I, O, A>) => Middleware<M, I, Z, B>
+  eval: <I, O, A>(ma: Middleware<M, I, O, A>, c: Conn<I>) => HKT<M, A>
+  lift: <I, A>(fa: HKT<M, A>) => Middleware<M, I, I, A>
+  gets: <I, A>(f: (c: Conn<I>) => A) => Middleware<M, I, I, A>
+}
+
+export interface MiddlewareT1<M extends HKTS> {
+  map: <I, A, B>(f: (a: A) => B, fa: Middleware1<M, I, I, A>) => Middleware1<M, I, I, B>
+  of: <I, A>(a: A) => Middleware1<M, I, I, A>
+  ap: <I, A, B>(fab: Middleware1<M, I, I, (a: A) => B>, fa: Middleware1<M, I, I, A>) => Middleware1<M, I, I, B>
+  chain: <I, A, B>(f: (a: A) => Middleware1<M, I, I, B>, fa: Middleware1<M, I, I, A>) => Middleware1<M, I, I, B>
+  ichain: <I, O, Z, A, B>(f: (a: A) => Middleware1<M, O, Z, B>, fa: Middleware1<M, I, O, A>) => Middleware1<M, I, Z, B>
+  eval: <I, O, A>(ma: Middleware1<M, I, O, A>, c: Conn<I>) => HKTAs<M, A>
+  lift: <I, A>(fa: HKTAs<M, A>) => Middleware1<M, I, I, A>
+  gets: <I, A>(f: (c: Conn<I>) => A) => Middleware1<M, I, I, A>
+}
+
+export interface MiddlewareT2<M extends HKT2S> {
+  map: <L, I, A, B>(f: (a: A) => B, fa: Middleware2<M, L, I, I, A>) => Middleware2<M, L, I, I, B>
+  of: <L, I, A>(a: A) => Middleware2<M, L, I, I, A>
+  ap: <L, I, A, B>(
+    fab: Middleware2<M, L, I, I, (a: A) => B>,
+    fa: Middleware2<M, L, I, I, A>
+  ) => Middleware2<M, L, I, I, B>
+  chain: <L, I, A, B>(
+    f: (a: A) => Middleware2<M, L, I, I, B>,
+    fa: Middleware2<M, L, I, I, A>
+  ) => Middleware2<M, L, I, I, B>
+  ichain: <L, I, O, Z, A, B>(
+    f: (a: A) => Middleware2<M, L, O, Z, B>,
+    fa: Middleware2<M, L, I, O, A>
+  ) => Middleware2<M, L, I, Z, B>
+  eval: <L, I, O, A>(ma: Middleware2<M, L, I, O, A>, c: Conn<I>) => HKT2As<M, L, A>
+  lift: <L, I, A>(fa: HKT2As<M, L, A>) => Middleware2<M, L, I, I, A>
+  gets: <L, I, A>(f: (c: Conn<I>) => A) => Middleware2<M, L, I, I, A>
+}
+
+export function getMiddlewareT<M extends HKT2S>(M: Monad<M>): MiddlewareT2<M>
+export function getMiddlewareT<M extends HKTS>(M: Monad<M>): MiddlewareT1<M>
+export function getMiddlewareT<M>(M: Monad<M>): MiddlewareT<M>
+export function getMiddlewareT<M>(M: Monad<M>): MiddlewareT<M> {
+  function map<I, A, B>(f: (a: A) => B, fa: Middleware<M, I, I, A>): Middleware<M, I, I, B> {
+    return cf => M.map(([a, ct]) => tuple(f(a), ct), fa(cf))
   }
-}
 
-export const URI = 'Middleware'
-
-export type URI = typeof URI
-
-/**
- * A middleware is an indexed monadic action transforming one `Conn` to another `Conn`.
- * It operates in some base monad `Task`, and is indexed by `I` and `O`,
- * the input and output `Conn` types of the middleware action.
- *
- * The input and output type parameters are used to ensure that a Conn is transformed,
- * and that side-effects are performed, correctly, throughout the middleware chain.
- *
- * Middleware are composed using `ichain`, the indexed monadic version of `chain`.
- */
-export class Middleware<I, O, A> {
-  // prettier-ignore
-  readonly '_A': A
-  // prettier-ignore
-  readonly '_L': O
-  // prettier-ignore
-  readonly '_U': I
-  // prettier-ignore
-  readonly '_URI': URI
-  constructor(readonly run: (c: Conn<I>) => Task<[A, Conn<O>]>) {}
-  eval(c: Conn<I>): Task<A> {
-    return this.run(c).map(([a]) => a)
+  function of<I, A>(a: A): Middleware<M, I, I, A> {
+    return c => M.of(tuple(a, c))
   }
-  map<B>(f: (a: A) => B): Middleware<I, O, B> {
-    return new Middleware(cf => this.run(cf).map(([a, ct]) => tuple(f(a), ct)))
+
+  function ap<I, A, B>(fab: Middleware<M, I, I, (a: A) => B>, fa: Middleware<M, I, I, A>): Middleware<M, I, I, B> {
+    return c => {
+      const ma = evalMiddleware(fa, c)
+      const mab = evalMiddleware(fab, c)
+      return M.map(b => tuple(b, c), M.ap(mab, ma))
+    }
   }
-  ap<S, B>(this: Middleware<S, S, A>, fab: Middleware<S, S, (a: A) => B>): Middleware<S, S, B> {
-    return new Middleware(c => {
-      // parallel execution
-      const ta = this.eval(c)
-      const tab = fab.eval(c)
-      return ta.ap(tab).map(b => tuple(b, c))
-    })
+
+  function chain<I, A, B>(f: (a: A) => Middleware<M, I, I, B>, fa: Middleware<M, I, I, A>): Middleware<M, I, I, B> {
+    return ichain(f, fa)
   }
-  chain<S, B>(this: Middleware<S, S, A>, f: (a: A) => Middleware<S, S, B>): Middleware<S, S, B> {
-    return this.ichain(f)
+
+  function ichain<I, O, Z, A, B>(
+    f: (a: A) => Middleware<M, O, Z, B>,
+    fa: Middleware<M, I, O, A>
+  ): Middleware<M, I, Z, B> {
+    return ci => M.chain(([a, co]) => f(a)(co), fa(ci))
   }
-  ichain<Z, B>(f: (a: A) => Middleware<O, Z, B>): Middleware<I, Z, B> {
-    return new Middleware(cf => this.run(cf).chain(([a, ct]) => f(a).run(ct)))
+
+  function evalMiddleware<I, O, A>(fa: Middleware<M, I, O, A>, c: Conn<I>): HKT<M, A> {
+    return M.map(([a]) => a, fa(c))
   }
-  toRequestHandler(this: Handler): express.RequestHandler {
-    return (req, res) => this.eval(new Conn(req, res)).run()
+
+  function lift<I, A>(fa: HKT<M, A>): Middleware<M, I, I, A> {
+    return c => M.map(a => tuple(a, c), fa)
   }
-}
 
-export const of = <S, A>(a: A): Middleware<S, S, A> => {
-  return new Middleware(c => task.of(tuple(a, c)))
-}
+  function gets<I, A>(f: (c: Conn<I>) => A): Middleware<M, I, I, A> {
+    return c => M.of(tuple(f(c), c))
+  }
 
-export const map = <I, O, A, B>(f: (a: A) => B, fa: Middleware<I, O, A>): Middleware<I, O, B> => {
-  return fa.map(f)
-}
-
-export const ap = <S, A, B>(fab: Middleware<S, S, (a: A) => B>, fa: Middleware<S, S, A>): Middleware<S, S, B> => {
-  return fa.ap(fab)
-}
-
-export const chain = <S, A, B>(f: (a: A) => Middleware<S, S, B>, fa: Middleware<S, S, A>): Middleware<S, S, B> => {
-  return fa.chain(f)
-}
-
-export const ichain = <I, O, Z, A, B>(
-  f: (a: A) => Middleware<O, Z, B>,
-  fa: Middleware<I, O, A>
-): Middleware<I, Z, B> => {
-  return fa.ichain(f)
-}
-
-export const gets = <I, A>(f: (c: Conn<I>) => A): Middleware<I, I, A> => {
-  return new Middleware(c => task.of(tuple(f(c), c)))
-}
-
-export const fromTask = <I, A>(task: Task<A>): Middleware<I, I, A> => {
-  return new Middleware(c => task.map(a => tuple(a, c)))
-}
-
-/** @instance */
-export const middleware: Monad<URI> & IxMonad<URI> = {
-  URI,
-  map,
-  of,
-  ap,
-  chain,
-  iof: of,
-  ichain
+  return {
+    eval: evalMiddleware,
+    map,
+    of,
+    ap,
+    chain,
+    ichain,
+    lift,
+    gets
+  }
 }
 
 /** Type indicating that the status-line is ready to be sent */
@@ -156,60 +159,57 @@ export type BodyOpen = 'BodyOpen'
 /** Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished. */
 export type ResponseEnded = 'ResponseEnded'
 
-/** A middleware transitioning from one `Response` state to another */
-export interface ResponseStateTransition<I, O> extends Middleware<I, O, void> {}
-
-/** A middleware representing a complete `Request` / `Response` handling */
-export interface Handler extends ResponseStateTransition<StatusOpen, ResponseEnded> {}
-
-const transition = <I, O>(f: (c: Conn<I>) => void): ResponseStateTransition<I, O> =>
-  new Middleware(
-    c =>
-      new Task(() => {
-        f(c)
-        return Promise.resolve([undefined, c] as any)
-      })
-  )
-
-export const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
-  transition(c => c.res.status(status))
-
 export type Header = [string, string]
 
-export const header = ([field, value]: Header): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  transition(c => c.res.header(field, value))
+export interface Monad3<M> {
+  URI: M
+  map<I, A, B>(f: (a: A) => B, fa: HKT3<M, I, I, A>): HKT3<M, I, I, B>
+  of<I, A>(a: A): HKT3<M, I, I, A>
+  ap<I, A, B>(fab: HKT3<M, I, I, (a: A) => B>, fa: HKT3<M, I, I, A>): HKT3<M, I, I, B>
+  chain<I, A, B>(f: (a: A) => HKT3<M, I, I, B>, fa: HKT3<M, I, I, A>): HKT3<M, I, I, B>
+}
 
-export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = new Middleware(c =>
-  task.of([undefined, c] as any)
-)
+export interface IxMonad3<M> {
+  URI: M
+  iof<I, A>(a: A): HKT3<M, I, I, A>
+  ichain<I, O, Z, A, B>(f: (a: A) => HKT3<M, O, Z, B>, fa: HKT3<M, I, O, A>): HKT3<M, I, Z, B>
+}
 
-export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(c => c.res.send(o))
+export interface MonadMiddleware<M> extends Monad3<M>, IxMonad3<M> {
+  status: (status: Status) => HKT3<M, StatusOpen, HeadersOpen, void>
+  header: (header: Header) => HKT3<M, HeadersOpen, HeadersOpen, void>
+  closeHeaders: HKT3<M, HeadersOpen, BodyOpen, void>
+  send: (o: string) => HKT3<M, BodyOpen, ResponseEnded, void>
+  json: (o: string) => HKT3<M, HeadersOpen, ResponseEnded, void>
+  end: HKT3<M, BodyOpen, ResponseEnded, void>
+  cookie: (name: string, value: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
+  clearCookie: (name: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
+}
 
-export const json = (o: string): ResponseStateTransition<HeadersOpen, ResponseEnded> =>
-  contentType(MediaType.applicationJSON)
-    .ichain(() => closeHeaders)
-    .ichain(() => send(o))
+export function headers<M extends HKT3S>(
+  R: MonadMiddleware<M>
+): <F>(F: Foldable<F>) => (headers: HKT<F, Header>) => HKT3As<M, HeadersOpen, BodyOpen, void>
+export function headers<M>(
+  R: MonadMiddleware<M>
+): <F>(F: Foldable<F>) => (headers: HKT<F, Header>) => HKT3<M, HeadersOpen, BodyOpen, void> {
+  return F => headers => {
+    const mheaders = traverse_(R, F)(h => R.header(h), headers) as HKT3<M, HeadersOpen, HeadersOpen, void>
+    return R.ichain(() => R.closeHeaders, mheaders)
+  }
+}
 
-export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(c => c.res.end())
+export function contentType<M extends HKT3S>(
+  R: MonadMiddleware<M>
+): (mediaType: MediaType) => HKT3As<M, HeadersOpen, HeadersOpen, void>
+export function contentType<M>(
+  R: MonadMiddleware<M>
+): (mediaType: MediaType) => HKT3<M, HeadersOpen, HeadersOpen, void> {
+  return mediaType => R.header(['Content-Type', mediaType])
+}
 
-export const cookie = (
-  name: string,
-  value: string,
-  options: express.CookieOptions
-): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.res.cookie(name, value, options))
-
-export const clearCookie = (
-  name: string,
-  options: express.CookieOptions
-): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.res.clearCookie(name, options))
-
-export const headers = <F>(F: Foldable<F>) => (
-  headers: HKT<F, Header>
-): ResponseStateTransition<HeadersOpen, BodyOpen> =>
-  traverse_(middleware, F)(header, headers).ichain(() => closeHeaders)
-
-export const contentType = (mediaType: MediaType): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  header(['Content-Type', mediaType])
-
-export const redirect = (uri: string): ResponseStateTransition<StatusOpen, HeadersOpen> =>
-  status(Status.Found).ichain(() => header(['Location', uri]))
+export function redirect<M extends HKT3S>(
+  R: MonadMiddleware<M>
+): (uri: string) => HKT3As<M, StatusOpen, HeadersOpen, void>
+export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void> {
+  return uri => R.ichain(() => R.header(['Location', uri]), R.status(Status.Found))
+}

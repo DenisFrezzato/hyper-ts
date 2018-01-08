@@ -1,33 +1,27 @@
 import * as assert from 'assert'
 import {
-  Middleware,
-  fromTask,
+  MiddlewareTask,
+  lift,
   gets,
-  StatusOpen,
   status,
   closeHeaders,
-  ResponseEnded,
   send,
   json,
   ResponseStateTransition,
   Handler,
-  Conn,
   header,
-  HeadersOpen,
-  BodyOpen,
   headers,
-  Header,
   contentType,
-  MediaType,
   redirect,
   cookie,
   clearCookie
-} from '../src'
+} from '../src/MiddlewareTask'
 import { Either, right, left } from 'fp-ts/lib/Either'
 import * as task from 'fp-ts/lib/Task'
 import { Option, fromNullable } from 'fp-ts/lib/Option'
 import * as express from 'express'
 import { array } from 'fp-ts/lib/Array'
+import { Conn, StatusOpen, HeadersOpen, BodyOpen, Header, MediaType, ResponseEnded } from '../src/index'
 
 function mockRequest(params: { [key: string]: string }): express.Request {
   return { params } as any
@@ -220,7 +214,7 @@ describe('redirect', () => {
 
 describe('Middleware', () => {
   it('should create a request handler', () => {
-    const param = (name: string): Middleware<StatusOpen, StatusOpen, Option<string>> =>
+    const param = (name: string): MiddlewareTask<StatusOpen, StatusOpen, Option<string>> =>
       gets(c => fromNullable(c.req.params[name]))
 
     // `ResponseStateTransition<I, O>` is an alias for `Middleware<I, O, void>`
@@ -242,8 +236,8 @@ describe('Middleware', () => {
       }
     }
 
-    const getUser = (api: API) => (id: string): Middleware<StatusOpen, StatusOpen, Either<string, User>> =>
-      fromTask(api.fetchUser(id))
+    const getUser = (api: API) => (id: string): MiddlewareTask<StatusOpen, StatusOpen, Either<string, User>> =>
+      lift(api.fetchUser(id))
 
     const writeUser = (u: User): Handler => status(200).ichain(() => json(JSON.stringify(u)))
 
