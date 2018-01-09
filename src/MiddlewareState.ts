@@ -6,18 +6,12 @@ import {
   HeadersOpen,
   BodyOpen,
   ResponseEnded,
-  MediaType,
   Header,
-  MonadMiddleware,
-  headers as headers_,
-  contentType as contentType_,
-  redirect as redirect_
+  MonadMiddleware
 } from './index'
 import { State } from 'fp-ts/lib/State'
 import * as state from 'fp-ts/lib/State'
 import * as express from 'express'
-import { Foldable } from 'fp-ts/lib/Foldable'
-import { HKT } from 'fp-ts/lib/HKT'
 
 const t = getMiddlewareT(state)
 
@@ -169,11 +163,6 @@ export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = tran
 
 export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(() => new SendEvent(o))
 
-export const json = (o: string): ResponseStateTransition<HeadersOpen, ResponseEnded> =>
-  contentType(MediaType.applicationJSON)
-    .ichain(() => closeHeaders)
-    .ichain(() => send(o))
-
 export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(() => new EndEvent())
 
 export const cookie = (
@@ -200,18 +189,7 @@ export const middlewareState: MonadMiddleware<URI> = {
   header,
   closeHeaders,
   send,
-  json,
   end,
   cookie,
   clearCookie
 }
-
-export const headers: <F>(
-  F: Foldable<F>
-) => (headers: HKT<F, Header>) => ResponseStateTransition<HeadersOpen, BodyOpen> = headers_(middlewareState)
-
-export const contentType: (mediaType: MediaType) => ResponseStateTransition<HeadersOpen, HeadersOpen> = contentType_(
-  middlewareState
-)
-
-export const redirect: (uri: string) => ResponseStateTransition<StatusOpen, HeadersOpen> = redirect_(middlewareState)

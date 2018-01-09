@@ -11,6 +11,7 @@ import {
   MonadMiddleware,
   headers as headers_,
   contentType as contentType_,
+  json as json_,
   redirect as redirect_
 } from './index'
 import { Task } from 'fp-ts/lib/Task'
@@ -125,11 +126,6 @@ export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = new 
 
 export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(c => c.res.send(o))
 
-export const json = (o: string): ResponseStateTransition<HeadersOpen, ResponseEnded> =>
-  contentType(MediaType.applicationJSON)
-    .ichain(() => closeHeaders)
-    .ichain(() => send(o))
-
 export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(c => c.res.end())
 
 export const cookie = (
@@ -156,7 +152,6 @@ export const middlewareTask: MonadMiddleware<URI> = {
   header,
   closeHeaders,
   send,
-  json,
   end,
   cookie,
   clearCookie
@@ -169,5 +164,7 @@ export const headers: <F>(
 export const contentType: (mediaType: MediaType) => ResponseStateTransition<HeadersOpen, HeadersOpen> = contentType_(
   middlewareTask
 )
+
+export const json: (o: string) => ResponseStateTransition<HeadersOpen, ResponseEnded> = json_(middlewareTask)
 
 export const redirect: (uri: string) => ResponseStateTransition<StatusOpen, HeadersOpen> = redirect_(middlewareTask)

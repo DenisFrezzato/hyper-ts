@@ -162,7 +162,7 @@ export type ResponseEnded = 'ResponseEnded'
 export type Header = [string, string]
 
 export interface Monad3<M> {
-  URI: M
+  readonly URI: M
   map<I, A, B>(f: (a: A) => B, fa: HKT3<M, I, I, A>): HKT3<M, I, I, B>
   of<I, A>(a: A): HKT3<M, I, I, A>
   ap<I, A, B>(fab: HKT3<M, I, I, (a: A) => B>, fa: HKT3<M, I, I, A>): HKT3<M, I, I, B>
@@ -170,7 +170,7 @@ export interface Monad3<M> {
 }
 
 export interface IxMonad3<M> {
-  URI: M
+  readonly URI: M
   iof<I, A>(a: A): HKT3<M, I, I, A>
   ichain<I, O, Z, A, B>(f: (a: A) => HKT3<M, O, Z, B>, fa: HKT3<M, I, O, A>): HKT3<M, I, Z, B>
 }
@@ -180,7 +180,6 @@ export interface MonadMiddleware<M> extends Monad3<M>, IxMonad3<M> {
   header: (header: Header) => HKT3<M, HeadersOpen, HeadersOpen, void>
   closeHeaders: HKT3<M, HeadersOpen, BodyOpen, void>
   send: (o: string) => HKT3<M, BodyOpen, ResponseEnded, void>
-  json: (o: string) => HKT3<M, HeadersOpen, ResponseEnded, void>
   end: HKT3<M, BodyOpen, ResponseEnded, void>
   cookie: (name: string, value: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
   clearCookie: (name: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
@@ -189,6 +188,9 @@ export interface MonadMiddleware<M> extends Monad3<M>, IxMonad3<M> {
 export function headers<M extends HKT3S>(
   R: MonadMiddleware<M>
 ): <F>(F: Foldable<F>) => (headers: HKT<F, Header>) => HKT3As<M, HeadersOpen, BodyOpen, void>
+export function headers<M>(
+  R: MonadMiddleware<M>
+): <F>(F: Foldable<F>) => (headers: HKT<F, Header>) => HKT3<M, HeadersOpen, BodyOpen, void>
 export function headers<M>(
   R: MonadMiddleware<M>
 ): <F>(F: Foldable<F>) => (headers: HKT<F, Header>) => HKT3<M, HeadersOpen, BodyOpen, void> {
@@ -201,15 +203,24 @@ export function headers<M>(
 export function contentType<M extends HKT3S>(
   R: MonadMiddleware<M>
 ): (mediaType: MediaType) => HKT3As<M, HeadersOpen, HeadersOpen, void>
+export function contentType<M>(R: MonadMiddleware<M>): (mediaType: MediaType) => HKT3<M, HeadersOpen, HeadersOpen, void>
 export function contentType<M>(
   R: MonadMiddleware<M>
 ): (mediaType: MediaType) => HKT3<M, HeadersOpen, HeadersOpen, void> {
   return mediaType => R.header(['Content-Type', mediaType])
 }
 
+export function json<M extends HKT3S>(R: MonadMiddleware<M>): (o: string) => HKT3As<M, HeadersOpen, ResponseEnded, void>
+export function json<M>(R: MonadMiddleware<M>): (o: string) => HKT3<M, HeadersOpen, ResponseEnded, void>
+export function json<M>(R: MonadMiddleware<M>): (o: string) => HKT3<M, HeadersOpen, ResponseEnded, void> {
+  const contentType_ = contentType(R)
+  return o => R.ichain(() => R.send(o), R.ichain(() => R.closeHeaders, contentType_(MediaType.applicationJSON)))
+}
+
 export function redirect<M extends HKT3S>(
   R: MonadMiddleware<M>
 ): (uri: string) => HKT3As<M, StatusOpen, HeadersOpen, void>
+export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void>
 export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void> {
   return uri => R.ichain(() => R.header(['Location', uri]), R.status(Status.Found))
 }
