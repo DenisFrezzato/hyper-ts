@@ -12,13 +12,15 @@ import {
   headers as headers_,
   contentType as contentType_,
   json as json_,
-  redirect as redirect_
+  redirect as redirect_,
+  param as param_
 } from './index'
 import { Task } from 'fp-ts/lib/Task'
 import * as task from 'fp-ts/lib/Task'
 import * as express from 'express'
 import { Foldable } from 'fp-ts/lib/Foldable'
 import { HKT } from 'fp-ts/lib/HKT'
+import { Option } from 'fp-ts/lib/Option'
 
 const t = getMiddlewareT(task)
 
@@ -43,7 +45,7 @@ export class MiddlewareTask<I, O, A> {
   readonly '_URI': URI
   constructor(readonly run: (c: Conn<I>) => Task<[A, Conn<O>]>) {}
   eval(c: Conn<I>): Task<A> {
-    return t.eval(this.run, c)
+    return t.evalMiddleware(this.run, c)
   }
   map<I, B>(this: MiddlewareTask<I, I, A>, f: (a: A) => B): MiddlewareTask<I, I, B> {
     return new MiddlewareTask(t.map(f, this.run))
@@ -154,7 +156,8 @@ export const middlewareTask: MonadMiddleware<URI> = {
   send,
   end,
   cookie,
-  clearCookie
+  clearCookie,
+  gets
 }
 
 export const headers: <F>(
@@ -168,3 +171,5 @@ export const contentType: (mediaType: MediaType) => ResponseStateTransition<Head
 export const json: (o: string) => ResponseStateTransition<HeadersOpen, ResponseEnded> = json_(middlewareTask)
 
 export const redirect: (uri: string) => ResponseStateTransition<StatusOpen, HeadersOpen> = redirect_(middlewareTask)
+
+export const param: (name: string) => MiddlewareTask<StatusOpen, StatusOpen, Option<string>> = param_(middlewareTask)

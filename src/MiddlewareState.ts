@@ -86,7 +86,7 @@ export class MiddlewareState<I, O, A> {
   readonly '_URI': URI
   constructor(readonly run: (c: Conn<I>) => State<S, [A, Conn<O>]>) {}
   eval(c: Conn<I>): State<S, A> {
-    return t.eval(this.run, c)
+    return t.evalMiddleware(this.run, c)
   }
   map<I, B>(this: MiddlewareState<I, I, A>, f: (a: A) => B): MiddlewareState<I, I, B> {
     return new MiddlewareState(t.map(f, this.run))
@@ -191,5 +191,6 @@ export const middlewareState: MonadMiddleware<URI> = {
   send,
   end,
   cookie,
-  clearCookie
+  clearCookie,
+  gets
 }

@@ -104,14 +104,18 @@ There's another interpreter for testing purposes: `MiddlewareState`
 
 ```ts
 import * as express from 'express'
-import { MonadMiddleware, StatusOpen, ResponseEnded, Conn } from 'hyper-ts/lib/index'
+import { MonadMiddleware, StatusOpen, ResponseEnded, Conn, param } from 'hyper-ts/lib/index'
 import { middlewareTask } from 'hyper-ts/lib/MiddlewareTask'
 import { middlewareState } from 'hyper-ts/lib/MiddlewareState'
 import { HKT3, HKT3S, HKT3As } from 'fp-ts/lib/HKT'
 
 function program<M extends HKT3S>(R: MonadMiddleware<M>): HKT3As<M, StatusOpen, ResponseEnded, void>
 function program<M>(R: MonadMiddleware<M>): HKT3<M, StatusOpen, ResponseEnded, void> {
-  return R.ichain(() => R.send('Hello hyper-ts!'), R.ichain(() => R.closeHeaders, R.status(200)))
+  return R.ichain(
+    o =>
+      R.ichain(() => R.send(`Hello ${o.getOrElseValue('Anonymous')}!`), R.ichain(() => R.closeHeaders, R.status(200))),
+    param(R)('name')
+  )
 }
 
 // interpreted in Task
@@ -121,7 +125,15 @@ const helloTask = program(middlewareTask)
 const helloState = program(middlewareState)
 
 // fake Conn
-const c: Conn<StatusOpen> = { res: { status: () => null, send: () => null } } as any
+const c: Conn<StatusOpen> = {
+  req: {
+    params: {}
+  },
+  res: {
+    status: () => null,
+    send: () => null
+  }
+} as any
 
 console.log(helloState.eval(c).run([]))
 
@@ -130,16 +142,16 @@ console.log(helloState.eval(c).run([]))
 //
 
 const app = express()
-app.get('/', helloTask.toRequestHandler())
+app.get('/:name?', helloTask.toRequestHandler())
 app.listen(3000, () => console.log('App listening on port 3000!'))
 
 /*
 Output:
 
 [ undefined,
-  [ { type: 'StatusEvent', status: 200 },
-    { type: 'CloseHeadersEvent' },
-    { type: 'SendEvent', o: 'Hello hyper-ts!' } ] ]
+  [ StatusEvent { status: 200, type: 'StatusEvent' },
+    CloseHeadersEvent { type: 'CloseHeadersEvent' },
+    SendEvent { o: 'Hello Anonymous!', type: 'SendEvent' } ] ]
 App listening on port 3000!
 
 */

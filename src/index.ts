@@ -3,6 +3,7 @@ import { Monad } from 'fp-ts/lib/Monad'
 import { HKT, HKTS, HKTAs, HKT3, HKT3S, HKT3As, HKT2S, HKT2As } from 'fp-ts/lib/HKT'
 import { tuple } from 'fp-ts/lib/function'
 import { Foldable, traverse_ } from 'fp-ts/lib/Foldable'
+import { Option, fromNullable } from 'fp-ts/lib/Option'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -56,7 +57,7 @@ export interface MiddlewareT<M> {
   ap: <I, A, B>(fab: Middleware<M, I, I, (a: A) => B>, fa: Middleware<M, I, I, A>) => Middleware<M, I, I, B>
   chain: <I, A, B>(f: (a: A) => Middleware<M, I, I, B>, fa: Middleware<M, I, I, A>) => Middleware<M, I, I, B>
   ichain: <I, O, Z, A, B>(f: (a: A) => Middleware<M, O, Z, B>, fa: Middleware<M, I, O, A>) => Middleware<M, I, Z, B>
-  eval: <I, O, A>(ma: Middleware<M, I, O, A>, c: Conn<I>) => HKT<M, A>
+  evalMiddleware: <I, O, A>(ma: Middleware<M, I, O, A>, c: Conn<I>) => HKT<M, A>
   lift: <I, A>(fa: HKT<M, A>) => Middleware<M, I, I, A>
   gets: <I, A>(f: (c: Conn<I>) => A) => Middleware<M, I, I, A>
 }
@@ -67,7 +68,7 @@ export interface MiddlewareT1<M extends HKTS> {
   ap: <I, A, B>(fab: Middleware1<M, I, I, (a: A) => B>, fa: Middleware1<M, I, I, A>) => Middleware1<M, I, I, B>
   chain: <I, A, B>(f: (a: A) => Middleware1<M, I, I, B>, fa: Middleware1<M, I, I, A>) => Middleware1<M, I, I, B>
   ichain: <I, O, Z, A, B>(f: (a: A) => Middleware1<M, O, Z, B>, fa: Middleware1<M, I, O, A>) => Middleware1<M, I, Z, B>
-  eval: <I, O, A>(ma: Middleware1<M, I, O, A>, c: Conn<I>) => HKTAs<M, A>
+  evalMiddleware: <I, O, A>(ma: Middleware1<M, I, O, A>, c: Conn<I>) => HKTAs<M, A>
   lift: <I, A>(fa: HKTAs<M, A>) => Middleware1<M, I, I, A>
   gets: <I, A>(f: (c: Conn<I>) => A) => Middleware1<M, I, I, A>
 }
@@ -87,7 +88,7 @@ export interface MiddlewareT2<M extends HKT2S> {
     f: (a: A) => Middleware2<M, L, O, Z, B>,
     fa: Middleware2<M, L, I, O, A>
   ) => Middleware2<M, L, I, Z, B>
-  eval: <L, I, O, A>(ma: Middleware2<M, L, I, O, A>, c: Conn<I>) => HKT2As<M, L, A>
+  evalMiddleware: <L, I, O, A>(ma: Middleware2<M, L, I, O, A>, c: Conn<I>) => HKT2As<M, L, A>
   lift: <L, I, A>(fa: HKT2As<M, L, A>) => Middleware2<M, L, I, I, A>
   gets: <L, I, A>(f: (c: Conn<I>) => A) => Middleware2<M, L, I, I, A>
 }
@@ -136,7 +137,7 @@ export function getMiddlewareT<M>(M: Monad<M>): MiddlewareT<M> {
   }
 
   return {
-    eval: evalMiddleware,
+    evalMiddleware,
     map,
     of,
     ap,
@@ -183,6 +184,7 @@ export interface MonadMiddleware<M> extends Monad3<M>, IxMonad3<M> {
   end: HKT3<M, BodyOpen, ResponseEnded, void>
   cookie: (name: string, value: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
   clearCookie: (name: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
+  gets: <I, A>(f: (c: Conn<I>) => A) => HKT3<M, I, I, A>
 }
 
 export function headers<M extends HKT3S>(
@@ -223,4 +225,12 @@ export function redirect<M extends HKT3S>(
 export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void>
 export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void> {
   return uri => R.ichain(() => R.header(['Location', uri]), R.status(Status.Found))
+}
+
+export function param<M extends HKT3S>(
+  R: MonadMiddleware<M>
+): (name: string) => HKT3As<M, StatusOpen, StatusOpen, Option<string>>
+export function param<M>(R: MonadMiddleware<M>): (name: string) => HKT3<M, StatusOpen, StatusOpen, Option<string>>
+export function param<M>(R: MonadMiddleware<M>): (name: string) => HKT3<M, StatusOpen, StatusOpen, Option<string>> {
+  return name => R.gets(c => fromNullable(c.req.params[name]))
 }
