@@ -1,10 +1,6 @@
-# Work in progress
-
 A partial porting of https://github.com/owickstrom/hyper to TypeScript
 
-# Examples
-
-## Hello world
+# Hello world
 
 ```ts
 import * as express from 'express'
@@ -14,20 +10,17 @@ const hello = status(200)
   .ichain(() => closeHeaders)
   .ichain(() => send('Hello hyper-ts!'))
 
-//
-// express app
-//
-
 const app = express()
 app.get('/', hello.toRequestHandler())
 app.listen(3000, () => console.log('App listening on port 3000!'))
 ```
 
-## MiddlewareTask
+# Loading a user
+
+The default interpreter is based on [fp-ts](https://github.com/gcanti/fp-ts)'s `Task`
 
 ```ts
 import {
-  gets,
   status,
   closeHeaders,
   send,
@@ -35,22 +28,15 @@ import {
   ResponseStateTransition,
   Handler,
   MiddlewareTask,
-  lift
+  lift,
+  param
 } from 'hyper-ts/lib/MiddlewareTask'
 import { Either, right, left } from 'fp-ts/lib/Either'
 import * as task from 'fp-ts/lib/Task'
-import { Option, fromNullable } from 'fp-ts/lib/Option'
 import * as express from 'express'
-import { StatusOpen, ResponseEnded } from 'hyper-ts'
+import { StatusOpen, ResponseEnded } from 'hyper-ts/lib/index'
 
-//
-// generic middlewares
-//
-
-const param = (name: string): MiddlewareTask<StatusOpen, StatusOpen, Option<string>> =>
-  gets(c => fromNullable(c.req.params[name]))
-
-// `ResponseStateTransition<I, O>` is an alias for `Middleware<I, O, void>`
+// a generic middleware
 const notFound = (message: string): ResponseStateTransition<StatusOpen, ResponseEnded> =>
   status(404)
     .ichain(() => closeHeaders)
@@ -75,7 +61,7 @@ const api: API = {
 }
 
 //
-// user middleware
+// load user middleware
 //
 
 const getUser = (api: API) => (id: string): MiddlewareTask<StatusOpen, StatusOpen, Either<string, User>> =>
@@ -84,21 +70,17 @@ const getUser = (api: API) => (id: string): MiddlewareTask<StatusOpen, StatusOpe
 // `Handler` is an alias for `ResponseStateTransition<StatusOpen, ResponseEnded>`
 const writeUser = (u: User): Handler => status(200).ichain(() => json(JSON.stringify(u)))
 
-const userMiddleware = (api: API): Handler =>
+const loadUserMiddleware = (api: API): Handler =>
   param('user_id').ichain(o =>
     o.fold(() => notFound('id not found'), id => getUser(api)(id).ichain(e => e.fold(notFound, writeUser)))
   )
 
-//
-// express app
-//
-
 const app = express()
-app.get('/:user_id/', userMiddleware(api).toRequestHandler())
+app.get('/:user_id/', loadUserMiddleware(api).toRequestHandler())
 app.listen(3000, () => console.log('App listening on port 3000!'))
 ```
 
-## MiddlewareState
+# Using the State monad for writing tests
 
 There's another interpreter for testing purposes: `MiddlewareState`
 
