@@ -4,6 +4,7 @@ import { HKT, HKTS, HKTAs, HKT3, HKT3S, HKT3As, HKT2S, HKT2As } from 'fp-ts/lib/
 import { tuple } from 'fp-ts/lib/function'
 import { Foldable, traverse_ } from 'fp-ts/lib/Foldable'
 import { Option, fromNullable } from 'fp-ts/lib/Option'
+import { IxMonad } from 'fp-ts/lib/IxMonad'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -170,13 +171,7 @@ export interface Monad3<M> {
   chain<I, A, B>(f: (a: A) => HKT3<M, I, I, B>, fa: HKT3<M, I, I, A>): HKT3<M, I, I, B>
 }
 
-export interface IxMonad3<M> {
-  readonly URI: M
-  iof<I, A>(a: A): HKT3<M, I, I, A>
-  ichain<I, O, Z, A, B>(f: (a: A) => HKT3<M, O, Z, B>, fa: HKT3<M, I, O, A>): HKT3<M, I, Z, B>
-}
-
-export interface MonadMiddleware<M> extends Monad3<M>, IxMonad3<M> {
+export interface MonadMiddleware<M> extends Monad3<M>, IxMonad<M> {
   status: (status: Status) => HKT3<M, StatusOpen, HeadersOpen, void>
   header: (header: Header) => HKT3<M, HeadersOpen, HeadersOpen, void>
   closeHeaders: HKT3<M, HeadersOpen, BodyOpen, void>
