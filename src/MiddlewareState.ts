@@ -177,7 +177,7 @@ export const clearCookie = (
 ): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(() => new ClearCookieEvent(name, options))
 
 /** @instance */
-export const middlewareState: MonadMiddleware<URI> = {
+export const monadMiddlewareState: MonadMiddleware<URI> = {
   URI,
   map,
   of,

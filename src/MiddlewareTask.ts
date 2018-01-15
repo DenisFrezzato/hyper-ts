@@ -142,7 +142,7 @@ export const clearCookie = (
 ): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.res.clearCookie(name, options))
 
 /** @instance */
-export const middlewareTask: MonadMiddleware<URI> = {
+export const monadMiddlewareTask: MonadMiddleware<URI> = {
   URI,
   map,
   of,
@@ -162,14 +162,18 @@ export const middlewareTask: MonadMiddleware<URI> = {
 
 export const headers: <F>(
   F: Foldable<F>
-) => (headers: HKT<F, Header>) => ResponseStateTransition<HeadersOpen, BodyOpen> = headers_(middlewareTask)
+) => (headers: HKT<F, Header>) => ResponseStateTransition<HeadersOpen, BodyOpen> = headers_(monadMiddlewareTask)
 
 export const contentType: (mediaType: MediaType) => ResponseStateTransition<HeadersOpen, HeadersOpen> = contentType_(
-  middlewareTask
+  monadMiddlewareTask
 )
 
-export const json: (o: string) => ResponseStateTransition<HeadersOpen, ResponseEnded> = json_(middlewareTask)
+export const json: (o: string) => ResponseStateTransition<HeadersOpen, ResponseEnded> = json_(monadMiddlewareTask)
 
-export const redirect: (uri: string) => ResponseStateTransition<StatusOpen, HeadersOpen> = redirect_(middlewareTask)
+export const redirect: (uri: string) => ResponseStateTransition<StatusOpen, HeadersOpen> = redirect_(
+  monadMiddlewareTask
+)
 
-export const param: (name: string) => MiddlewareTask<StatusOpen, StatusOpen, Option<string>> = param_(middlewareTask)
+export const param: (name: string) => MiddlewareTask<StatusOpen, StatusOpen, Option<string>> = param_(
+  monadMiddlewareTask
+)
