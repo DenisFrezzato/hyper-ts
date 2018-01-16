@@ -46,6 +46,11 @@ export class Conn<S> {
   constructor(readonly req: express.Request, readonly res: express.Response) {}
 }
 
+/**
+ * A middleware is an indexed monadic action transforming one `Conn` to another `Conn`. It operates
+ * in some base monad `M`, and is indexed by `I` and `O`, the input and output `Conn` types of the
+ * middleware action.
+ */
 export type Middleware<M, I, O, A> = (c: Conn<I>) => HKT<M, [A, Conn<O>]>
 
 export type Middleware1<M extends HKTS, I, O, A> = (c: Conn<I>) => HKTAs<M, [A, Conn<O>]>
