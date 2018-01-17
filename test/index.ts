@@ -2,7 +2,7 @@ import * as assert from 'assert'
 import {
   MiddlewareTask,
   lift,
-  gets,
+  param,
   status,
   closeHeaders,
   send,
@@ -14,17 +14,27 @@ import {
   contentType,
   redirect,
   cookie,
-  clearCookie
+  clearCookie,
+  query,
+  params,
+  body
 } from '../src/MiddlewareTask'
 import { Either, right, left } from 'fp-ts/lib/Either'
 import * as task from 'fp-ts/lib/Task'
-import { Option, fromNullable } from 'fp-ts/lib/Option'
 import * as express from 'express'
 import { array } from 'fp-ts/lib/Array'
 import { Conn, StatusOpen, HeadersOpen, BodyOpen, Header, MediaType, ResponseEnded } from '../src/index'
+import * as t from 'io-ts'
+import { failure } from 'io-ts/lib/PathReporter'
+import * as querystring from 'qs'
 
-function mockRequest(params: { [key: string]: string }): express.Request {
-  return { params } as any
+function mockRequest(params: any, query: string = '', body: any = undefined): express.Request {
+  const parsedQuery = querystring.parse(query)
+  return {
+    params,
+    query: parsedQuery,
+    body
+  } as any
 }
 
 type MokedHeaders = { [key: string]: string }
@@ -213,11 +223,125 @@ describe('MiddlewareTask', () => {
     })
   })
 
+  describe('param', () => {
+    it('should validate a param (success case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({ foo: 1 }), mockResponse())
+      return param('foo', t.number)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e, right(1))
+        })
+    })
+
+    it('should validate a param (failure case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({ foo: 'a' }), mockResponse())
+      return param('foo', t.number)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : number']))
+        })
+    })
+  })
+
+  describe('params', () => {
+    it('should validate all params (success case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({ foo: 1 }), mockResponse())
+      return params(t.interface({ foo: t.number }))
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e, right({ foo: 1 }))
+        })
+    })
+
+    it('should validate all params (failure case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({ foo: 'a' }), mockResponse())
+      return params(t.interface({ foo: t.number }))
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : { foo: number }/foo: number']))
+        })
+    })
+  })
+
+  describe('query', () => {
+    it('should validate a query (success case 1)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({}, 'q=tobi+ferret'), mockResponse())
+      const Query = t.interface({
+        q: t.string
+      })
+      return query(Query)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e, right({ q: 'tobi ferret' }))
+        })
+    })
+
+    it('should validate a query (success case 2)', () => {
+      const conn = new Conn<StatusOpen>(
+        mockRequest({}, 'order=desc&shoe[color]=blue&shoe[type]=converse'),
+        mockResponse()
+      )
+      const Query = t.interface({
+        order: t.string,
+        shoe: t.interface({
+          color: t.string,
+          type: t.string
+        })
+      })
+      return query(Query)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e, right({ order: 'desc', shoe: { color: 'blue', type: 'converse' } }))
+        })
+    })
+
+    it('should validate a query (failure case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({}, 'q=tobi+ferret'), mockResponse())
+      const Query = t.interface({
+        q: t.number
+      })
+      return query(Query)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(
+            e.mapLeft(failure),
+            left(['Invalid value "tobi ferret" supplied to : { q: number }/q: number'])
+          )
+        })
+    })
+  })
+
+  describe('body', () => {
+    it('should validate the body (success case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({}, undefined, 1), mockResponse())
+      return body(t.number)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e, right(1))
+        })
+    })
+
+    it('should validate the body (failure case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({}, undefined, 'a'), mockResponse())
+      return body(t.number)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : number']))
+        })
+    })
+  })
+
   describe('userMiddleware', () => {
     it('should create a request handler', () => {
-      const param = (name: string): MiddlewareTask<StatusOpen, StatusOpen, Option<string>> =>
-        gets(c => fromNullable(c.req.params[name]))
-
       // `ResponseStateTransition<I, O>` is an alias for `Middleware<I, O, void>`
       const notFound = (message: string): ResponseStateTransition<StatusOpen, ResponseEnded> =>
         status(404)
@@ -243,7 +367,7 @@ describe('MiddlewareTask', () => {
       const writeUser = (u: User): Handler => status(200).ichain(() => json(JSON.stringify(u)))
 
       const userMiddleware = (api: API): Handler =>
-        param('user_id').ichain(o =>
+        param('user_id', t.string).ichain(o =>
           o.fold(() => notFound('id not found'), id => getUser(api)(id).ichain(e => e.fold(notFound, writeUser)))
         )
 
