@@ -103,6 +103,8 @@ import { Either, right, left } from 'fp-ts/lib/Either'
 import * as task from 'fp-ts/lib/Task'
 import * as express from 'express'
 import { StatusOpen, ResponseEnded } from 'hyper-ts'
+import * as t from 'io-ts'
+import { failure } from 'io-ts/lib/PathReporter'
 
 // a generic middleware
 const notFound = (message: string): ResponseStateTransition<StatusOpen, ResponseEnded> =>
@@ -139,12 +141,15 @@ const getUser = (api: API) => (id: string): MiddlewareTask<StatusOpen, StatusOpe
 const writeUser = (u: User): Handler => status(200).ichain(() => json(JSON.stringify(u)))
 
 const loadUserMiddleware = (api: API): Handler =>
-  param('user_id').ichain(o =>
-    o.fold(() => notFound('id not found'), id => getUser(api)(id).ichain(e => e.fold(notFound, writeUser)))
+  param('user_id', t.string).ichain(e =>
+    e.fold(
+      errors => notFound(failure(errors).join('')),
+      id => getUser(api)(id).ichain(e => e.fold(notFound, writeUser))
+    )
   )
 
 const app = express()
-app.get('/:user_id/', loadUserMiddleware(api).toRequestHandler())
+app.get('/:user_id?/', loadUserMiddleware(api).toRequestHandler())
 app.listen(3000, () => console.log('App listening on port 3000!'))
 ```
 
@@ -158,13 +163,15 @@ import { MonadMiddleware, StatusOpen, ResponseEnded, Conn, param } from 'hyper-t
 import { monadMiddlewareTask } from 'hyper-ts/lib/MiddlewareTask'
 import { monadMiddlewareState } from 'hyper-ts/lib/MiddlewareState'
 import { HKT3, HKT3S, HKT3As } from 'fp-ts/lib/HKT'
+import * as t from 'io-ts'
 
 function program<M extends HKT3S>(R: MonadMiddleware<M>): HKT3As<M, StatusOpen, ResponseEnded, void>
+function program<M>(R: MonadMiddleware<M>): HKT3<M, StatusOpen, ResponseEnded, void>
 function program<M>(R: MonadMiddleware<M>): HKT3<M, StatusOpen, ResponseEnded, void> {
   return R.ichain(
-    o =>
-      R.ichain(() => R.send(`Hello ${o.getOrElseValue('Anonymous')}!`), R.ichain(() => R.closeHeaders, R.status(200))),
-    param(R)('name')
+    e =>
+      R.ichain(() => R.send(`Hello ${e.getOrElseValue('Anonymous')}!`), R.ichain(() => R.closeHeaders, R.status(200))),
+    param(R)('name', t.string)
   )
 }
 
