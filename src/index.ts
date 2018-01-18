@@ -4,7 +4,7 @@ import { HKT, HKTS, HKTAs, HKT3, HKT3S, HKT3As, HKT2S, HKT2As } from 'fp-ts/lib/
 import { tuple } from 'fp-ts/lib/function'
 import { Foldable, traverse_ } from 'fp-ts/lib/Foldable'
 import { IxMonad } from 'fp-ts/lib/IxMonad'
-import { Type, Validation, validate, Dictionary } from 'io-ts'
+import { Decoder, Validation, validate, Dictionary } from 'io-ts'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -229,48 +229,48 @@ export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, Sta
 
 export function param<M extends HKT3S>(
   R: MonadMiddleware<M>
-): <A>(name: string, type: Type<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(name: string, type: Decoder<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
 export function param<M>(
   R: MonadMiddleware<M>
-): <A>(name: string, type: Type<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(name: string, type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function param<M>(
   R: MonadMiddleware<M>
-): <A>(name: string, type: Type<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+): <A>(name: string, type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return (name, type) => R.gets(c => validate(c.req.params, Dictionary).chain(params => validate(params[name], type)))
 }
 
 export function params<M extends HKT3S>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
 export function params<M>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function params<M>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return type => R.gets(c => validate(c.req.params, type))
 }
 
 export function query<M extends HKT3S>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
 export function query<M>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function query<M>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return type => R.gets(c => validate(c.req.query, type))
 }
 
 export function body<M extends HKT3S>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
 export function body<M>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function body<M>(
   R: MonadMiddleware<M>
-): <A>(type: Type<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return type => R.gets(c => validate(c.req.body, type))
 }

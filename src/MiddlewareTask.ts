@@ -23,7 +23,7 @@ import * as task from 'fp-ts/lib/Task'
 import * as express from 'express'
 import { Foldable } from 'fp-ts/lib/Foldable'
 import { HKT } from 'fp-ts/lib/HKT'
-import { Type, Validation } from 'io-ts'
+import { Decoder, Validation } from 'io-ts'
 
 const t = getMiddlewareT(task)
 
@@ -179,17 +179,17 @@ export const redirect: (uri: string) => ResponseStateTransition<StatusOpen, Head
 
 export const param: <A>(
   name: string,
-  type: Type<any, A>
+  type: Decoder<any, A>
 ) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = param_(monadMiddlewareTask)
 
-export const params: <A>(type: Type<any, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = params_(
+export const params: <A>(type: Decoder<any, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = params_(
   monadMiddlewareTask
 )
 
-export const query: <A>(type: Type<any, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = query_(
+export const query: <A>(type: Decoder<any, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = query_(
   monadMiddlewareTask
 )
 
-export const body: <A>(type: Type<any, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = body_(
+export const body: <A>(type: Decoder<any, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = body_(
   monadMiddlewareTask
 )
