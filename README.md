@@ -83,6 +83,65 @@ const hello = status(200)
 
 No more `"Can't set headers after they are sent."` errors.
 
+# Validating params, query and body
+
+Validations leverage [io-ts](https://github.com/gcanti/io-ts) types
+
+```ts
+import { param, params, query, body } from 'hyper-ts/lib/MiddlewareTask'
+import * as t from 'io-ts'
+```
+
+**A single param**
+
+```ts
+// returns a middleware validating `req.param.user_id`
+const middleware = param('user_id', t.string)
+```
+
+Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
+
+```ts
+import { IntegerFromString } from 'io-ts-types/lib/number/IntegerFromString'
+
+// validation succeeds only if `req.param.user_id` is an integer
+param('user_id', IntegerFromString)
+```
+
+**Multiple params**
+
+```ts
+// returns a middleware validating both `req.param.user_id` and `req.param.user_name`
+const middleware = params(
+  t.type({
+    user_id: t.string,
+    user_name: t.string
+  })
+)
+```
+
+**Query**
+
+```ts
+// return a middleware validating the query "order=desc&shoe[color]=blue&shoe[type]=converse"
+const middleware = query(
+  t.type({
+    order: t.string,
+    shoe: t.type({
+      color: t.string,
+      type: t.string
+    })
+  })
+)
+```
+
+**Body**
+
+```ts
+// return a middleware validating `req.body`
+const middleware = body(t.string)
+```
+
 ## Another example: loading a user
 
 The default interpreter is based on [fp-ts](https://github.com/gcanti/fp-ts)'s `Task`
