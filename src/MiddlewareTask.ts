@@ -16,7 +16,8 @@ import {
   param as param_,
   params as params_,
   query as query_,
-  body as body_
+  body as body_,
+  get as get_
 } from './index'
 import { Task } from 'fp-ts/lib/Task'
 import * as task from 'fp-ts/lib/Task'
@@ -193,3 +194,8 @@ export const query: <A>(type: Decoder<any, A>) => MiddlewareTask<StatusOpen, Sta
 export const body: <A>(type: Decoder<any, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = body_(
   monadMiddlewareTask
 )
+
+export const get: <A>(
+  name: string,
+  type: Decoder<any, A>
+) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = get_(monadMiddlewareTask)

@@ -17,7 +17,8 @@ import {
   clearCookie,
   query,
   params,
-  body
+  body,
+  get
 } from '../src/MiddlewareTask'
 import { Either, right, left } from 'fp-ts/lib/Either'
 import * as task from 'fp-ts/lib/Task'
@@ -28,12 +29,18 @@ import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
 
-function mockRequest(params: any, query: string = '', body: any = undefined): express.Request {
+function mockRequest(
+  params: any,
+  query: string = '',
+  body: any = undefined,
+  headers: { [key: string]: string } = {}
+): express.Request {
   const parsedQuery = querystring.parse(query)
   return {
     params,
     query: parsedQuery,
-    body
+    body,
+    get: (name: string) => headers[name]
   } as any
 }
 
@@ -336,6 +343,28 @@ describe('MiddlewareTask', () => {
         .run()
         .then(e => {
           assert.deepEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : number']))
+        })
+    })
+  })
+
+  describe('get', () => {
+    it('should validate a header (success case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({}, undefined, undefined, { token: 'mytoken' }), mockResponse())
+      return get('token', t.string)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e, right('mytoken'))
+        })
+    })
+
+    it('should validate a header (failure case)', () => {
+      const conn = new Conn<StatusOpen>(mockRequest({}, undefined, undefined, {}), mockResponse())
+      return get('token', t.string)
+        .eval(conn)
+        .run()
+        .then(e => {
+          assert.deepEqual(e.mapLeft(failure), left(['Invalid value undefined supplied to : string']))
         })
     })
   })
