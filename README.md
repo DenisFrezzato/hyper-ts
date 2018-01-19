@@ -54,6 +54,8 @@ Middlewares are composed using `ichain`, the indexed monadic version of `chain`.
 
 # Hello world
 
+The default interpreter, `MiddlewareTask`, is based on [fp-ts](https://github.com/gcanti/fp-ts)'s `Task`
+
 ```ts
 import * as express from 'express'
 import { status, closeHeaders, send } from 'hyper-ts/lib/MiddlewareTask'
@@ -142,73 +144,100 @@ const middleware = query(
 const middleware = body(t.string)
 ```
 
-## Another example: loading a user
+# Defining custom connection states: authentication
 
-The default interpreter is based on [fp-ts](https://github.com/gcanti/fp-ts)'s `Task`
+Let's say there are some middlewares that must be executed only if the authentication process succeded. Here's how to
+ensure this requirement statically
 
 ```ts
+import * as express from 'express'
 import {
   status,
   closeHeaders,
   send,
-  json,
-  ResponseStateTransition,
-  Handler,
   MiddlewareTask,
-  lift,
-  param
+  param,
+  of,
+  Handler,
+  unsafeResponseStateTransition
 } from 'hyper-ts/lib/MiddlewareTask'
-import { Either, right, left } from 'fp-ts/lib/Either'
-import * as task from 'fp-ts/lib/Task'
-import * as express from 'express'
-import { StatusOpen, ResponseEnded } from 'hyper-ts'
+import { Status, StatusOpen } from 'hyper-ts'
+import { Option, some, none } from 'fp-ts/lib/Option'
 import * as t from 'io-ts'
-import { failure } from 'io-ts/lib/PathReporter'
+import * as task from 'fp-ts/lib/Task'
+import { tuple } from 'fp-ts/lib/function'
+import { IntegerFromString } from 'io-ts-types/lib/number/IntegerFromString'
 
-// a generic middleware
-const notFound = (message: string): ResponseStateTransition<StatusOpen, ResponseEnded> =>
-  status(404)
+// the new connection state
+type Authenticated = 'Authenticated'
+
+interface Authentication
+  extends MiddlewareTask<StatusOpen, StatusOpen, Option<MiddlewareTask<StatusOpen, Authenticated, void>>> {}
+
+const withAuthentication = (strategy: (req: express.Request) => task.Task<boolean>): Authentication =>
+  new MiddlewareTask(c => {
+    return strategy(c.req).map(authenticated => tuple(authenticated ? some(unsafeResponseStateTransition) : none, c))
+  })
+
+// dummy authentication process
+const tokenAuthentication = withAuthentication(req => task.of(t.string.is(req.get('token'))))
+
+// dummy ResponseStateTransition (like closeHeaders)
+const authenticated: MiddlewareTask<Authenticated, StatusOpen, void> = unsafeResponseStateTransition
+
+//
+// error handling combinators
+//
+
+const badRequest = (message: string) =>
+  status(Status.BadRequest)
+    .ichain(() => closeHeaders)
+    .ichain(() => send(message))
+
+const notFound = (message: string) =>
+  status(Status.NotFound)
+    .ichain(() => closeHeaders)
+    .ichain(() => send(message))
+
+const unauthorized = (message: string) =>
+  status(Status.Unauthorized)
     .ichain(() => closeHeaders)
     .ichain(() => send(message))
 
 //
-// domain and mocked APIs
+// user
 //
 
 interface User {
   name: string
 }
 
-interface API {
-  fetchUser: (id: string) => task.Task<Either<string, User>>
-}
+// the result of this function requires a successful authentication upstream
+const loadUser = (id: number) => authenticated.ichain(() => of(id === 1 ? some<User>({ name: 'Giulio' }) : none))
 
-const api: API = {
-  fetchUser: (id: string): task.Task<Either<string, User>> => {
-    return task.of(id === '1' ? right({ name: 'Giulio' }) : left('user not found'))
-  }
-}
+const getUserId = param('user_id', IntegerFromString)
 
-//
-// load user middleware
-//
+const sendUser = (user: User) =>
+  status(Status.OK)
+    .ichain(() => closeHeaders)
+    .ichain(() => send(`Hello ${user.name}!`))
 
-const getUser = (api: API) => (id: string): MiddlewareTask<StatusOpen, StatusOpen, Either<string, User>> =>
-  lift(api.fetchUser(id))
-
-// `Handler` is an alias for `ResponseStateTransition<StatusOpen, ResponseEnded>`
-const writeUser = (u: User): Handler => status(200).ichain(() => json(JSON.stringify(u)))
-
-const loadUserMiddleware = (api: API): Handler =>
-  param('user_id', t.string).ichain(e =>
-    e.fold(
-      errors => notFound(failure(errors).join('')),
-      id => getUser(api)(id).ichain(e => e.fold(notFound, writeUser))
-    )
+const user: Handler = getUserId.ichain(oid =>
+  oid.fold(
+    () => badRequest('Invalid user id'),
+    id =>
+      tokenAuthentication.ichain(oAuthenticated =>
+        oAuthenticated.fold(
+          () => unauthorized('Unauthorized user'),
+          authenticated =>
+            authenticated.ichain(() => loadUser(id).ichain(ou => ou.fold(() => notFound('User not found'), sendUser)))
+        )
+      )
   )
+)
 
 const app = express()
-app.get('/:user_id?/', loadUserMiddleware(api).toRequestHandler())
+app.get('/:user_id', user.toRequestHandler())
 app.listen(3000, () => console.log('App listening on port 3000!'))
 ```
 
