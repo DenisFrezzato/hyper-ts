@@ -274,3 +274,15 @@ export function body<M>(
 ): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return type => R.gets(c => validate(c.req.body, type))
 }
+
+export function get<M extends HKT3S>(
+  R: MonadMiddleware<M>
+): <A>(name: string, type: Decoder<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
+export function get<M>(
+  R: MonadMiddleware<M>
+): <A>(name: string, type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+export function get<M>(
+  R: MonadMiddleware<M>
+): <A>(name: string, type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+  return (name, type) => R.gets(c => validate(c.req.get(name), type))
+}
