@@ -126,9 +126,11 @@ export const status = (status: Status): ResponseStateTransition<StatusOpen, Head
 export const header = ([field, value]: Header): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
   transition(c => c.res.header(field, value))
 
-export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = new MiddlewareTask(c =>
+export const unsafeResponseStateTransition: ResponseStateTransition<any, any> = new MiddlewareTask(c =>
   task.of([undefined, c] as any)
 )
+
+export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = unsafeResponseStateTransition
 
 export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(c => c.res.send(o))
 
