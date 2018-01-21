@@ -1,15 +1,9 @@
 import * as assert from 'assert'
 import {
-  MiddlewareTask,
-  lift,
   param,
   status,
-  closeHeaders,
   send,
   json,
-  ResponseStateTransition,
-  Handler,
-  header,
   headers,
   contentType,
   redirect,
@@ -18,13 +12,11 @@ import {
   query,
   params,
   body,
-  get
+  header
 } from '../src/MiddlewareTask'
-import { Either, right, left } from 'fp-ts/lib/Either'
-import * as task from 'fp-ts/lib/Task'
+import { right, left } from 'fp-ts/lib/Either'
 import * as express from 'express'
-import { array } from 'fp-ts/lib/Array'
-import { Conn, StatusOpen, HeadersOpen, BodyOpen, Header, MediaType, ResponseEnded } from '../src/index'
+import { Conn, StatusOpen, HeadersOpen, BodyOpen, MediaType } from '../src/index'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
@@ -117,9 +109,9 @@ describe('MiddlewareTask', () => {
     })
   })
 
-  describe('header', () => {
-    it('should write the header', () => {
-      const middleware = header(['name', 'value'])
+  describe('headers', () => {
+    it('should write the headers', () => {
+      const middleware = headers({ name: 'value' })
       const res = mockResponse()
       const conn = new Conn<HeadersOpen>(mockRequest({}), res)
       return middleware
@@ -183,21 +175,6 @@ describe('MiddlewareTask', () => {
         .run()
         .then(() => {
           assertResponse(res, undefined, {}, undefined, {})
-        })
-    })
-  })
-
-  describe('headers', () => {
-    it('should add the headers', () => {
-      const hs: Array<Header> = [['a', 'b'], ['c', 'd']]
-      const middleware = headers(array)(hs)
-      const res = mockResponse()
-      const conn = new Conn<HeadersOpen>(mockRequest({}), res)
-      return middleware
-        .eval(conn)
-        .run()
-        .then(() => {
-          assertResponse(res, undefined, { a: 'b', c: 'd' }, undefined, {})
         })
     })
   })
@@ -347,10 +324,10 @@ describe('MiddlewareTask', () => {
     })
   })
 
-  describe('get', () => {
+  describe('header', () => {
     it('should validate a header (success case)', () => {
       const conn = new Conn<StatusOpen>(mockRequest({}, undefined, undefined, { token: 'mytoken' }), mockResponse())
-      return get('token', t.string)
+      return header('token', t.string)
         .eval(conn)
         .run()
         .then(e => {
@@ -360,62 +337,12 @@ describe('MiddlewareTask', () => {
 
     it('should validate a header (failure case)', () => {
       const conn = new Conn<StatusOpen>(mockRequest({}, undefined, undefined, {}), mockResponse())
-      return get('token', t.string)
+      return header('token', t.string)
         .eval(conn)
         .run()
         .then(e => {
           assert.deepEqual(e.mapLeft(failure), left(['Invalid value undefined supplied to : string']))
         })
-    })
-  })
-
-  describe('userMiddleware', () => {
-    it('should create a request handler', () => {
-      // `ResponseStateTransition<I, O>` is an alias for `Middleware<I, O, void>`
-      const notFound = (message: string): ResponseStateTransition<StatusOpen, ResponseEnded> =>
-        status(404)
-          .ichain(() => closeHeaders)
-          .ichain(() => send(message))
-      interface User {
-        name: string
-      }
-
-      interface API {
-        fetchUser: (id: string) => task.Task<Either<string, User>>
-      }
-
-      const api: API = {
-        fetchUser: (id: string): task.Task<Either<string, User>> => {
-          return task.of(id === '1' ? right({ name: 'Giulio' }) : left('user not found'))
-        }
-      }
-
-      const getUser = (api: API) => (id: string): MiddlewareTask<StatusOpen, StatusOpen, Either<string, User>> =>
-        lift(api.fetchUser(id))
-
-      const writeUser = (u: User): Handler => status(200).ichain(() => json(JSON.stringify(u)))
-
-      const userMiddleware = (api: API): Handler =>
-        param('user_id', t.string).ichain(o =>
-          o.fold(() => notFound('id not found'), id => getUser(api)(id).ichain(e => e.fold(notFound, writeUser)))
-        )
-
-      const middleware = userMiddleware(api)
-
-      const req1 = mockRequest({ user_id: '1' })
-      const res1 = mockResponse()
-      const conn1 = new Conn<StatusOpen>(req1, res1)
-      const promise1 = middleware.eval(conn1).run()
-
-      const req2 = mockRequest({ user_id: '2' })
-      const res2 = mockResponse()
-      const conn2 = new Conn<StatusOpen>(req2, res2)
-      const promise2 = middleware.eval(conn2).run()
-
-      return Promise.all([promise1, promise2]).then(() => {
-        assertResponse(res1, 200, { 'Content-Type': 'application/json' }, '{"name":"Giulio"}', {})
-        assertResponse(res2, 404, {}, 'user not found', {})
-      })
     })
   })
 })

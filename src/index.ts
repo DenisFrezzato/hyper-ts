@@ -2,7 +2,6 @@ import * as express from 'express'
 import { Monad } from 'fp-ts/lib/Monad'
 import { HKT, HKTS, HKTAs, HKT3, HKT3S, HKT3As, HKT2S, HKT2As } from 'fp-ts/lib/HKT'
 import { tuple } from 'fp-ts/lib/function'
-import { Foldable, traverse_ } from 'fp-ts/lib/Foldable'
 import { IxMonad } from 'fp-ts/lib/IxMonad'
 import { Decoder, Validation, validate, Dictionary } from 'io-ts'
 
@@ -166,8 +165,6 @@ export type BodyOpen = 'BodyOpen'
 /** Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished. */
 export type ResponseEnded = 'ResponseEnded'
 
-export type Header = [string, string]
-
 export interface Monad3<M> {
   readonly URI: M
   map<I, A, B>(f: (a: A) => B, fa: HKT3<M, I, I, A>): HKT3<M, I, I, B>
@@ -178,28 +175,13 @@ export interface Monad3<M> {
 
 export interface MonadMiddleware<M> extends Monad3<M>, IxMonad<M> {
   status: (status: Status) => HKT3<M, StatusOpen, HeadersOpen, void>
-  header: (header: Header) => HKT3<M, HeadersOpen, HeadersOpen, void>
+  headers: (headers: { [key: string]: string }) => HKT3<M, HeadersOpen, HeadersOpen, void>
   closeHeaders: HKT3<M, HeadersOpen, BodyOpen, void>
   send: (o: string) => HKT3<M, BodyOpen, ResponseEnded, void>
   end: HKT3<M, BodyOpen, ResponseEnded, void>
   cookie: (name: string, value: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
   clearCookie: (name: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
   gets: <I, A>(f: (c: Conn<I>) => A) => HKT3<M, I, I, A>
-}
-
-export function headers<M extends HKT3S>(
-  R: MonadMiddleware<M>
-): <F>(F: Foldable<F>) => (headers: HKT<F, Header>) => HKT3As<M, HeadersOpen, BodyOpen, void>
-export function headers<M>(
-  R: MonadMiddleware<M>
-): <F>(F: Foldable<F>) => (headers: HKT<F, Header>) => HKT3<M, HeadersOpen, BodyOpen, void>
-export function headers<M>(
-  R: MonadMiddleware<M>
-): <F>(F: Foldable<F>) => (headers: HKT<F, Header>) => HKT3<M, HeadersOpen, BodyOpen, void> {
-  return F => headers => {
-    const mheaders = traverse_(R, F)(h => R.header(h), headers) as HKT3<M, HeadersOpen, HeadersOpen, void>
-    return R.ichain(() => R.closeHeaders, mheaders)
-  }
 }
 
 export function contentType<M extends HKT3S>(
@@ -209,7 +191,7 @@ export function contentType<M>(R: MonadMiddleware<M>): (mediaType: MediaType) =>
 export function contentType<M>(
   R: MonadMiddleware<M>
 ): (mediaType: MediaType) => HKT3<M, HeadersOpen, HeadersOpen, void> {
-  return mediaType => R.header(['Content-Type', mediaType])
+  return mediaType => R.headers({ 'Content-Type': mediaType })
 }
 
 export function json<M extends HKT3S>(R: MonadMiddleware<M>): (o: string) => HKT3As<M, HeadersOpen, ResponseEnded, void>
@@ -224,7 +206,7 @@ export function redirect<M extends HKT3S>(
 ): (uri: string) => HKT3As<M, StatusOpen, HeadersOpen, void>
 export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void>
 export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void> {
-  return uri => R.ichain(() => R.header(['Location', uri]), R.status(Status.Found))
+  return uri => R.ichain(() => R.headers({ Location: uri }), R.status(Status.Found))
 }
 
 export function param<M extends HKT3S>(
@@ -275,13 +257,13 @@ export function body<M>(
   return type => R.gets(c => validate(c.req.body, type))
 }
 
-export function get<M extends HKT3S>(
+export function header<M extends HKT3S>(
   R: MonadMiddleware<M>
 ): <A>(name: string, type: Decoder<any, A>) => HKT3As<M, StatusOpen, StatusOpen, Validation<A>>
-export function get<M>(
+export function header<M>(
   R: MonadMiddleware<M>
 ): <A>(name: string, type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
-export function get<M>(
+export function header<M>(
   R: MonadMiddleware<M>
 ): <A>(name: string, type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return (name, type) => R.gets(c => validate(c.req.get(name), type))
