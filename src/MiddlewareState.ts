@@ -6,7 +6,6 @@ import {
   HeadersOpen,
   BodyOpen,
   ResponseEnded,
-  Header,
   MonadMiddleware
 } from './index'
 import { State } from 'fp-ts/lib/State'
@@ -30,9 +29,9 @@ export class StatusEvent {
   constructor(readonly status: number) {}
 }
 
-export class HeaderEvent {
-  readonly type: 'HeaderEvent' = 'HeaderEvent'
-  constructor(readonly field: string, readonly value: string) {}
+export class HeadersEvent {
+  readonly type: 'HeadersEvent' = 'HeadersEvent'
+  constructor(readonly headers: { [key: string]: string }) {}
 }
 
 export class CloseHeadersEvent {
@@ -65,7 +64,7 @@ export class CustomEvent {
 
 export type Event =
   | StatusEvent
-  | HeaderEvent
+  | HeadersEvent
   | CloseHeadersEvent
   | SendEvent
   | EndEvent
@@ -156,8 +155,8 @@ const transition = <I, O>(f: () => Event): ResponseStateTransition<I, O> =>
 export const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
   transition(() => new StatusEvent(status))
 
-export const header = ([field, value]: Header): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  transition(() => new HeaderEvent(field, value))
+export const headers = (headers: { [key: string]: string }): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+  transition(() => new HeadersEvent(headers))
 
 export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = transition(() => new CloseHeadersEvent())
 
@@ -186,7 +185,7 @@ export const monadMiddlewareState: MonadMiddleware<URI> = {
   iof: of,
   ichain,
   status,
-  header,
+  headers,
   closeHeaders,
   send,
   end,

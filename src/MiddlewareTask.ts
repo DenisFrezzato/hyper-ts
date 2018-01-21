@@ -7,9 +7,7 @@ import {
   BodyOpen,
   ResponseEnded,
   MediaType,
-  Header,
   MonadMiddleware,
-  headers as headers_,
   contentType as contentType_,
   json as json_,
   redirect as redirect_,
@@ -17,13 +15,11 @@ import {
   params as params_,
   query as query_,
   body as body_,
-  get as get_
+  header as header_
 } from './index'
 import { Task } from 'fp-ts/lib/Task'
 import * as task from 'fp-ts/lib/Task'
 import * as express from 'express'
-import { Foldable } from 'fp-ts/lib/Foldable'
-import { HKT } from 'fp-ts/lib/HKT'
 import { Decoder, Validation } from 'io-ts'
 
 const t = getMiddlewareT(task)
@@ -123,8 +119,12 @@ const transition = <I, O>(f: (c: Conn<I>) => void): ResponseStateTransition<I, O
 export const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
   transition(c => c.res.status(status))
 
-export const header = ([field, value]: Header): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  transition(c => c.res.header(field, value))
+export const headers = (headers: { [key: string]: string }): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+  transition(c => {
+    for (const field in headers) {
+      c.res.header(field, headers[field])
+    }
+  })
 
 export const unsafeResponseStateTransition: ResponseStateTransition<any, any> = new MiddlewareTask(c =>
   task.of([undefined, c] as any)
@@ -157,7 +157,7 @@ export const monadMiddlewareTask: MonadMiddleware<URI> = {
   iof: of,
   ichain,
   status,
-  header,
+  headers,
   closeHeaders,
   send,
   end,
@@ -165,10 +165,6 @@ export const monadMiddlewareTask: MonadMiddleware<URI> = {
   clearCookie,
   gets
 }
-
-export const headers: <F>(
-  F: Foldable<F>
-) => (headers: HKT<F, Header>) => ResponseStateTransition<HeadersOpen, BodyOpen> = headers_(monadMiddlewareTask)
 
 export const contentType: (mediaType: MediaType) => ResponseStateTransition<HeadersOpen, HeadersOpen> = contentType_(
   monadMiddlewareTask
@@ -197,7 +193,7 @@ export const body: <A>(type: Decoder<any, A>) => MiddlewareTask<StatusOpen, Stat
   monadMiddlewareTask
 )
 
-export const get: <A>(
+export const header: <A>(
   name: string,
   type: Decoder<any, A>
-) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = get_(monadMiddlewareTask)
+) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = header_(monadMiddlewareTask)
