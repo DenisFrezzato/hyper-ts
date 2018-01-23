@@ -59,8 +59,9 @@ The default interpreter, `MiddlewareTask`, is based on [fp-ts](https://github.co
 ```ts
 import * as express from 'express'
 import { status, closeHeaders, send } from 'hyper-ts/lib/MiddlewareTask'
+import { Status } from 'hyper-ts'
 
-const hello = status(200)
+const hello = status(Status.OK)
   .ichain(() => closeHeaders)
   .ichain(() => send('Hello hyper-ts!'))
 
@@ -75,8 +76,9 @@ Invalid operations are prevented statically
 
 ```ts
 import { status, closeHeaders, send, header } from 'hyper-ts/lib/MiddlewareTask'
+import { Status } from 'hyper-ts'
 
-const hello = status(200)
+const hello = status(Status.OK)
   .ichain(() => closeHeaders)
   .ichain(() => send('Hello hyper-ts!'))
   // try to write a header after sending the body
@@ -247,7 +249,7 @@ There's another interpreter for testing purposes: `MiddlewareState`
 
 ```ts
 import * as express from 'express'
-import { MonadMiddleware, StatusOpen, ResponseEnded, Conn, param } from 'hyper-ts'
+import { MonadMiddleware, StatusOpen, ResponseEnded, Conn, param, Status } from 'hyper-ts'
 import { monadMiddlewareTask } from 'hyper-ts/lib/MiddlewareTask'
 import { monadMiddlewareState } from 'hyper-ts/lib/MiddlewareState'
 import { HKT3, HKT3S, HKT3As } from 'fp-ts/lib/HKT'
@@ -258,7 +260,10 @@ function program<M>(R: MonadMiddleware<M>): HKT3<M, StatusOpen, ResponseEnded, v
 function program<M>(R: MonadMiddleware<M>): HKT3<M, StatusOpen, ResponseEnded, void> {
   return R.ichain(
     e =>
-      R.ichain(() => R.send(`Hello ${e.getOrElseValue('Anonymous')}!`), R.ichain(() => R.closeHeaders, R.status(200))),
+      R.ichain(
+        () => R.send(`Hello ${e.getOrElseValue('Anonymous')}!`),
+        R.ichain(() => R.closeHeaders, R.status(Status.OK))
+      ),
     param(R)('name', t.string)
   )
 }
