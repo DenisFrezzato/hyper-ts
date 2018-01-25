@@ -15,14 +15,13 @@ import {
   header
 } from '../src/MiddlewareTask'
 import { right, left } from 'fp-ts/lib/Either'
-import * as express from 'express'
 import { Conn, StatusOpen, HeadersOpen, BodyOpen, MediaType, Status, CookieOptions } from '../src/index'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
 
 type MockedHeaders = { [key: string]: string }
-type MockedCookies = { [key: string]: [string | undefined, express.CookieOptions] }
+type MockedCookies = { [key: string]: [string | undefined, CookieOptions] }
 
 class MockConn<S> implements Conn<S> {
   public readonly '-S': S
