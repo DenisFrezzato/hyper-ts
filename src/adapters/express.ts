@@ -1,5 +1,6 @@
 import * as express from 'express'
-import { CookieOptions, Conn, Status } from '..'
+import { CookieOptions, Conn, Status, StatusOpen, ResponseEnded } from '..'
+import { MiddlewareTask } from '../MiddlewareTask'
 
 export class ExpressConn<S> implements Conn<S> {
   public readonly '-S': S
@@ -42,3 +43,9 @@ export class ExpressConn<S> implements Conn<S> {
     this.res.status(status)
   }
 }
+
+export const toRequestHandler = (task: MiddlewareTask<StatusOpen, ResponseEnded, void>): express.RequestHandler => (
+  req,
+  res,
+  next
+) => task.toRequestHandler(() => new ExpressConn(req, res))()

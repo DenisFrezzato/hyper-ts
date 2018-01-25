@@ -1,5 +1,7 @@
-import { Conn, Status, CookieOptions } from '..'
+import { Conn, Status, CookieOptions, ResponseEnded, StatusOpen } from '..'
 import * as koa from 'koa'
+import * as Router from 'koa-router'
+import { MiddlewareTask } from '../MiddlewareTask'
 
 export class KoaConn<S> implements Conn<S> {
   public readonly '-S': S
@@ -42,3 +44,8 @@ export class KoaConn<S> implements Conn<S> {
     this.context.status = status
   }
 }
+
+export const toRequestHandler = (task: MiddlewareTask<StatusOpen, ResponseEnded, void>): Router.IMiddleware => (
+  ctx,
+  next
+) => task.toRequestHandler(() => new KoaConn(ctx))()
