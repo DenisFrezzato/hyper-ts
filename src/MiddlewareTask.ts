@@ -15,11 +15,11 @@ import {
   params as params_,
   query as query_,
   body as body_,
-  header as header_
+  header as header_,
+  CookieOptions
 } from './index'
 import { Task } from 'fp-ts/lib/Task'
 import * as task from 'fp-ts/lib/Task'
-import * as express from 'express'
 import { Decoder, Validation } from 'io-ts'
 
 const t = getMiddlewareT(task)
@@ -59,8 +59,8 @@ export class MiddlewareTask<I, O, A> {
   ichain<Z, B>(f: (a: A) => MiddlewareTask<O, Z, B>): MiddlewareTask<I, Z, B> {
     return new MiddlewareTask(t.ichain(a => f(a).run, this.run))
   }
-  toRequestHandler(this: Handler): express.RequestHandler {
-    return (req, res) => this.eval(new Conn(req, res)).run()
+  toRequestHandler(this: Handler, f: <S>() => Conn<S>) {
+    return () => this.eval(f()).run()
   }
 }
 
@@ -117,12 +117,12 @@ const transition = <I, O>(f: (c: Conn<I>) => void): ResponseStateTransition<I, O
   )
 
 export const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
-  transition(c => c.res.status(status))
+  transition(c => c.setStatus(status))
 
 export const headers = (headers: { [key: string]: string }): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
   transition(c => {
     for (const field in headers) {
-      c.res.header(field, headers[field])
+      c.setHeader(field, headers[field])
     }
   })
 
@@ -132,20 +132,18 @@ export const unsafeResponseStateTransition: ResponseStateTransition<any, any> = 
 
 export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = unsafeResponseStateTransition
 
-export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(c => c.res.send(o))
+export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(c => c.setBody(o))
 
-export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(c => c.res.end())
+export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(c => c.endResponse())
 
 export const cookie = (
   name: string,
   value: string,
-  options: express.CookieOptions
-): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.res.cookie(name, value, options))
+  options: CookieOptions
+): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.setCookie(name, value, options))
 
-export const clearCookie = (
-  name: string,
-  options: express.CookieOptions
-): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.res.clearCookie(name, options))
+export const clearCookie = (name: string, options: CookieOptions): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+  transition(c => c.setCookie(name, undefined, options))
 
 /** @instance */
 export const monadMiddlewareTask: MonadMiddleware<URI> = {

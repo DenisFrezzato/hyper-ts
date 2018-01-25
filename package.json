@@ -2,18 +2,17 @@
   "name": "hyper-ts",
   "version": "0.1.0",
   "description": "hyper-ts description",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "lint": "tslint src/**/*.ts test/**/*.ts",
-    "typings-checker":
-      "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
+    "typings-checker": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
     "mocha": "mocha -r ts-node/register test/*.ts",
-    "prettier":
-      "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
-    "fix-prettier":
-      "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test}/**/*.ts\"",
+    "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
+    "fix-prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test}/**/*.ts\"",
     "test": "npm run prettier && npm run lint && npm run typings-checker && npm run mocha",
     "clean": "rm -rf lib/*",
     "build": "npm run clean && tsc"
@@ -33,12 +32,10 @@
     "io-ts": "^0.9.5"
   },
   "devDependencies": {
-    "@types/express": "4.11.0",
     "@types/mocha": "2.2.38",
     "@types/node": "8.0.19",
     "@types/qs": "^6.5.1",
     "autocannon": "^0.16.5",
-    "express": "^4.16.2",
     "mocha": "3.2.0",
     "prettier": "1.9.2",
     "qs": "^6.5.1",
@@ -48,6 +45,32 @@
     "typescript": "2.6.2",
     "typings-checker": "1.1.2"
   },
-  "tags": ["typescript", "express", "middleware", "fp-ts", "io-ts", "functional-programming"],
-  "keywords": ["typescript", "express", "middleware", "fp-ts", "io-ts", "functional-programming"]
+  "peerDependencies": {
+    "@types/cookies": "^0.7.1",
+    "@types/express": "4.11.0",
+    "@types/koa": "^2.0.43",
+    "@types/koa-router": "^7.0.27",
+    "cookies": "^0.7.1",
+    "express": "^4.16.2",
+    "koa": "^2.4.1",
+    "koa-router": "^7.3.0"
+  },
+  "tags": [
+    "typescript",
+    "express",
+    "koa",
+    "middleware",
+    "fp-ts",
+    "io-ts",
+    "functional-programming"
+  ],
+  "keywords": [
+    "typescript",
+    "express",
+    "koa",
+    "middleware",
+    "fp-ts",
+    "io-ts",
+    "functional-programming"
+  ]
 }

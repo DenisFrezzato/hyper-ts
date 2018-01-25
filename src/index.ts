@@ -1,4 +1,3 @@
-import * as express from 'express'
 import { Monad } from 'fp-ts/lib/Monad'
 import { HKT, HKTS, HKTAs, HKT3, HKT3S, HKT3As, HKT2S, HKT2As } from 'fp-ts/lib/HKT'
 import { tuple } from 'fp-ts/lib/function'
@@ -34,14 +33,36 @@ export enum Status {
   NotAcceptable = 406
 }
 
+export interface CookieOptions {
+  expires?: Date
+  domain?: string
+  httpOnly?: boolean
+  maxAge?: number
+  path?: string
+  sameSite?: boolean | 'strict' | 'lax'
+  secure?: boolean
+  signed?: boolean
+}
+
 /**
  * A `Conn`, short for "connection", models the entirety of a connection between the HTTP server and the user agent,
  * both request and response.
  * State changes are tracked by the phanton type `S`
  */
-export class Conn<S> {
+export interface Conn<S> {
   readonly '-S': S
-  constructor(readonly req: express.Request, readonly res: express.Response) {}
+
+  endResponse: () => void
+
+  getBody: () => any
+  getHeader: (name: string) => string | undefined
+  getParams: () => any
+  getQuery: () => any
+
+  setBody: (body: any) => void
+  setCookie: (name: string, value: string | undefined, options: CookieOptions) => void
+  setHeader: (name: string, value: string) => void
+  setStatus: (status: Status) => void
 }
 
 /**
@@ -178,8 +199,8 @@ export interface MonadMiddleware<M> extends Monad3<M>, IxMonad<M> {
   closeHeaders: HKT3<M, HeadersOpen, BodyOpen, void>
   send: (o: string) => HKT3<M, BodyOpen, ResponseEnded, void>
   end: HKT3<M, BodyOpen, ResponseEnded, void>
-  cookie: (name: string, value: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
-  clearCookie: (name: string, options: express.CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
+  cookie: (name: string, value: string, options: CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
+  clearCookie: (name: string, options: CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
   gets: <I, A>(f: (c: Conn<I>) => A) => HKT3<M, I, I, A>
 }
 
@@ -217,7 +238,7 @@ export function param<M>(
 export function param<M>(
   R: MonadMiddleware<M>
 ): <A>(name: string, type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return (name, type) => R.gets(c => validate(c.req.params, Dictionary).chain(params => validate(params[name], type)))
+  return (name, type) => R.gets(c => validate(c.getParams(), Dictionary).chain(params => validate(params[name], type)))
 }
 
 export function params<M extends HKT3S>(
@@ -229,7 +250,7 @@ export function params<M>(
 export function params<M>(
   R: MonadMiddleware<M>
 ): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return type => R.gets(c => validate(c.req.params, type))
+  return type => R.gets(c => validate(c.getParams(), type))
 }
 
 export function query<M extends HKT3S>(
@@ -241,7 +262,7 @@ export function query<M>(
 export function query<M>(
   R: MonadMiddleware<M>
 ): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return type => R.gets(c => validate(c.req.query, type))
+  return type => R.gets(c => validate(c.getQuery(), type))
 }
 
 export function body<M extends HKT3S>(
@@ -253,7 +274,7 @@ export function body<M>(
 export function body<M>(
   R: MonadMiddleware<M>
 ): <A>(type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return type => R.gets(c => validate(c.req.body, type))
+  return type => R.gets(c => validate(c.getBody(), type))
 }
 
 export function header<M extends HKT3S>(
@@ -265,5 +286,5 @@ export function header<M>(
 export function header<M>(
   R: MonadMiddleware<M>
 ): <A>(name: string, type: Decoder<any, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return (name, type) => R.gets(c => validate(c.req.get(name), type))
+  return (name, type) => R.gets(c => validate(c.getHeader(name), type))
 }
