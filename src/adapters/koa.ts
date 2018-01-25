@@ -48,4 +48,4 @@ export class KoaConn<S> implements Conn<S> {
 export const toRequestHandler = (task: MiddlewareTask<StatusOpen, ResponseEnded, void>): Router.IMiddleware => (
   ctx,
   next
-) => task.toRequestHandler(() => new KoaConn(ctx))()
+) => task.toRequestHandler(new KoaConn(ctx))()

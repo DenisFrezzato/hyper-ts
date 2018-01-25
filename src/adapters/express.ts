@@ -48,4 +48,4 @@ export const toRequestHandler = (task: MiddlewareTask<StatusOpen, ResponseEnded,
   req,
   res,
   next
-) => task.toRequestHandler(() => new ExpressConn(req, res))()
+) => task.toRequestHandler(new ExpressConn(req, res))()
