@@ -2,7 +2,7 @@ import { Monad } from 'fp-ts/lib/Monad'
 import { HKT, HKTS, HKTAs, HKT3, HKT3S, HKT3As, HKT2S, HKT2As } from 'fp-ts/lib/HKT'
 import { tuple } from 'fp-ts/lib/function'
 import { IxMonad } from 'fp-ts/lib/IxMonad'
-import { Decoder, Validation, validate, Dictionary } from 'io-ts'
+import { Decoder, Validation, validate, Dictionary, mixed } from 'io-ts'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -54,12 +54,12 @@ export interface Conn<S> {
 
   endResponse: () => void
 
-  getBody: () => any
+  getBody: () => mixed
   getHeader: (name: string) => string | undefined
-  getParams: () => any
-  getQuery: () => any
+  getParams: () => mixed
+  getQuery: () => mixed
 
-  setBody: (body: any) => void
+  setBody: (body: mixed) => void
   setCookie: (name: string, value: string | undefined, options: CookieOptions) => void
   setHeader: (name: string, value: string) => void
   setStatus: (status: Status) => void
