@@ -54,6 +54,8 @@ export type Body = mixed | mixed[] | Buffer
 export interface Conn<S> {
   readonly '-S': S
 
+  clearCookie: (name: string, options: CookieOptions) => void
+
   endResponse: () => void
 
   getBody: () => mixed
@@ -62,7 +64,7 @@ export interface Conn<S> {
   getQuery: () => mixed
 
   setBody: (body: Body) => void
-  setCookie: (name: string, value: string | undefined, options: CookieOptions) => void
+  setCookie: (name: string, value: string, options: CookieOptions) => void
   setHeader: (name: string, value: string) => void
   setStatus: (status: Status) => void
 }

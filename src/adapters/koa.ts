@@ -8,6 +8,10 @@ export class KoaConn<S> implements Conn<S> {
 
   constructor(readonly context: koa.Context) {}
 
+  public clearCookie(name: string, options: CookieOptions) {
+    this.context.cookies.set(name, undefined, options)
+  }
+
   public endResponse() {
     return this.context.response.res.end()
   }
@@ -32,7 +36,7 @@ export class KoaConn<S> implements Conn<S> {
     this.context.body = body
   }
 
-  public setCookie(name: string, value: string | undefined, options: CookieOptions) {
+  public setCookie(name: string, value: string, options: CookieOptions) {
     this.context.cookies.set(name, value, options)
   }
 

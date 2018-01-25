@@ -7,6 +7,10 @@ export class ExpressConn<S> implements Conn<S> {
 
   constructor(readonly req: express.Request, readonly res: express.Response) {}
 
+  public clearCookie(name: string, options: CookieOptions) {
+    this.res.cookie(name, undefined, options)
+  }
+
   public endResponse() {
     return this.res.end()
   }
@@ -31,7 +35,7 @@ export class ExpressConn<S> implements Conn<S> {
     this.res.send(body)
   }
 
-  public setCookie(name: string, value: string | undefined, options: CookieOptions) {
+  public setCookie(name: string, value: string, options: CookieOptions) {
     this.res.cookie(name, value, options)
   }
 
