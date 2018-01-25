@@ -143,7 +143,7 @@ export const cookie = (
 ): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(c => c.setCookie(name, value, options))
 
 export const clearCookie = (name: string, options: CookieOptions): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
-  transition(c => c.setCookie(name, undefined, options))
+  transition(c => c.clearCookie(name, options))
 
 /** @instance */
 export const monadMiddlewareTask: MonadMiddleware<URI> = {
