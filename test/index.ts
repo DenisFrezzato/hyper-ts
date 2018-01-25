@@ -16,90 +16,137 @@ import {
 } from '../src/MiddlewareTask'
 import { right, left } from 'fp-ts/lib/Either'
 import * as express from 'express'
-import { Conn, StatusOpen, HeadersOpen, BodyOpen, MediaType } from '../src/index'
+import { Conn, StatusOpen, HeadersOpen, BodyOpen, MediaType, Status, CookieOptions } from '../src/index'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
 
-function mockRequest(
-  params: any,
-  query: string = '',
-  body: any = undefined,
-  headers: { [key: string]: string } = {}
-): express.Request {
-  const parsedQuery = querystring.parse(query)
-  return {
-    params,
-    query: parsedQuery,
-    body,
-    get: (name: string) => headers[name]
-  } as any
+type MockedHeaders = { [key: string]: string }
+type MockedCookies = { [key: string]: [string | undefined, express.CookieOptions] }
+
+class MockConn<S> implements Conn<S> {
+  public readonly '-S': S
+
+  constructor(readonly req: MockRequest, readonly res: MockResponse) {}
+
+  public endResponse() {
+    return this.res.responseEnded
+  }
+
+  public getBody() {
+    return this.req.getBody()
+  }
+
+  public getHeader(name: string) {
+    return this.req.getHeader(name)
+  }
+
+  public getParams() {
+    return this.req.getParams()
+  }
+
+  public getQuery() {
+    return this.req.getQuery()
+  }
+
+  public setBody(body: any) {
+    this.res.setBody(body)
+  }
+
+  public setCookie(name: string, value: string | undefined, options: CookieOptions) {
+    this.res.setCookie(name, value, options)
+  }
+
+  public setHeader(name: string, value: string) {
+    this.res.setHeader(name, value)
+  }
+
+  public setStatus(status: Status) {
+    this.res.setStatus(status)
+  }
 }
 
-type MokedHeaders = { [key: string]: string }
-type MokedCookies = { [key: string]: [string, express.CookieOptions] }
+class MockRequest {
+  public body: any
+  public headers: MockedHeaders
+  public params: any
+  public query: any
 
-interface MockedResponse extends express.Response {
-  getStatus(): number
-  getContent(): string
-  getCookies(): MokedCookies
+  constructor(params?: any, query?: string, body?: any, headers?: MockedHeaders) {
+    this.params = params
+    this.query = querystring.parse(query || '')
+    this.body = body
+    this.headers = headers || {}
+  }
+
+  public getBody() {
+    return this.body
+  }
+
+  public getHeader(name: string) {
+    return this.headers[name]
+  }
+
+  public getParams() {
+    return this.params
+  }
+
+  public getQuery() {
+    return this.query
+  }
 }
 
-function mockResponse(): MockedResponse {
-  let status: number
-  let headers: MokedHeaders = {}
-  let content: string
-  let cookies: MokedCookies = {}
-  return {
-    status(s: number) {
-      status = s
-    },
-    getStatus() {
-      return status
-    },
-    header(field: string, value: string) {
-      headers[field] = value
-    },
-    getHeaders() {
-      return headers
-    },
-    send(o: string) {
-      content = o
-    },
-    getContent() {
-      return content
-    },
-    cookie(name: string, value: string, options: express.CookieOptions) {
-      cookies[name] = [value, options]
-    },
-    clearCookie(name: string, options: express.CookieOptions) {
-      delete cookies[name]
-    },
-    getCookies() {
-      return cookies
+class MockResponse {
+  public body: any
+  public cookies: MockedCookies = {}
+  public headers: MockedHeaders = {}
+  public responseEnded: boolean = false
+  public status: Status | undefined
+
+  public endResponse() {
+    this.responseEnded = true
+  }
+
+  public setBody(body: any) {
+    this.body = body
+  }
+
+  public setCookie(name: string, value: string | undefined, options: CookieOptions) {
+    if (value === undefined) {
+      delete this.cookies[name]
+    } else {
+      this.cookies[name] = [value, options]
     }
-  } as any
+  }
+
+  public setHeader(name: string, value: string) {
+    this.headers[name] = value
+  }
+
+  public setStatus(status: Status) {
+    this.status = status
+  }
 }
 
 function assertResponse(
-  res: MockedResponse,
+  res: MockResponse,
   status: number | undefined,
-  headers: MokedHeaders,
-  content: string | undefined,
-  cookies: MokedCookies
+  headers: MockedHeaders,
+  body: string | undefined,
+  cookies: MockedCookies
 ) {
-  assert.strictEqual(res.getStatus(), status)
-  assert.deepEqual(res.getHeaders(), headers)
-  assert.strictEqual(res.getContent(), content)
-  assert.deepEqual(res.getCookies(), cookies)
+  assert.strictEqual(res.status, status)
+  assert.deepEqual(res.headers, headers)
+  assert.strictEqual(res.body, body)
+  assert.deepEqual(res.cookies, cookies)
 }
 
 describe('MiddlewareTask', () => {
   describe('status', () => {
     it('should write the status code', () => {
       const middleware = status(200)
-      const res = mockResponse()
-      const conn = new Conn<StatusOpen>(mockRequest({}), res)
+      const res = new MockResponse()
+      const conn = new MockConn<StatusOpen>(new MockRequest(), res)
       return middleware
         .eval(conn)
         .run()
@@ -112,8 +159,8 @@ describe('MiddlewareTask', () => {
   describe('headers', () => {
     it('should write the headers', () => {
       const middleware = headers({ name: 'value' })
-      const res = mockResponse()
-      const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+      const res = new MockResponse()
+      const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
       return middleware
         .eval(conn)
         .run()
@@ -126,8 +173,8 @@ describe('MiddlewareTask', () => {
   describe('send', () => {
     it('should send the content', () => {
       const middleware = send('<h1>Hello world!</h1>')
-      const res = mockResponse()
-      const conn = new Conn<BodyOpen>(mockRequest({}), res)
+      const res = new MockResponse()
+      const conn = new MockConn<BodyOpen>(new MockRequest(), res)
       return middleware
         .eval(conn)
         .run()
@@ -140,8 +187,8 @@ describe('MiddlewareTask', () => {
   describe('json', () => {
     it('should add the proper header and send the content', () => {
       const middleware = json('{}')
-      const res = mockResponse()
-      const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+      const res = new MockResponse()
+      const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
       return middleware
         .eval(conn)
         .run()
@@ -154,8 +201,8 @@ describe('MiddlewareTask', () => {
   describe('cookie', () => {
     it('should add the cookie', () => {
       const middleware = cookie('name', 'value', {})
-      const res = mockResponse()
-      const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+      const res = new MockResponse()
+      const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
       return middleware
         .eval(conn)
         .run()
@@ -168,8 +215,8 @@ describe('MiddlewareTask', () => {
   describe('clearCookie', () => {
     it('should clear the cookie', () => {
       const middleware = cookie('name', 'value', {}).ichain(() => clearCookie('name', {}))
-      const res = mockResponse()
-      const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+      const res = new MockResponse()
+      const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
       return middleware
         .eval(conn)
         .run()
@@ -182,8 +229,8 @@ describe('MiddlewareTask', () => {
   describe('contentType', () => {
     it('should add the `Content-Type` header', () => {
       const middleware = contentType(MediaType.applicationXML)
-      const res = mockResponse()
-      const conn = new Conn<HeadersOpen>(mockRequest({}), res)
+      const res = new MockResponse()
+      const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
       return middleware
         .eval(conn)
         .run()
@@ -196,8 +243,8 @@ describe('MiddlewareTask', () => {
   describe('redirect', () => {
     it('should add the correct status / header', () => {
       const middleware = redirect('/users')
-      const res = mockResponse()
-      const conn = new Conn<StatusOpen>(mockRequest({}), res)
+      const res = new MockResponse()
+      const conn = new MockConn<StatusOpen>(new MockRequest(), res)
       return middleware
         .eval(conn)
         .run()
@@ -209,7 +256,7 @@ describe('MiddlewareTask', () => {
 
   describe('param', () => {
     it('should validate a param (success case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({ foo: 1 }), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({ foo: 1 }), new MockResponse())
       return param('foo', t.number)
         .eval(conn)
         .run()
@@ -219,7 +266,7 @@ describe('MiddlewareTask', () => {
     })
 
     it('should validate a param (failure case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({ foo: 'a' }), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({ foo: 'a' }), new MockResponse())
       return param('foo', t.number)
         .eval(conn)
         .run()
@@ -231,7 +278,7 @@ describe('MiddlewareTask', () => {
 
   describe('params', () => {
     it('should validate all params (success case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({ foo: 1 }), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({ foo: 1 }), new MockResponse())
       return params(t.interface({ foo: t.number }))
         .eval(conn)
         .run()
@@ -241,7 +288,7 @@ describe('MiddlewareTask', () => {
     })
 
     it('should validate all params (failure case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({ foo: 'a' }), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({ foo: 'a' }), new MockResponse())
       return params(t.interface({ foo: t.number }))
         .eval(conn)
         .run()
@@ -253,7 +300,7 @@ describe('MiddlewareTask', () => {
 
   describe('query', () => {
     it('should validate a query (success case 1)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({}, 'q=tobi+ferret'), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({}, 'q=tobi+ferret'), new MockResponse())
       const Query = t.interface({
         q: t.string
       })
@@ -266,9 +313,9 @@ describe('MiddlewareTask', () => {
     })
 
     it('should validate a query (success case 2)', () => {
-      const conn = new Conn<StatusOpen>(
-        mockRequest({}, 'order=desc&shoe[color]=blue&shoe[type]=converse'),
-        mockResponse()
+      const conn = new MockConn<StatusOpen>(
+        new MockRequest({}, 'order=desc&shoe[color]=blue&shoe[type]=converse'),
+        new MockResponse()
       )
       const Query = t.interface({
         order: t.string,
@@ -286,7 +333,7 @@ describe('MiddlewareTask', () => {
     })
 
     it('should validate a query (failure case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({}, 'q=tobi+ferret'), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({}, 'q=tobi+ferret'), new MockResponse())
       const Query = t.interface({
         q: t.number
       })
@@ -304,7 +351,7 @@ describe('MiddlewareTask', () => {
 
   describe('body', () => {
     it('should validate the body (success case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({}, undefined, 1), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({}, undefined, 1), new MockResponse())
       return body(t.number)
         .eval(conn)
         .run()
@@ -314,7 +361,7 @@ describe('MiddlewareTask', () => {
     })
 
     it('should validate the body (failure case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({}, undefined, 'a'), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({}, undefined, 'a'), new MockResponse())
       return body(t.number)
         .eval(conn)
         .run()
@@ -326,7 +373,10 @@ describe('MiddlewareTask', () => {
 
   describe('header', () => {
     it('should validate a header (success case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({}, undefined, undefined, { token: 'mytoken' }), mockResponse())
+      const conn = new MockConn<StatusOpen>(
+        new MockRequest({}, undefined, undefined, { token: 'mytoken' }),
+        new MockResponse()
+      )
       return header('token', t.string)
         .eval(conn)
         .run()
@@ -336,7 +386,7 @@ describe('MiddlewareTask', () => {
     })
 
     it('should validate a header (failure case)', () => {
-      const conn = new Conn<StatusOpen>(mockRequest({}, undefined, undefined, {}), mockResponse())
+      const conn = new MockConn<StatusOpen>(new MockRequest({}, undefined, undefined, {}), new MockResponse())
       return header('token', t.string)
         .eval(conn)
         .run()

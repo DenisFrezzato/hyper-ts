@@ -6,11 +6,11 @@ import {
   HeadersOpen,
   BodyOpen,
   ResponseEnded,
-  MonadMiddleware
+  MonadMiddleware,
+  CookieOptions
 } from './index'
 import { State } from 'fp-ts/lib/State'
 import * as state from 'fp-ts/lib/State'
-import * as express from 'express'
 
 const t = getMiddlewareT(state)
 
@@ -49,12 +49,12 @@ export class EndEvent {
 
 export class CookieEvent {
   readonly type: 'CookieEvent' = 'CookieEvent'
-  constructor(readonly name: string, readonly value: string, readonly options: express.CookieOptions) {}
+  constructor(readonly name: string, readonly value: string, readonly options: CookieOptions) {}
 }
 
 export class ClearCookieEvent {
   readonly type: 'ClearCookieEvent' = 'ClearCookieEvent'
-  constructor(readonly name: string, readonly options: express.CookieOptions) {}
+  constructor(readonly name: string, readonly options: CookieOptions) {}
 }
 
 export class CustomEvent {
@@ -167,13 +167,11 @@ export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(
 export const cookie = (
   name: string,
   value: string,
-  options: express.CookieOptions
+  options: CookieOptions
 ): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(() => new CookieEvent(name, value, options))
 
-export const clearCookie = (
-  name: string,
-  options: express.CookieOptions
-): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(() => new ClearCookieEvent(name, options))
+export const clearCookie = (name: string, options: CookieOptions): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+  transition(() => new ClearCookieEvent(name, options))
 
 /** @instance */
 export const monadMiddlewareState: MonadMiddleware<URI> = {
