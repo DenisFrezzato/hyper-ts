@@ -1,6 +1,7 @@
 import * as express from 'express'
-import { Body, CookieOptions, Conn, Status, StatusOpen, ResponseEnded } from '..'
+import { CookieOptions, Conn, Status, StatusOpen, ResponseEnded } from '..'
 import { MiddlewareTask } from '../MiddlewareTask'
+import { mixed } from 'io-ts'
 
 export class ExpressConn<S> implements Conn<S> {
   public readonly '-S': S
@@ -31,7 +32,7 @@ export class ExpressConn<S> implements Conn<S> {
     return this.req.query
   }
 
-  public setBody(body: Body) {
+  public setBody(body: mixed) {
     this.res.send(body)
   }
 

@@ -1,7 +1,8 @@
-import { Body, Conn, Status, CookieOptions, ResponseEnded, StatusOpen } from '..'
+import { Conn, Status, CookieOptions, ResponseEnded, StatusOpen } from '..'
 import * as koa from 'koa'
 import * as Router from 'koa-router'
 import { MiddlewareTask } from '../MiddlewareTask'
+import { mixed } from 'io-ts'
 
 export class KoaConn<S> implements Conn<S> {
   public readonly '-S': S
@@ -32,7 +33,7 @@ export class KoaConn<S> implements Conn<S> {
     return this.context.query
   }
 
-  public setBody(body: Body) {
+  public setBody(body: mixed) {
     this.context.body = body
   }
 
