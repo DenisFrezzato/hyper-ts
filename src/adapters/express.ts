@@ -8,7 +8,7 @@ export class ExpressConn<S> implements Conn<S> {
   constructor(readonly req: express.Request, readonly res: express.Response) {}
 
   public clearCookie(name: string, options: CookieOptions) {
-    this.res.cookie(name, undefined, options)
+    this.res.clearCookie(name, options)
   }
 
   public endResponse() {

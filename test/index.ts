@@ -28,6 +28,10 @@ class MockConn<S> implements Conn<S> {
 
   constructor(readonly req: MockRequest, readonly res: MockResponse) {}
 
+  public clearCookie(name: string, options: CookieOptions) {
+    return this.res.clearCookie(name, options)
+  }
+
   public endResponse() {
     return this.res.responseEnded
   }
@@ -52,7 +56,7 @@ class MockConn<S> implements Conn<S> {
     this.res.setBody(body)
   }
 
-  public setCookie(name: string, value: string | undefined, options: CookieOptions) {
+  public setCookie(name: string, value: string, options: CookieOptions) {
     this.res.setCookie(name, value, options)
   }
 
@@ -102,6 +106,10 @@ class MockResponse {
   public responseEnded: boolean = false
   public status: Status | undefined
 
+  public clearCookie(name: string, options: CookieOptions) {
+    delete this.cookies[name]
+  }
+
   public endResponse() {
     this.responseEnded = true
   }
@@ -110,12 +118,8 @@ class MockResponse {
     this.body = body
   }
 
-  public setCookie(name: string, value: string | undefined, options: CookieOptions) {
-    if (value === undefined) {
-      delete this.cookies[name]
-    } else {
-      this.cookies[name] = [value, options]
-    }
+  public setCookie(name: string, value: string, options: CookieOptions) {
+    this.cookies[name] = [value, options]
   }
 
   public setHeader(name: string, value: string) {
