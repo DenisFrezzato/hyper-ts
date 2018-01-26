@@ -57,7 +57,7 @@ export interface Conn<S> {
   endResponse: () => void
 
   getBody: () => mixed
-  getHeader: (name: string) => string | undefined
+  getHeader: (name: string) => mixed
   getParams: () => mixed
   getQuery: () => mixed
 
