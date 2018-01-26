@@ -44,8 +44,6 @@ export interface CookieOptions {
   signed?: boolean
 }
 
-export type Body = mixed | mixed[] | Buffer
-
 /**
  * A `Conn`, short for "connection", models the entirety of a connection between the HTTP server and the user agent,
  * both request and response.
@@ -63,7 +61,7 @@ export interface Conn<S> {
   getParams: () => mixed
   getQuery: () => mixed
 
-  setBody: (body: Body) => void
+  setBody: (body: mixed) => void
   setCookie: (name: string, value: string, options: CookieOptions) => void
   setHeader: (name: string, value: string) => void
   setStatus: (status: Status) => void
