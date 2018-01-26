@@ -1,7 +1,7 @@
 import * as Koa from 'koa'
 import { Status, StatusOpen, ResponseEnded } from '..'
-import { status, closeHeaders, send, MiddlewareTask } from '../../src/MiddlewareTask'
-import { KoaConn } from '../adapters/koa'
+import { status, closeHeaders, send, MiddlewareTask } from '../src/MiddlewareTask'
+import { KoaConn } from '../src/adapters/koa'
 
 const hello = status(Status.OK)
   .ichain(() => closeHeaders)
