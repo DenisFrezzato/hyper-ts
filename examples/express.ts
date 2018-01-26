@@ -1,7 +1,7 @@
 import * as express from 'express'
-import { Status, StatusOpen, ResponseEnded } from '..'
-import { status, closeHeaders, send, MiddlewareTask } from '../../src/MiddlewareTask'
-import { ExpressConn } from '../adapters/express'
+import { Status, StatusOpen, ResponseEnded } from '../src'
+import { status, closeHeaders, send, MiddlewareTask } from '../src/MiddlewareTask'
+import { ExpressConn } from '../src/adapters/express'
 
 const hello = status(Status.OK)
   .ichain(() => closeHeaders)
