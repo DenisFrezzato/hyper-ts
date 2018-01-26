@@ -49,10 +49,8 @@
   "peerDependencies": {
     "@types/express": "4.11.0",
     "@types/koa": "^2.0.43",
-    "@types/koa-router": "^7.0.27",
     "express": "^4.16.2",
-    "koa": "^2.4.1",
-    "koa-router": "^7.3.0"
+    "koa": "^2.4.1"
   },
   "tags": ["typescript", "express", "koa", "middleware", "fp-ts", "io-ts", "functional-programming"],
   "keywords": ["typescript", "express", "koa", "middleware", "fp-ts", "io-ts", "functional-programming"]
