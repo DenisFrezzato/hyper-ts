@@ -59,9 +59,6 @@ export class MiddlewareTask<I, O, A> {
   ichain<Z, B>(f: (a: A) => MiddlewareTask<O, Z, B>): MiddlewareTask<I, Z, B> {
     return new MiddlewareTask(t.ichain(a => f(a).run, this.run))
   }
-  toRequestHandler(this: Handler, c: Conn<StatusOpen>): () => Promise<void> {
-    return () => this.eval(c).run()
-  }
 }
 
 export const of = <I, A>(a: A): MiddlewareTask<I, I, A> => {
