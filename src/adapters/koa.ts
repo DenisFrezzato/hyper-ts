@@ -16,7 +16,7 @@ export class KoaConn<S> implements Conn<S> {
   }
 
   public getBody() {
-    return this.context.body
+    return this.context.request.body
   }
 
   public getHeader(name: string) {
