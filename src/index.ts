@@ -21,17 +21,29 @@ export enum MediaType {
   textXML = 'text/xml'
 }
 
-export enum Status {
-  OK = 200,
-  Created = 201,
-  Found = 302,
-  BadRequest = 400,
-  Unauthorized = 401,
-  Forbidden = 403,
-  NotFound = 404,
-  MethodNotAllowed = 405,
-  NotAcceptable = 406
+const OK: 200 = 200
+const Created: 201 = 201
+const Found: 302 = 302
+const BadRequest: 400 = 400
+const Unauthorized: 401 = 401
+const Forbidden: 403 = 403
+const NotFound: 404 = 404
+const MethodNotAllowed: 405 = 405
+const NotAcceptable: 406 = 406
+
+export const Status = {
+  OK,
+  Created,
+  Found,
+  BadRequest,
+  Unauthorized,
+  Forbidden,
+  NotFound,
+  MethodNotAllowed,
+  NotAcceptable
 }
+
+export type Status = typeof Status[keyof typeof Status]
 
 export interface CookieOptions {
   expires?: Date
