@@ -1,18 +1,19 @@
 {
   "name": "hyper-ts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "hyper-ts description",
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "lint": "tslint src/**/*.ts test/**/*.ts",
-    "typings-checker": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
+    "typings-checker":
+      "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
     "mocha": "mocha -r ts-node/register test/*.ts",
-    "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
-    "fix-prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test}/**/*.ts\"",
+    "prettier":
+      "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
+    "fix-prettier":
+      "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test}/**/*.ts\"",
     "test": "npm run prettier && npm run lint && npm run typings-checker && npm run mocha",
     "clean": "rm -rf lib/*",
     "build": "npm run clean && tsc"
@@ -53,22 +54,6 @@
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0"
   },
-  "tags": [
-    "typescript",
-    "express",
-    "koa",
-    "middleware",
-    "fp-ts",
-    "io-ts",
-    "functional-programming"
-  ],
-  "keywords": [
-    "typescript",
-    "express",
-    "koa",
-    "middleware",
-    "fp-ts",
-    "io-ts",
-    "functional-programming"
-  ]
+  "tags": ["typescript", "express", "koa", "middleware", "fp-ts", "io-ts", "functional-programming"],
+  "keywords": ["typescript", "express", "koa", "middleware", "fp-ts", "io-ts", "functional-programming"]
 }
