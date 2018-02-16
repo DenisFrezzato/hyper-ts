@@ -1,49 +1,39 @@
 import * as express from 'express'
-import { CookieOptions, Conn, Status } from '..'
+import { CookieOptions, Conn, Status } from '.'
 import { mixed } from 'io-ts'
 
 export class ExpressConn<S> implements Conn<S> {
-  public readonly '-S': S
-
+  // prettier-ignore
+  readonly '_S': S
   constructor(readonly req: express.Request, readonly res: express.Response) {}
-
-  public clearCookie(name: string, options: CookieOptions) {
+  clearCookie(name: string, options: CookieOptions) {
     this.res.clearCookie(name, options)
   }
-
-  public endResponse() {
+  endResponse() {
     return this.res.end()
   }
-
-  public getBody() {
+  getBody() {
     return this.req.body
   }
-
-  public getHeader(name: string) {
+  getHeader(name: string) {
     return this.req.header(name)
   }
-
-  public getParams() {
+  getParams() {
     return this.req.params
   }
-
-  public getQuery() {
+  getQuery() {
     return this.req.query
   }
-
-  public setBody(body: mixed) {
+  setBody(body: mixed) {
     this.res.send(body)
   }
-
-  public setCookie(name: string, value: string, options: CookieOptions) {
+  setCookie(name: string, value: string, options: CookieOptions) {
     this.res.cookie(name, value, options)
   }
-
-  public setHeader(name: string, value: string) {
+  setHeader(name: string, value: string) {
     this.res.setHeader(name, value)
   }
-
-  public setStatus(status: Status) {
+  setStatus(status: Status) {
     this.res.status(status)
   }
 }

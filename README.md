@@ -32,7 +32,16 @@ State changes are tracked by the phanton type `S`.
 ```ts
 class Conn<S> {
   readonly _S: S
-  constructor(readonly req: express.Request, readonly res: express.Response) {}
+  clearCookie: (name: string, options: CookieOptions) => void
+  endResponse: () => void
+  getBody: () => mixed
+  getHeader: (name: string) => mixed
+  getParams: () => mixed
+  getQuery: () => mixed
+  setBody: (body: mixed) => void
+  setCookie: (name: string, value: string, options: CookieOptions) => void
+  setHeader: (name: string, value: string) => void
+  setStatus: (status: Status) => void
 }
 ```
 
@@ -58,16 +67,18 @@ The default interpreter, `MiddlewareTask`, is based on [fp-ts](https://github.co
 
 ```ts
 import * as express from 'express'
-import { status, closeHeaders, send } from 'hyper-ts/lib/MiddlewareTask'
 import { Status } from 'hyper-ts'
+import { middleware } from 'hyper-ts/lib/MiddlewareTask'
+import { toExpressRequestHandler } from 'hyper-ts/lib/toExpressRequestHandler'
 
-const hello = status(Status.OK)
-  .ichain(() => closeHeaders)
-  .ichain(() => send('Hello hyper-ts!'))
+const hello = middleware
+  .status(Status.OK)
+  .ichain(() => middleware.closeHeaders)
+  .ichain(() => middleware.send('Hello hyper-ts on express!'))
 
-const app = express()
-app.get('/', hello.toRequestHandler())
-app.listen(3000, () => console.log('App listening on port 3000!'))
+express()
+  .get('/', toExpressRequestHandler(hello))
+  .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))
 ```
 
 ## Type safety
@@ -75,14 +86,15 @@ app.listen(3000, () => console.log('App listening on port 3000!'))
 Invalid operations are prevented statically
 
 ```ts
-import { status, closeHeaders, send, header } from 'hyper-ts/lib/MiddlewareTask'
+import { middleware } from 'hyper-ts/lib/MiddlewareTask'
 import { Status } from 'hyper-ts'
 
-const hello = status(Status.OK)
-  .ichain(() => closeHeaders)
-  .ichain(() => send('Hello hyper-ts!'))
+middleware
+  .status(Status.OK)
+  .ichain(() => middleware.closeHeaders)
+  .ichain(() => middleware.send('Hello hyper-ts!'))
   // try to write a header after sending the body
-  .ichain(() => header(['field', 'value'])) // error: Type '"HeadersOpen"' is not assignable to type '"ResponseEnded"'
+  .ichain(() => middleware.headers({ field: 'value' })) // error: Type '"HeadersOpen"' is not assignable to type '"ResponseEnded"'
 ```
 
 No more `"Can't set headers after they are sent."` errors.
@@ -108,7 +120,7 @@ Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
 ```ts
 import { IntegerFromString } from 'io-ts-types/lib/number/IntegerFromString'
 
-// validation succeeds only if `req.param.user_id` is an integer
+// validation succeeds only if `req.param.user_id` can be parsed to an integer
 param('user_id', IntegerFromString)
 ```
 
@@ -153,22 +165,14 @@ ensure this requirement statically
 
 ```ts
 import * as express from 'express'
-import {
-  status,
-  closeHeaders,
-  send,
-  MiddlewareTask,
-  param,
-  of,
-  Handler,
-  unsafeResponseStateTransition
-} from 'hyper-ts/lib/MiddlewareTask'
-import { Status, StatusOpen } from 'hyper-ts'
+import { MiddlewareTask, param, Handler, unsafeResponseStateTransition, middleware } from 'hyper-ts/lib/MiddlewareTask'
+import { Status, StatusOpen, Conn } from 'hyper-ts'
 import { Option, some, none } from 'fp-ts/lib/Option'
 import * as t from 'io-ts'
-import * as task from 'fp-ts/lib/Task'
+import { Task, task } from 'fp-ts/lib/Task'
 import { tuple } from 'fp-ts/lib/function'
 import { IntegerFromString } from 'io-ts-types/lib/number/IntegerFromString'
+import { toExpressRequestHandler } from 'hyper-ts/lib/toExpressRequestHandler'
 
 // the new connection state
 type Authenticated = 'Authenticated'
@@ -176,15 +180,15 @@ type Authenticated = 'Authenticated'
 interface Authentication
   extends MiddlewareTask<StatusOpen, StatusOpen, Option<MiddlewareTask<StatusOpen, Authenticated, void>>> {}
 
-const withAuthentication = (strategy: (req: express.Request) => task.Task<boolean>): Authentication =>
+const withAuthentication = (strategy: (c: Conn<StatusOpen>) => Task<boolean>): Authentication =>
   new MiddlewareTask(c => {
-    return strategy(c.req).map(authenticated => tuple(authenticated ? some(unsafeResponseStateTransition) : none, c))
+    return strategy(c).map(authenticated => tuple(authenticated ? some(unsafeResponseStateTransition) : none, c))
   })
 
 // dummy authentication process
-const tokenAuthentication = withAuthentication(req => task.of(t.string.is(req.get('token'))))
+const tokenAuthentication = withAuthentication(c => task.of(t.string.is(c.getHeader('token'))))
 
-// dummy ResponseStateTransition (like closeHeaders)
+// dummy ResponseStateTransition (like middleware.closeHeaders)
 const authenticated: MiddlewareTask<Authenticated, StatusOpen, void> = unsafeResponseStateTransition
 
 //
@@ -192,19 +196,22 @@ const authenticated: MiddlewareTask<Authenticated, StatusOpen, void> = unsafeRes
 //
 
 const badRequest = (message: string) =>
-  status(Status.BadRequest)
-    .ichain(() => closeHeaders)
-    .ichain(() => send(message))
+  middleware
+    .status(Status.BadRequest)
+    .ichain(() => middleware.closeHeaders)
+    .ichain(() => middleware.send(message))
 
 const notFound = (message: string) =>
-  status(Status.NotFound)
-    .ichain(() => closeHeaders)
-    .ichain(() => send(message))
+  middleware
+    .status(Status.NotFound)
+    .ichain(() => middleware.closeHeaders)
+    .ichain(() => middleware.send(message))
 
 const unauthorized = (message: string) =>
-  status(Status.Unauthorized)
-    .ichain(() => closeHeaders)
-    .ichain(() => send(message))
+  middleware
+    .status(Status.Unauthorized)
+    .ichain(() => middleware.closeHeaders)
+    .ichain(() => middleware.send(message))
 
 //
 // user
@@ -215,32 +222,34 @@ interface User {
 }
 
 // the result of this function requires a successful authentication upstream
-const loadUser = (id: number) => authenticated.ichain(() => of(id === 1 ? some<User>({ name: 'Giulio' }) : none))
+const loadUser = (id: number) =>
+  authenticated.ichain(() => middleware.of(id === 1 ? some<User>({ name: 'Giulio' }) : none))
 
 const getUserId = param('user_id', IntegerFromString)
 
 const sendUser = (user: User) =>
-  status(Status.OK)
-    .ichain(() => closeHeaders)
-    .ichain(() => send(`Hello ${user.name}!`))
+  middleware
+    .status(Status.OK)
+    .ichain(() => middleware.closeHeaders)
+    .ichain(() => middleware.send(`Hello ${user.name}!`))
 
 const user: Handler = getUserId.ichain(oid =>
   oid.fold(
     () => badRequest('Invalid user id'),
     id =>
       tokenAuthentication.ichain(oAuthenticated =>
-        oAuthenticated.fold(
+        oAuthenticated.foldL(
           () => unauthorized('Unauthorized user'),
           authenticated =>
-            authenticated.ichain(() => loadUser(id).ichain(ou => ou.fold(() => notFound('User not found'), sendUser)))
+            authenticated.ichain(() => loadUser(id).ichain(ou => ou.foldL(() => notFound('User not found'), sendUser)))
         )
       )
   )
 )
 
-const app = express()
-app.get('/:user_id', user.toRequestHandler())
-app.listen(3000, () => console.log('App listening on port 3000!'))
+express()
+  .get('/:user_id', toExpressRequestHandler(user))
+  .listen(3000, () => console.log('Express listening on port 3000'))
 ```
 
 # Using the State monad for writing tests
@@ -249,47 +258,43 @@ There's another interpreter for testing purposes: `MiddlewareState`
 
 ```ts
 import * as express from 'express'
-import { MonadMiddleware, StatusOpen, ResponseEnded, Conn, param, Status } from 'hyper-ts'
-import { monadMiddlewareTask } from 'hyper-ts/lib/MiddlewareTask'
-import { monadMiddlewareState } from 'hyper-ts/lib/MiddlewareState'
-import { HKT3, HKT3S, HKT3As } from 'fp-ts/lib/HKT'
+import { MonadMiddleware, MonadMiddleware3, StatusOpen, ResponseEnded, Conn, param, Status } from 'hyper-ts'
+import { middleware as middlewareTask } from 'hyper-ts/lib/MiddlewareTask'
+import { middleware as middlewareState } from 'hyper-ts/lib/MiddlewareState'
+import { HKT3, URIS3, Type3 } from 'fp-ts/lib/HKT'
 import * as t from 'io-ts'
+import { toExpressRequestHandler } from 'hyper-ts/lib/toExpressRequestHandler'
 
-function program<M extends HKT3S>(R: MonadMiddleware<M>): HKT3As<M, StatusOpen, ResponseEnded, void>
+function program<M extends URIS3>(R: MonadMiddleware3<M>): Type3<M, StatusOpen, ResponseEnded, void>
 function program<M>(R: MonadMiddleware<M>): HKT3<M, StatusOpen, ResponseEnded, void>
 function program<M>(R: MonadMiddleware<M>): HKT3<M, StatusOpen, ResponseEnded, void> {
-  return R.ichain(
-    e =>
-      R.ichain(
-        () => R.send(`Hello ${e.getOrElseValue('Anonymous')}!`),
-        R.ichain(() => R.closeHeaders, R.status(Status.OK))
-      ),
-    param(R)('name', t.string)
+  return R.ichain(param(R)('name', t.string), e =>
+    R.ichain(R.ichain(R.status(Status.OK), () => R.closeHeaders), () => R.send(`Hello ${e.getOrElse('Anonymous')}!`))
   )
 }
 
 // interpreted in Task
-const helloTask = program(monadMiddlewareTask)
+const programTask = program(middlewareTask)
 
 // interpreted in State
-const helloState = program(monadMiddlewareState)
+const programState = program(middlewareState)
 
 // fake Conn
 const c: Conn<StatusOpen> = {
-  req: {
-    params: {}
-  },
-  res: {
-    status: () => null,
-    send: () => null
-  }
+  getParams: () => ({}),
+  setStatus: () => null,
+  setBody: () => null
 } as any
 
-console.log(helloState.eval(c).run([]))
+console.log(programState.eval(c).run([]))
 
-const app = express()
-app.get('/:name?', helloTask.toRequestHandler())
-app.listen(3000, () => console.log('App listening on port 3000!'))
+//
+// express app
+//
+
+express()
+  .get('/:name?', toExpressRequestHandler(programTask))
+  .listen(3000, () => console.log('Express listening on port 3000'))
 
 /*
 Output:

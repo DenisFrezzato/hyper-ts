@@ -1,49 +1,39 @@
-import { Conn, Status, CookieOptions } from '..'
+import { Conn, Status, CookieOptions } from '.'
 import * as koa from 'koa'
 import { mixed } from 'io-ts'
 
 export class KoaConn<S> implements Conn<S> {
-  public readonly '-S': S
-
+  // prettier-ignore
+  readonly '_S': S
   constructor(readonly context: koa.Context) {}
-
-  public clearCookie(name: string, options: CookieOptions) {
+  clearCookie(name: string, options: CookieOptions) {
     this.context.cookies.set(name, undefined, options)
   }
-
-  public endResponse() {
+  endResponse() {
     return this.context.response.res.end()
   }
-
-  public getBody() {
+  getBody() {
     return this.context.request.body
   }
-
-  public getHeader(name: string) {
+  getHeader(name: string) {
     return this.context.get(name)
   }
-
-  public getParams() {
+  getParams() {
     return this.context.params
   }
-
-  public getQuery() {
+  getQuery() {
     return this.context.query
   }
-
-  public setBody(body: mixed) {
+  setBody(body: mixed) {
     this.context.body = body
   }
-
-  public setCookie(name: string, value: string, options: CookieOptions) {
+  setCookie(name: string, value: string, options: CookieOptions) {
     this.context.cookies.set(name, value, options)
   }
-
-  public setHeader(name: string, value: string) {
+  setHeader(name: string, value: string) {
     this.context.set(name, value)
   }
-
-  public setStatus(status: Status) {
+  setStatus(status: Status) {
     this.context.status = status
   }
 }

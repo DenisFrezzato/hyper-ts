@@ -6,11 +6,11 @@ import {
   HeadersOpen,
   BodyOpen,
   ResponseEnded,
-  MonadMiddleware,
+  MonadMiddleware3,
   CookieOptions
 } from './index'
 import { State } from 'fp-ts/lib/State'
-import * as state from 'fp-ts/lib/State'
+import { state } from 'fp-ts/lib/State'
 
 const t = getMiddlewareT(state)
 
@@ -88,7 +88,7 @@ export class MiddlewareState<I, O, A> {
     return t.evalMiddleware(this.run, c)
   }
   map<I, B>(this: MiddlewareState<I, I, A>, f: (a: A) => B): MiddlewareState<I, I, B> {
-    return new MiddlewareState(t.map(f, this.run))
+    return new MiddlewareState(t.map(this.run, f))
   }
   ap<I, B>(this: MiddlewareState<I, I, A>, fab: MiddlewareState<I, I, (a: A) => B>): MiddlewareState<I, I, B> {
     return new MiddlewareState(t.ap(fab.run, this.run))
@@ -97,35 +97,35 @@ export class MiddlewareState<I, O, A> {
     return this.ichain(f)
   }
   ichain<Z, B>(f: (a: A) => MiddlewareState<O, Z, B>): MiddlewareState<I, Z, B> {
-    return new MiddlewareState(t.ichain(a => f(a).run, this.run))
+    return new MiddlewareState(t.ichain(this.run, a => f(a).run))
   }
 }
 
-export const of = <I, A>(a: A): MiddlewareState<I, I, A> => {
+const of = <I, A>(a: A): MiddlewareState<I, I, A> => {
   return new MiddlewareState(t.of(a))
 }
 
-export const map = <I, A, B>(f: (a: A) => B, fa: MiddlewareState<I, I, A>): MiddlewareState<I, I, B> => {
+const map = <I, A, B>(fa: MiddlewareState<I, I, A>, f: (a: A) => B): MiddlewareState<I, I, B> => {
   return fa.map(f)
 }
 
-export const ap = <S, A, B>(
+const ap = <S, A, B>(
   fab: MiddlewareState<S, S, (a: A) => B>,
   fa: MiddlewareState<S, S, A>
 ): MiddlewareState<S, S, B> => {
   return fa.ap(fab)
 }
 
-export const chain = <S, A, B>(
-  f: (a: A) => MiddlewareState<S, S, B>,
-  fa: MiddlewareState<S, S, A>
+const chain = <S, A, B>(
+  fa: MiddlewareState<S, S, A>,
+  f: (a: A) => MiddlewareState<S, S, B>
 ): MiddlewareState<S, S, B> => {
   return fa.chain(f)
 }
 
-export const ichain = <I, O, Z, A, B>(
-  f: (a: A) => MiddlewareState<O, Z, B>,
-  fa: MiddlewareState<I, O, A>
+const ichain = <I, O, Z, A, B>(
+  fa: MiddlewareState<I, O, A>,
+  f: (a: A) => MiddlewareState<O, Z, B>
 ): MiddlewareState<I, Z, B> => {
   return fa.ichain(f)
 }
@@ -134,7 +134,7 @@ export const lift = <I, A>(fa: State<S, A>): MiddlewareState<I, I, A> => {
   return new MiddlewareState(t.lift(fa))
 }
 
-export const gets = <I, A>(f: (c: Conn<I>) => A): MiddlewareState<I, I, A> => {
+const gets = <I, A>(f: (c: Conn<I>) => A): MiddlewareState<I, I, A> => {
   return new MiddlewareState(t.gets(f))
 }
 
@@ -152,29 +152,29 @@ const transition = <I, O>(f: () => Event): ResponseStateTransition<I, O> =>
       })
   )
 
-export const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
+const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen> =>
   transition(() => new StatusEvent(status))
 
-export const headers = (headers: { [key: string]: string }): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+const headers = (headers: { [key: string]: string }): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
   transition(() => new HeadersEvent(headers))
 
-export const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = transition(() => new CloseHeadersEvent())
+const closeHeaders: ResponseStateTransition<HeadersOpen, BodyOpen> = transition(() => new CloseHeadersEvent())
 
-export const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(() => new SendEvent(o))
+const send = (o: string): ResponseStateTransition<BodyOpen, ResponseEnded> => transition(() => new SendEvent(o))
 
-export const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(() => new EndEvent())
+const end: ResponseStateTransition<BodyOpen, ResponseEnded> = transition(() => new EndEvent())
 
-export const cookie = (
+const cookie = (
   name: string,
   value: string,
   options: CookieOptions
 ): ResponseStateTransition<HeadersOpen, HeadersOpen> => transition(() => new CookieEvent(name, value, options))
 
-export const clearCookie = (name: string, options: CookieOptions): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
+const clearCookie = (name: string, options: CookieOptions): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
   transition(() => new ClearCookieEvent(name, options))
 
 /** @instance */
-export const monadMiddlewareState: MonadMiddleware<URI> = {
+export const middleware: MonadMiddleware3<URI> = {
   URI,
   map,
   of,
