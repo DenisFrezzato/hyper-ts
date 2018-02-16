@@ -1,17 +1,13 @@
 import * as express from 'express'
-import { Status, StatusOpen, ResponseEnded } from '../src'
-import { status, closeHeaders, send, MiddlewareTask } from '../src/MiddlewareTask'
-import { ExpressConn } from '../src/adapters/express'
+import { Status } from '../src'
+import { middleware } from '../src/MiddlewareTask'
+import { toExpressRequestHandler } from '../src/toExpressRequestHandler'
 
-const hello = status(Status.OK)
-  .ichain(() => closeHeaders)
-  .ichain(() => send('Hello hyper-ts on express!'))
-
-export const toRequestHandler = (task: MiddlewareTask<StatusOpen, ResponseEnded, void>): express.RequestHandler => (
-  req,
-  res
-) => task.eval(new ExpressConn(req, res)).run()
+const hello = middleware
+  .status(Status.OK)
+  .ichain(() => middleware.closeHeaders)
+  .ichain(() => middleware.send('Hello hyper-ts on express!'))
 
 express()
-  .get('/', toRequestHandler(hello))
+  .get('/', toExpressRequestHandler(hello))
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))

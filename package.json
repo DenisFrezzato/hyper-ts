@@ -1,6 +1,6 @@
 {
   "name": "hyper-ts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "hyper-ts description",
   "files": ["lib"],
   "main": "lib/index.js",
@@ -9,7 +9,7 @@
     "lint": "tslint src/**/*.ts test/**/*.ts",
     "typings-checker":
       "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
-    "mocha": "mocha -r ts-node/register test/*.ts",
+    "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
     "prettier":
       "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
     "fix-prettier":
@@ -29,14 +29,15 @@
   },
   "homepage": "https://github.com/gcanti/hyper-ts",
   "dependencies": {
-    "fp-ts": "^0.6.8",
-    "io-ts": "^0.9.5"
+    "fp-ts": "^1.0.1",
+    "io-ts": "^1.0.2"
   },
   "devDependencies": {
     "@types/mocha": "2.2.38",
     "@types/node": "8.0.19",
     "@types/qs": "^6.5.1",
     "autocannon": "^0.16.5",
+    "io-ts-types": "^0.3.0",
     "mocha": "3.2.0",
     "prettier": "1.9.2",
     "qs": "^6.5.1",

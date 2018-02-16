@@ -1,19 +1,5 @@
 import * as assert from 'assert'
-import {
-  param,
-  status,
-  send,
-  json,
-  headers,
-  contentType,
-  redirect,
-  cookie,
-  clearCookie,
-  query,
-  params,
-  body,
-  header
-} from '../src/MiddlewareTask'
+import { middleware, param, json, contentType, redirect, query, params, body, header } from '../src/MiddlewareTask'
 import { right, left } from 'fp-ts/lib/Either'
 import { Conn, StatusOpen, HeadersOpen, BodyOpen, MediaType, Status, CookieOptions } from '../src/index'
 import * as t from 'io-ts'
@@ -24,56 +10,46 @@ type MockedHeaders = { [key: string]: string }
 type MockedCookies = { [key: string]: [string | undefined, CookieOptions] }
 
 class MockConn<S> implements Conn<S> {
-  public readonly '-S': S
-
+  // prettier-ignore
+  readonly '_S': S
   constructor(readonly req: MockRequest, readonly res: MockResponse) {}
-
-  public clearCookie(name: string, options: CookieOptions) {
+  clearCookie(name: string, options: CookieOptions) {
     return this.res.clearCookie(name, options)
   }
-
-  public endResponse() {
+  endResponse() {
     return this.res.responseEnded
   }
-
-  public getBody() {
+  getBody() {
     return this.req.getBody()
   }
-
-  public getHeader(name: string) {
+  getHeader(name: string) {
     return this.req.getHeader(name)
   }
-
-  public getParams() {
+  getParams() {
     return this.req.getParams()
   }
-
-  public getQuery() {
+  getQuery() {
     return this.req.getQuery()
   }
-
-  public setBody(body: any) {
+  setBody(body: any) {
     this.res.setBody(body)
   }
-
-  public setCookie(name: string, value: string, options: CookieOptions) {
+  setCookie(name: string, value: string, options: CookieOptions) {
     this.res.setCookie(name, value, options)
   }
-
-  public setHeader(name: string, value: string) {
+  setHeader(name: string, value: string) {
     this.res.setHeader(name, value)
   }
-
-  public setStatus(status: Status) {
+  setStatus(status: Status) {
     this.res.setStatus(status)
   }
 }
 
 class MockRequest {
-  public body: any
-  public headers: MockedHeaders
-  public params: any
-  public query: any
+  body: any
+  headers: MockedHeaders
+  params: any
+  query: any
 
   constructor(params?: any, query?: string, body?: any, headers?: MockedHeaders) {
     this.params = params
@@ -82,51 +58,51 @@ class MockRequest {
     this.headers = headers || {}
   }
 
-  public getBody() {
+  getBody() {
     return this.body
   }
 
-  public getHeader(name: string) {
+  getHeader(name: string) {
     return this.headers[name]
   }
 
-  public getParams() {
+  getParams() {
     return this.params
   }
 
-  public getQuery() {
+  getQuery() {
     return this.query
   }
 }
 
 class MockResponse {
-  public body: any
-  public cookies: MockedCookies = {}
-  public headers: MockedHeaders = {}
-  public responseEnded: boolean = false
-  public status: Status | undefined
+  body: any
+  cookies: MockedCookies = {}
+  headers: MockedHeaders = {}
+  responseEnded: boolean = false
+  status: Status | undefined
 
-  public clearCookie(name: string, options: CookieOptions) {
+  clearCookie(name: string, options: CookieOptions) {
     delete this.cookies[name]
   }
 
-  public endResponse() {
+  endResponse() {
     this.responseEnded = true
   }
 
-  public setBody(body: any) {
+  setBody(body: any) {
     this.body = body
   }
 
-  public setCookie(name: string, value: string, options: CookieOptions) {
+  setCookie(name: string, value: string, options: CookieOptions) {
     this.cookies[name] = [value, options]
   }
 
-  public setHeader(name: string, value: string) {
+  setHeader(name: string, value: string) {
     this.headers[name] = value
   }
 
-  public setStatus(status: Status) {
+  setStatus(status: Status) {
     this.status = status
   }
 }
@@ -147,10 +123,10 @@ function assertResponse(
 describe('MiddlewareTask', () => {
   describe('status', () => {
     it('should write the status code', () => {
-      const middleware = status(200)
+      const m = middleware.status(200)
       const res = new MockResponse()
       const conn = new MockConn<StatusOpen>(new MockRequest(), res)
-      return middleware
+      return m
         .eval(conn)
         .run()
         .then(() => {
@@ -161,10 +137,10 @@ describe('MiddlewareTask', () => {
 
   describe('headers', () => {
     it('should write the headers', () => {
-      const middleware = headers({ name: 'value' })
+      const m = middleware.headers({ name: 'value' })
       const res = new MockResponse()
       const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
-      return middleware
+      return m
         .eval(conn)
         .run()
         .then(() => {
@@ -175,10 +151,10 @@ describe('MiddlewareTask', () => {
 
   describe('send', () => {
     it('should send the content', () => {
-      const middleware = send('<h1>Hello world!</h1>')
+      const m = middleware.send('<h1>Hello world!</h1>')
       const res = new MockResponse()
       const conn = new MockConn<BodyOpen>(new MockRequest(), res)
-      return middleware
+      return m
         .eval(conn)
         .run()
         .then(() => {
@@ -203,10 +179,10 @@ describe('MiddlewareTask', () => {
 
   describe('cookie', () => {
     it('should add the cookie', () => {
-      const middleware = cookie('name', 'value', {})
+      const m = middleware.cookie('name', 'value', {})
       const res = new MockResponse()
       const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
-      return middleware
+      return m
         .eval(conn)
         .run()
         .then(() => {
@@ -217,10 +193,10 @@ describe('MiddlewareTask', () => {
 
   describe('clearCookie', () => {
     it('should clear the cookie', () => {
-      const middleware = cookie('name', 'value', {}).ichain(() => clearCookie('name', {}))
+      const m = middleware.cookie('name', 'value', {}).ichain(() => middleware.clearCookie('name', {}))
       const res = new MockResponse()
       const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
-      return middleware
+      return m
         .eval(conn)
         .run()
         .then(() => {
