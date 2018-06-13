@@ -3,8 +3,7 @@ import { CookieOptions, Conn, Status } from '.'
 import { mixed } from 'io-ts'
 
 export class ExpressConn<S> implements Conn<S> {
-  // prettier-ignore
-  readonly '_S': S
+  readonly _S!: S
   constructor(readonly req: express.Request, readonly res: express.Response) {}
   clearCookie(name: string, options: CookieOptions) {
     this.res.clearCookie(name, options)

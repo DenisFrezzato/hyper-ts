@@ -3,8 +3,7 @@ import * as koa from 'koa'
 import { mixed } from 'io-ts'
 
 export class KoaConn<S> implements Conn<S> {
-  // prettier-ignore
-  readonly '_S': S
+  readonly _S!: S
   constructor(readonly context: koa.Context) {}
   clearCookie(name: string, options: CookieOptions) {
     this.context.cookies.set(name, undefined, options)
