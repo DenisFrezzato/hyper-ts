@@ -2,18 +2,17 @@
   "name": "hyper-ts",
   "version": "0.3.0",
   "description": "hyper-ts description",
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "lint": "tslint src/**/*.ts test/**/*.ts",
-    "typings-checker":
-      "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
+    "typings-checker": "typings-checker --allow-expect-error --project typings-checker/tsconfig.json typings-checker/index.ts",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
-    "prettier":
-      "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
-    "fix-prettier":
-      "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test}/**/*.ts\"",
+    "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
+    "fix-prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test}/**/*.ts\"",
     "test": "npm run prettier && npm run lint && npm run typings-checker && npm run mocha",
     "clean": "rm -rf lib/*",
     "build": "npm run clean && tsc"
@@ -30,7 +29,7 @@
   "homepage": "https://github.com/gcanti/hyper-ts",
   "dependencies": {
     "fp-ts": "^1.0.1",
-    "io-ts": "^1.0.2"
+    "io-ts": "^1.1.4"
   },
   "devDependencies": {
     "@types/express": "4.11.0",
@@ -45,12 +44,12 @@
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",
     "mocha": "3.2.0",
-    "prettier": "^1.11.0",
+    "prettier": "^1.13.5",
     "qs": "^6.5.1",
     "ts-node": "3.3.0",
     "tslint": "4.4.2",
     "tslint-config-standard": "4.0.0",
-    "typescript": "2.6.2",
+    "typescript": "^2.9.1",
     "typings-checker": "1.1.2"
   },
   "peerDependencies": {
@@ -61,6 +60,22 @@
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0"
   },
-  "tags": ["typescript", "express", "koa", "middleware", "fp-ts", "io-ts", "functional-programming"],
-  "keywords": ["typescript", "express", "koa", "middleware", "fp-ts", "io-ts", "functional-programming"]
+  "tags": [
+    "typescript",
+    "express",
+    "koa",
+    "middleware",
+    "fp-ts",
+    "io-ts",
+    "functional-programming"
+  ],
+  "keywords": [
+    "typescript",
+    "express",
+    "koa",
+    "middleware",
+    "fp-ts",
+    "io-ts",
+    "functional-programming"
+  ]
 }

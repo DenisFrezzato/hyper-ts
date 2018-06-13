@@ -75,14 +75,10 @@ export type Event =
 export type S = Array<Event>
 
 export class MiddlewareState<I, O, A> {
-  // prettier-ignore
-  readonly '_A': A
-  // prettier-ignore
-  readonly '_L': O
-  // prettier-ignore
-  readonly '_U': I
-  // prettier-ignore
-  readonly '_URI': URI
+  readonly _A!: A
+  readonly _L!: O
+  readonly _U!: I
+  readonly _URI!: URI
   constructor(readonly run: (c: Conn<I>) => State<S, [A, Conn<O>]>) {}
   eval(c: Conn<I>): State<S, A> {
     return t.evalMiddleware(this.run, c)
