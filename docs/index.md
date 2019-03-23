@@ -1,3 +1,8 @@
+---
+title: Home
+nav_order: 1
+---
+
 A partial porting of https://github.com/owickstrom/hyper to TypeScript
 
 `hyper-ts` is an experimental middleware architecture for HTTP servers written in TypeScript.
@@ -311,7 +316,3 @@ App listening on port 3000!
 
 */
 ```
-
-# Documentation
-
-- [API Reference](https://gcanti.github.io/hyper-ts/modules/)

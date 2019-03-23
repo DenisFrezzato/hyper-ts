@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
     "noEmit": true,
+    "strict": true,
     "noImplicitAny": true,
-    "noImplicitReturns": false,
     "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "strictNullChecks": true,
-    "target": "es5"
-  },
-  "lib": [
-    "es6", "dom"
-  ]
+    "target": "es5",
+    "lib": ["es2015"]
+  }
 }

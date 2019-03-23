@@ -1,28 +1,32 @@
+import { Task, task, URI as TaskURI } from 'fp-ts/lib/Task'
+import { Decoder, Validation } from 'io-ts'
 import {
-  getMiddlewareT,
-  Conn,
-  Status,
-  StatusOpen,
-  HeadersOpen,
+  body as body_,
   BodyOpen,
-  ResponseEnded,
-  MediaType,
-  MonadMiddleware3,
+  Conn,
   contentType as contentType_,
+  CookieOptions,
+  getMiddlewareT,
+  header as header_,
+  HeadersOpen,
   json as json_,
-  redirect as redirect_,
+  MediaType,
+  Middleware1,
+  MonadMiddleware3,
   param as param_,
   params as params_,
   query as query_,
-  body as body_,
-  header as header_,
-  CookieOptions
+  redirect as redirect_,
+  ResponseEnded,
+  Status,
+  StatusOpen
 } from './index'
-import { Task } from 'fp-ts/lib/Task'
-import { task } from 'fp-ts/lib/Task'
-import { Decoder, Validation, mixed } from 'io-ts'
 
-const t = getMiddlewareT(task)
+const middlewareT = getMiddlewareT(task)
+
+export const URI = 'MiddlewareTask'
+
+export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URI2HKT3<U, L, A> {
@@ -30,35 +34,27 @@ declare module 'fp-ts/lib/HKT' {
   }
 }
 
-export const URI = 'MiddlewareTask'
-
-export type URI = typeof URI
-
 export class MiddlewareTask<I, O, A> {
-  readonly _A!: A
-  readonly _L!: O
-  readonly _U!: I
-  readonly _URI!: URI
-  constructor(readonly run: (c: Conn<I>) => Task<[A, Conn<O>]>) {}
+  constructor(readonly run: Middleware1<TaskURI, I, O, A>) {}
   eval(c: Conn<I>): Task<A> {
-    return t.evalMiddleware(this.run, c)
+    return middlewareT.evalMiddleware(this.run, c)
   }
   map<I, B>(this: MiddlewareTask<I, I, A>, f: (a: A) => B): MiddlewareTask<I, I, B> {
-    return new MiddlewareTask(t.map(this.run, f))
+    return new MiddlewareTask(middlewareT.map(this.run, f))
   }
   ap<I, B>(this: MiddlewareTask<I, I, A>, fab: MiddlewareTask<I, I, (a: A) => B>): MiddlewareTask<I, I, B> {
-    return new MiddlewareTask(t.ap(fab.run, this.run))
+    return new MiddlewareTask(middlewareT.ap(fab.run, this.run))
   }
   chain<I, B>(this: MiddlewareTask<I, I, A>, f: (a: A) => MiddlewareTask<I, I, B>): MiddlewareTask<I, I, B> {
     return this.ichain(f)
   }
   ichain<Z, B>(f: (a: A) => MiddlewareTask<O, Z, B>): MiddlewareTask<I, Z, B> {
-    return new MiddlewareTask(t.ichain(this.run, a => f(a).run))
+    return new MiddlewareTask(middlewareT.ichain(this.run, a => f(a).run))
   }
 }
 
 const of = <I, A>(a: A): MiddlewareTask<I, I, A> => {
-  return new MiddlewareTask(t.of(a))
+  return new MiddlewareTask(middlewareT.of(a))
 }
 
 const map = <I, A, B>(fa: MiddlewareTask<I, I, A>, f: (a: A) => B): MiddlewareTask<I, I, B> => {
@@ -81,11 +77,11 @@ const ichain = <I, O, Z, A, B>(
 }
 
 export const lift = <I, A>(fa: Task<A>): MiddlewareTask<I, I, A> => {
-  return new MiddlewareTask(t.lift(fa))
+  return new MiddlewareTask(middlewareT.lift(fa))
 }
 
 const gets = <I, A>(f: (c: Conn<I>) => A): MiddlewareTask<I, I, A> => {
-  return new MiddlewareTask(t.gets(f))
+  return new MiddlewareTask(middlewareT.gets(f))
 }
 
 /** A middleware transitioning from one `Response` state to another */
@@ -109,7 +105,9 @@ const status = (status: Status): ResponseStateTransition<StatusOpen, HeadersOpen
 const headers = (headers: { [key: string]: string }): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
   transition(c => {
     for (const field in headers) {
-      c.setHeader(field, headers[field])
+      if (headers.hasOwnProperty(field)) {
+        c.setHeader(field, headers[field])
+      }
     }
   })
 
@@ -132,7 +130,6 @@ const cookie = (
 const clearCookie = (name: string, options: CookieOptions): ResponseStateTransition<HeadersOpen, HeadersOpen> =>
   transition(c => c.clearCookie(name, options))
 
-/** @instance */
 export const middleware: MonadMiddleware3<URI> = {
   URI,
   map,
@@ -161,22 +158,22 @@ export const redirect: (uri: string) => ResponseStateTransition<StatusOpen, Head
 
 export const param: <A>(
   name: string,
-  type: Decoder<mixed, A>
+  type: Decoder<unknown, A>
 ) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = param_(middleware)
 
-export const params: <A>(type: Decoder<mixed, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = params_(
+export const params: <A>(type: Decoder<unknown, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = params_(
   middleware
 )
 
-export const query: <A>(type: Decoder<mixed, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = query_(
+export const query: <A>(type: Decoder<unknown, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = query_(
   middleware
 )
 
-export const body: <A>(type: Decoder<mixed, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = body_(
+export const body: <A>(type: Decoder<unknown, A>) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = body_(
   middleware
 )
 
 export const header: <A>(
   name: string,
-  type: Decoder<mixed, A>
+  type: Decoder<unknown, A>
 ) => MiddlewareTask<StatusOpen, StatusOpen, Validation<A>> = header_(middleware)

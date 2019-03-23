@@ -1,6 +1,5 @@
 import * as express from 'express'
 import { CookieOptions, Conn, Status } from '.'
-import { mixed } from 'io-ts'
 
 export class ExpressConn<S> implements Conn<S> {
   readonly _S!: S
@@ -23,7 +22,7 @@ export class ExpressConn<S> implements Conn<S> {
   getQuery() {
     return this.req.query
   }
-  setBody(body: mixed) {
+  setBody(body: unknown) {
     this.res.send(body)
   }
   setCookie(name: string, value: string, options: CookieOptions) {
