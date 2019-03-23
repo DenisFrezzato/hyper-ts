@@ -1,12 +1,12 @@
 import * as Koa from 'koa'
 import { Status } from '..'
-import { middleware } from '../src/MiddlewareTask'
+import { middleware as hyper } from '../src/MiddlewareTask'
 import { toKoaRequestHandler } from '../src/toKoaRequestHandler'
 
-const hello = middleware
+const hello = hyper
   .status(Status.OK)
-  .ichain(() => middleware.closeHeaders)
-  .ichain(() => middleware.send('Hello hyper-ts on koa!'))
+  .ichain(() => hyper.closeHeaders)
+  .ichain(() => hyper.send('Hello hyper-ts on koa!'))
 
 const app = new Koa()
 

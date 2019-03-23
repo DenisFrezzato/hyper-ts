@@ -1,12 +1,12 @@
 import * as express from 'express'
 import { Status } from '../src'
-import { middleware } from '../src/MiddlewareTask'
+import { middleware as hyper } from '../src/MiddlewareTask'
 import { toExpressRequestHandler } from '../src/toExpressRequestHandler'
 
-const hello = middleware
+const hello = hyper
   .status(Status.OK)
-  .ichain(() => middleware.closeHeaders)
-  .ichain(() => middleware.send('Hello hyper-ts on express!'))
+  .ichain(() => hyper.closeHeaders)
+  .ichain(() => hyper.send('Hello hyper-ts on express!'))
 
 express()
   .get('/', toExpressRequestHandler(hello))

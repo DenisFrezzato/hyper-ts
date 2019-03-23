@@ -1,6 +1,5 @@
 import { Conn, Status, CookieOptions } from '.'
 import * as koa from 'koa'
-import { mixed } from 'io-ts'
 
 export class KoaConn<S> implements Conn<S> {
   readonly _S!: S
@@ -23,7 +22,7 @@ export class KoaConn<S> implements Conn<S> {
   getQuery() {
     return this.context.query
   }
-  setBody(body: mixed) {
+  setBody(body: unknown) {
     this.context.body = body
   }
   setCookie(name: string, value: string, options: CookieOptions) {

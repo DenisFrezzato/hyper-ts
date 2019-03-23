@@ -10,7 +10,6 @@ type MockedHeaders = { [key: string]: string }
 type MockedCookies = { [key: string]: [string | undefined, CookieOptions] }
 
 class MockConn<S> implements Conn<S> {
-  // prettier-ignore
   readonly '_S': S
   constructor(readonly req: MockRequest, readonly res: MockResponse) {}
   clearCookie(name: string, options: CookieOptions) {
@@ -51,11 +50,11 @@ class MockRequest {
   params: any
   query: any
 
-  constructor(params?: any, query?: string, body?: any, headers?: MockedHeaders) {
+  constructor(params?: any, query: string = '', body?: any, headers: MockedHeaders = {}) {
     this.params = params
-    this.query = querystring.parse(query || '')
+    this.query = querystring.parse(query)
     this.body = body
-    this.headers = headers || {}
+    this.headers = headers
   }
 
   getBody() {
@@ -82,7 +81,7 @@ class MockResponse {
   responseEnded: boolean = false
   status: Status | undefined
 
-  clearCookie(name: string, options: CookieOptions) {
+  clearCookie(name: string, _: CookieOptions) {
     delete this.cookies[name]
   }
 

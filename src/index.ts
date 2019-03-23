@@ -2,7 +2,7 @@ import { Monad, Monad1, Monad2 } from 'fp-ts/lib/Monad'
 import { HKT, URIS, Type, HKT3, URIS3, Type3, URIS2, Type2 } from 'fp-ts/lib/HKT'
 import { tuple } from 'fp-ts/lib/function'
 import { IxMonad, IxMonad3 } from 'fp-ts/lib/IxMonad'
-import { Decoder, Validation, Dictionary, mixed } from 'io-ts'
+import { Decoder, Validation, UnknownRecord } from 'io-ts'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -59,17 +59,17 @@ export interface CookieOptions {
 /**
  * A `Conn`, short for "connection", models the entirety of a connection between the HTTP server and the user agent,
  * both request and response.
- * State changes are tracked by the phanton type `S`
+ * State changes are tracked by the phantom type `S`
  */
 export interface Conn<S> {
   readonly _S: S
   clearCookie: (name: string, options: CookieOptions) => void
   endResponse: () => void
-  getBody: () => mixed
-  getHeader: (name: string) => mixed
-  getParams: () => mixed
-  getQuery: () => mixed
-  setBody: (body: mixed) => void
+  getBody: () => unknown
+  getHeader: (name: string) => unknown
+  getParams: () => unknown
+  getQuery: () => unknown
+  setBody: (body: unknown) => void
   setCookie: (name: string, value: string, options: CookieOptions) => void
   setHeader: (name: string, value: string) => void
   setStatus: (status: Status) => void
@@ -128,6 +128,9 @@ export interface MiddlewareT2<M extends URIS2> {
   gets: <L, I, A>(f: (c: Conn<I>) => A) => Middleware2<M, L, I, I, A>
 }
 
+/**
+ * `Middleware` monad transformer
+ */
 export function getMiddlewareT<M extends URIS2>(M: Monad2<M>): MiddlewareT2<M>
 export function getMiddlewareT<M extends URIS>(M: Monad1<M>): MiddlewareT1<M>
 export function getMiddlewareT<M>(M: Monad<M>): MiddlewareT<M>
@@ -195,7 +198,11 @@ export type BodyOpen = 'BodyOpen'
 /** Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished. */
 export type ResponseEnded = 'ResponseEnded'
 
-export interface InducedMonad<M> {
+/**
+ * This models the `Monad` interface induced by a `IxMonad`.
+ * Note that `Monad` operations cannot change the state (`U = L`)
+ */
+export interface IxInducedMonad<M> {
   readonly URI: M
   map: <I, A, B>(fa: HKT3<M, I, I, A>, f: (a: A) => B) => HKT3<M, I, I, B>
   of: <I, A>(a: A) => HKT3<M, I, I, A>
@@ -203,15 +210,10 @@ export interface InducedMonad<M> {
   chain: <I, A, B>(fa: HKT3<M, I, I, A>, f: (a: A) => HKT3<M, I, I, B>) => HKT3<M, I, I, B>
 }
 
-export interface InducedMonad3<M extends URIS3> {
-  readonly URI: M
-  map: <I, A, B>(fa: Type3<M, I, I, A>, f: (a: A) => B) => Type3<M, I, I, B>
-  of: <I, A>(a: A) => Type3<M, I, I, A>
-  ap: <I, A, B>(fab: Type3<M, I, I, (a: A) => B>, fa: Type3<M, I, I, A>) => Type3<M, I, I, B>
-  chain: <I, A, B>(fa: Type3<M, I, I, A>, f: (a: A) => Type3<M, I, I, B>) => Type3<M, I, I, B>
-}
-
-export interface MonadMiddleware<M> extends InducedMonad<M>, IxMonad<M> {
+/**
+ * Middleware campabilites
+ */
+export interface MonadMiddleware<M> extends IxInducedMonad<M>, IxMonad<M> {
   status: (status: Status) => HKT3<M, StatusOpen, HeadersOpen, void>
   headers: (headers: { [key: string]: string }) => HKT3<M, HeadersOpen, HeadersOpen, void>
   closeHeaders: HKT3<M, HeadersOpen, BodyOpen, void>
@@ -222,7 +224,15 @@ export interface MonadMiddleware<M> extends InducedMonad<M>, IxMonad<M> {
   gets: <I, A>(f: (c: Conn<I>) => A) => HKT3<M, I, I, A>
 }
 
-export interface MonadMiddleware3<M extends URIS3> extends InducedMonad3<M>, IxMonad3<M> {
+export interface IxInducedMonad3<M extends URIS3> {
+  readonly URI: M
+  map: <I, A, B>(fa: Type3<M, I, I, A>, f: (a: A) => B) => Type3<M, I, I, B>
+  of: <I, A>(a: A) => Type3<M, I, I, A>
+  ap: <I, A, B>(fab: Type3<M, I, I, (a: A) => B>, fa: Type3<M, I, I, A>) => Type3<M, I, I, B>
+  chain: <I, A, B>(fa: Type3<M, I, I, A>, f: (a: A) => Type3<M, I, I, B>) => Type3<M, I, I, B>
+}
+
+export interface MonadMiddleware3<M extends URIS3> extends IxInducedMonad3<M>, IxMonad3<M> {
   status: (status: Status) => Type3<M, StatusOpen, HeadersOpen, void>
   headers: (headers: { [key: string]: string }) => Type3<M, HeadersOpen, HeadersOpen, void>
   closeHeaders: Type3<M, HeadersOpen, BodyOpen, void>
@@ -232,6 +242,10 @@ export interface MonadMiddleware3<M extends URIS3> extends InducedMonad3<M>, IxM
   clearCookie: (name: string, options: CookieOptions) => Type3<M, HeadersOpen, HeadersOpen, void>
   gets: <I, A>(f: (c: Conn<I>) => A) => Type3<M, I, I, A>
 }
+
+//
+// derivable operations
+//
 
 export function contentType<M extends URIS3>(
   R: MonadMiddleware3<M>
@@ -260,60 +274,60 @@ export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, Sta
 
 export function param<M extends URIS3>(
   R: MonadMiddleware3<M>
-): <A>(name: string, type: Decoder<mixed, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(name: string, type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
 export function param<M>(
   R: MonadMiddleware<M>
-): <A>(name: string, type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(name: string, type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function param<M>(
   R: MonadMiddleware<M>
-): <A>(name: string, type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return (name, type) => R.gets(c => Dictionary.decode(c.getParams()).chain(params => type.decode(params[name])))
+): <A>(name: string, type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+  return (name, type) => R.gets(c => UnknownRecord.decode(c.getParams()).chain(params => type.decode(params[name])))
 }
 
 export function params<M extends URIS3>(
   R: MonadMiddleware3<M>
-): <A>(type: Decoder<mixed, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
 export function params<M>(
   R: MonadMiddleware<M>
-): <A>(type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function params<M>(
   R: MonadMiddleware<M>
-): <A>(type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return type => R.gets(c => type.decode(c.getParams()))
 }
 
 export function query<M extends URIS3>(
   R: MonadMiddleware3<M>
-): <A>(type: Decoder<mixed, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
 export function query<M>(
   R: MonadMiddleware<M>
-): <A>(type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function query<M>(
   R: MonadMiddleware<M>
-): <A>(type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return type => R.gets(c => type.decode(c.getQuery()))
 }
 
 export function body<M extends URIS3>(
   R: MonadMiddleware3<M>
-): <A>(type: Decoder<mixed, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
 export function body<M>(
   R: MonadMiddleware<M>
-): <A>(type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function body<M>(
   R: MonadMiddleware<M>
-): <A>(type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return type => R.gets(c => type.decode(c.getBody()))
 }
 
 export function header<M extends URIS3>(
   R: MonadMiddleware3<M>
-): <A>(name: string, type: Decoder<mixed, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(name: string, type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
 export function header<M>(
   R: MonadMiddleware<M>
-): <A>(name: string, type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
+): <A>(name: string, type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
 export function header<M>(
   R: MonadMiddleware<M>
-): <A>(name: string, type: Decoder<mixed, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
+): <A>(name: string, type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
   return (name, type) => R.gets(c => type.decode(c.getHeader(name)))
 }
