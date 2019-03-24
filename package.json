@@ -42,7 +42,7 @@
     "express": "^4.16.2",
     "fp-ts": "^1.15.0",
     "io-ts": "^1.8.3",
-    "io-ts-types": "^0.3.0",
+    "io-ts-types": "^0.4.4",
     "jest": "^24.5.0",
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",

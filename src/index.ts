@@ -1,8 +1,7 @@
-import { Monad, Monad1, Monad2 } from 'fp-ts/lib/Monad'
-import { HKT, URIS, Type, HKT3, URIS3, Type3, URIS2, Type2 } from 'fp-ts/lib/HKT'
 import { tuple } from 'fp-ts/lib/function'
-import { IxMonad, IxMonad3 } from 'fp-ts/lib/IxMonad'
-import { Decoder, Validation, UnknownRecord } from 'io-ts'
+import { TaskEither, taskEither, right as rightTaskEither, fromLeft } from 'fp-ts/lib/TaskEither'
+import { Task } from 'fp-ts/lib/Task'
+import * as t from 'io-ts'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -75,117 +74,6 @@ export interface Conn<S> {
   setStatus: (status: Status) => void
 }
 
-/**
- * A middleware is an indexed monadic action transforming one `Conn` to another `Conn`. It operates
- * in some base monad `M`, and is indexed by `I` and `O`, the input and output `Conn` types of the
- * middleware action.
- */
-export type Middleware<M, I, O, A> = (c: Conn<I>) => HKT<M, [A, Conn<O>]>
-
-export type Middleware1<M extends URIS, I, O, A> = (c: Conn<I>) => Type<M, [A, Conn<O>]>
-
-export type Middleware2<M extends URIS2, L, I, O, A> = (c: Conn<I>) => Type2<M, L, [A, Conn<O>]>
-
-export interface MiddlewareT<M> {
-  map: <I, A, B>(fa: Middleware<M, I, I, A>, f: (a: A) => B) => Middleware<M, I, I, B>
-  of: <I, A>(a: A) => Middleware<M, I, I, A>
-  ap: <I, A, B>(fab: Middleware<M, I, I, (a: A) => B>, fa: Middleware<M, I, I, A>) => Middleware<M, I, I, B>
-  chain: <I, A, B>(fa: Middleware<M, I, I, A>, f: (a: A) => Middleware<M, I, I, B>) => Middleware<M, I, I, B>
-  ichain: <I, O, Z, A, B>(fa: Middleware<M, I, O, A>, f: (a: A) => Middleware<M, O, Z, B>) => Middleware<M, I, Z, B>
-  evalMiddleware: <I, O, A>(ma: Middleware<M, I, O, A>, c: Conn<I>) => HKT<M, A>
-  lift: <I, A>(fa: HKT<M, A>) => Middleware<M, I, I, A>
-  gets: <I, A>(f: (c: Conn<I>) => A) => Middleware<M, I, I, A>
-}
-
-export interface MiddlewareT1<M extends URIS> {
-  map: <I, A, B>(fa: Middleware1<M, I, I, A>, f: (a: A) => B) => Middleware1<M, I, I, B>
-  of: <I, A>(a: A) => Middleware1<M, I, I, A>
-  ap: <I, A, B>(fab: Middleware1<M, I, I, (a: A) => B>, fa: Middleware1<M, I, I, A>) => Middleware1<M, I, I, B>
-  chain: <I, A, B>(fa: Middleware1<M, I, I, A>, f: (a: A) => Middleware1<M, I, I, B>) => Middleware1<M, I, I, B>
-  ichain: <I, O, Z, A, B>(fa: Middleware1<M, I, O, A>, f: (a: A) => Middleware1<M, O, Z, B>) => Middleware1<M, I, Z, B>
-  evalMiddleware: <I, O, A>(ma: Middleware1<M, I, O, A>, c: Conn<I>) => Type<M, A>
-  lift: <I, A>(fa: Type<M, A>) => Middleware1<M, I, I, A>
-  gets: <I, A>(f: (c: Conn<I>) => A) => Middleware1<M, I, I, A>
-}
-
-export interface MiddlewareT2<M extends URIS2> {
-  map: <L, I, A, B>(fa: Middleware2<M, L, I, I, A>, f: (a: A) => B) => Middleware2<M, L, I, I, B>
-  of: <L, I, A>(a: A) => Middleware2<M, L, I, I, A>
-  ap: <L, I, A, B>(
-    fab: Middleware2<M, L, I, I, (a: A) => B>,
-    fa: Middleware2<M, L, I, I, A>
-  ) => Middleware2<M, L, I, I, B>
-  chain: <L, I, A, B>(
-    fa: Middleware2<M, L, I, I, A>,
-    f: (a: A) => Middleware2<M, L, I, I, B>
-  ) => Middleware2<M, L, I, I, B>
-  ichain: <L, I, O, Z, A, B>(
-    fa: Middleware2<M, L, I, O, A>,
-    f: (a: A) => Middleware2<M, L, O, Z, B>
-  ) => Middleware2<M, L, I, Z, B>
-  evalMiddleware: <L, I, O, A>(ma: Middleware2<M, L, I, O, A>, c: Conn<I>) => Type2<M, L, A>
-  lift: <L, I, A>(fa: Type2<M, L, A>) => Middleware2<M, L, I, I, A>
-  gets: <L, I, A>(f: (c: Conn<I>) => A) => Middleware2<M, L, I, I, A>
-}
-
-/**
- * `Middleware` monad transformer
- */
-export function getMiddlewareT<M extends URIS2>(M: Monad2<M>): MiddlewareT2<M>
-export function getMiddlewareT<M extends URIS>(M: Monad1<M>): MiddlewareT1<M>
-export function getMiddlewareT<M>(M: Monad<M>): MiddlewareT<M>
-export function getMiddlewareT<M>(M: Monad<M>): MiddlewareT<M> {
-  function map<I, A, B>(fa: Middleware<M, I, I, A>, f: (a: A) => B): Middleware<M, I, I, B> {
-    return cf => M.map(fa(cf), ([a, ct]) => tuple(f(a), ct))
-  }
-
-  function of<I, A>(a: A): Middleware<M, I, I, A> {
-    return c => M.of(tuple(a, c))
-  }
-
-  function ap<I, A, B>(fab: Middleware<M, I, I, (a: A) => B>, fa: Middleware<M, I, I, A>): Middleware<M, I, I, B> {
-    return c => {
-      const ma = evalMiddleware(fa, c)
-      const mab = evalMiddleware(fab, c)
-      return M.map(M.ap(mab, ma), b => tuple(b, c))
-    }
-  }
-
-  function chain<I, A, B>(fa: Middleware<M, I, I, A>, f: (a: A) => Middleware<M, I, I, B>): Middleware<M, I, I, B> {
-    return ichain(fa, f)
-  }
-
-  function ichain<I, O, Z, A, B>(
-    fa: Middleware<M, I, O, A>,
-    f: (a: A) => Middleware<M, O, Z, B>
-  ): Middleware<M, I, Z, B> {
-    return ci => M.chain(fa(ci), ([a, co]) => f(a)(co))
-  }
-
-  function evalMiddleware<I, O, A>(fa: Middleware<M, I, O, A>, c: Conn<I>): HKT<M, A> {
-    return M.map(fa(c), ([a]) => a)
-  }
-
-  function lift<I, A>(fa: HKT<M, A>): Middleware<M, I, I, A> {
-    return c => M.map(fa, a => tuple(a, c))
-  }
-
-  function gets<I, A>(f: (c: Conn<I>) => A): Middleware<M, I, I, A> {
-    return c => M.of(tuple(f(c), c))
-  }
-
-  return {
-    evalMiddleware,
-    map,
-    of,
-    ap,
-    chain,
-    ichain,
-    lift,
-    gets
-  }
-}
-
 /** Type indicating that the status-line is ready to be sent */
 export type StatusOpen = 'StatusOpen'
 
@@ -199,135 +87,203 @@ export type BodyOpen = 'BodyOpen'
 export type ResponseEnded = 'ResponseEnded'
 
 /**
- * This models the `Monad` interface induced by a `IxMonad`.
- * Note that `Monad` operations cannot change the state (`U = L`)
+ * A middleware is an indexed monadic action transforming one `Conn` to another `Conn`. It operates
+ * in the `TaskEither` monad, and is indexed by `I` and `O`, the input and output `Conn` types of the
+ * middleware action.
  */
-export interface IxInducedMonad<M> {
-  readonly URI: M
-  map: <I, A, B>(fa: HKT3<M, I, I, A>, f: (a: A) => B) => HKT3<M, I, I, B>
-  of: <I, A>(a: A) => HKT3<M, I, I, A>
-  ap: <I, A, B>(fab: HKT3<M, I, I, (a: A) => B>, fa: HKT3<M, I, I, A>) => HKT3<M, I, I, B>
-  chain: <I, A, B>(fa: HKT3<M, I, I, A>, f: (a: A) => HKT3<M, I, I, B>) => HKT3<M, I, I, B>
+export class Middleware<I, O, L, A> {
+  constructor(readonly run: (c: Conn<I>) => TaskEither<L, [A, Conn<O>]>) {}
+  eval(c: Conn<I>): TaskEither<L, A> {
+    return this.run(c).map(([a]) => a)
+  }
+  map<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => B): Middleware<I, I, L, B> {
+    return new Middleware(cin => this.run(cin).map(([a, cout]) => tuple(f(a), cout)))
+  }
+  ap<I, L, A, B>(this: Middleware<I, I, L, A>, fab: Middleware<I, I, L, (a: A) => B>): Middleware<I, I, L, B> {
+    return new Middleware(c =>
+      this.eval(c)
+        .ap(fab.eval(c))
+        .map(b => tuple(b, c))
+    )
+  }
+  chain<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => Middleware<I, I, L, B>): Middleware<I, I, L, B> {
+    return this.ichain(f)
+  }
+  ichain<Z, B>(f: (a: A) => Middleware<O, Z, L, B>): Middleware<I, Z, L, B> {
+    return new Middleware(cin => this.run(cin).chain(([a, co]) => f(a).run(co)))
+  }
+  orElse<M>(f: (l: L) => Middleware<I, O, M, A>): Middleware<I, O, M, A> {
+    return new Middleware(c => this.run(c).orElse(l => f(l).run(c)))
+  }
+  /** Returns a middleware that writes the response status */
+  status<I, L, A>(this: Middleware<I, StatusOpen, L, A>, s: Status): Middleware<I, HeadersOpen, L, void> {
+    return this.ichain(() => status(s))
+  }
+  headers<I, L, A>(
+    this: Middleware<I, HeadersOpen, L, A>,
+    hs: Record<string, string>
+  ): Middleware<I, HeadersOpen, L, void> {
+    return this.ichain(() => headers(hs))
+  }
+  contentType<I, L, A>(
+    this: Middleware<I, HeadersOpen, L, A>,
+    mediaType: MediaType
+  ): Middleware<I, HeadersOpen, L, void> {
+    return this.ichain(() => contentType(mediaType))
+  }
+  cookie<I, L, A>(
+    this: Middleware<I, HeadersOpen, L, A>,
+    name: string,
+    value: string,
+    options: CookieOptions
+  ): Middleware<I, HeadersOpen, L, void> {
+    return this.ichain(() => cookie(name, value, options))
+  }
+  clearCookie<I, L, A>(
+    this: Middleware<I, HeadersOpen, L, A>,
+    name: string,
+    options: CookieOptions
+  ): Middleware<I, HeadersOpen, L, void> {
+    return this.ichain(() => clearCookie(name, options))
+  }
+  /** Return a middleware that changes the connection status to `BodyOpen` */
+  closeHeaders<I, L, A>(this: Middleware<I, HeadersOpen, L, A>): Middleware<I, BodyOpen, L, void> {
+    return this.ichain(() => closeHeaders)
+  }
+  /** Return a middleware that sends `body` as response body */
+  send<I, L, A>(this: Middleware<I, BodyOpen, L, A>, body: string): Middleware<I, ResponseEnded, L, void> {
+    return this.ichain(() => send(body))
+  }
+  /** Return a middleware that ends the response without sending any response body */
+  end<I, L, A>(this: Middleware<I, BodyOpen, L, A>): Middleware<I, ResponseEnded, L, void> {
+    return this.ichain(() => end)
+  }
 }
 
-/**
- * Middleware campabilites
- */
-export interface MonadMiddleware<M> extends IxInducedMonad<M>, IxMonad<M> {
-  status: (status: Status) => HKT3<M, StatusOpen, HeadersOpen, void>
-  headers: (headers: { [key: string]: string }) => HKT3<M, HeadersOpen, HeadersOpen, void>
-  closeHeaders: HKT3<M, HeadersOpen, BodyOpen, void>
-  send: (o: string) => HKT3<M, BodyOpen, ResponseEnded, void>
-  end: HKT3<M, BodyOpen, ResponseEnded, void>
-  cookie: (name: string, value: string, options: CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
-  clearCookie: (name: string, options: CookieOptions) => HKT3<M, HeadersOpen, HeadersOpen, void>
-  gets: <I, A>(f: (c: Conn<I>) => A) => HKT3<M, I, I, A>
+export function of<I, L, A>(a: A): Middleware<I, I, L, A> {
+  return iof(a)
 }
 
-export interface IxInducedMonad3<M extends URIS3> {
-  readonly URI: M
-  map: <I, A, B>(fa: Type3<M, I, I, A>, f: (a: A) => B) => Type3<M, I, I, B>
-  of: <I, A>(a: A) => Type3<M, I, I, A>
-  ap: <I, A, B>(fab: Type3<M, I, I, (a: A) => B>, fa: Type3<M, I, I, A>) => Type3<M, I, I, B>
-  chain: <I, A, B>(fa: Type3<M, I, I, A>, f: (a: A) => Type3<M, I, I, B>) => Type3<M, I, I, B>
+export function iof<I, O, L, A>(a: A): Middleware<I, O, L, A> {
+  return new Middleware<I, O, L, A>(c => taskEither.of(tuple(a, c as any)))
 }
 
-export interface MonadMiddleware3<M extends URIS3> extends IxInducedMonad3<M>, IxMonad3<M> {
-  status: (status: Status) => Type3<M, StatusOpen, HeadersOpen, void>
-  headers: (headers: { [key: string]: string }) => Type3<M, HeadersOpen, HeadersOpen, void>
-  closeHeaders: Type3<M, HeadersOpen, BodyOpen, void>
-  send: (o: string) => Type3<M, BodyOpen, ResponseEnded, void>
-  end: Type3<M, BodyOpen, ResponseEnded, void>
-  cookie: (name: string, value: string, options: CookieOptions) => Type3<M, HeadersOpen, HeadersOpen, void>
-  clearCookie: (name: string, options: CookieOptions) => Type3<M, HeadersOpen, HeadersOpen, void>
-  gets: <I, A>(f: (c: Conn<I>) => A) => Type3<M, I, I, A>
+export function fromTaskEither<I, L, A>(fa: TaskEither<L, A>): Middleware<I, I, L, A> {
+  return new Middleware(c => fa.map(a => tuple(a, c)))
 }
 
-//
-// derivable operations
-//
-
-export function contentType<M extends URIS3>(
-  R: MonadMiddleware3<M>
-): (mediaType: MediaType) => Type3<M, HeadersOpen, HeadersOpen, void>
-export function contentType<M>(R: MonadMiddleware<M>): (mediaType: MediaType) => HKT3<M, HeadersOpen, HeadersOpen, void>
-export function contentType<M>(
-  R: MonadMiddleware<M>
-): (mediaType: MediaType) => HKT3<M, HeadersOpen, HeadersOpen, void> {
-  return mediaType => R.headers({ 'Content-Type': mediaType })
+export function right<I, L, A>(fa: Task<A>): Middleware<I, I, L, A> {
+  return fromTaskEither(rightTaskEither(fa))
 }
 
-export function json<M extends URIS3>(R: MonadMiddleware3<M>): (o: string) => Type3<M, HeadersOpen, ResponseEnded, void>
-export function json<M>(R: MonadMiddleware<M>): (o: string) => HKT3<M, HeadersOpen, ResponseEnded, void>
-export function json<M>(R: MonadMiddleware<M>): (o: string) => HKT3<M, HeadersOpen, ResponseEnded, void> {
-  const contentType_ = contentType(R)
-  return o => R.ichain(R.ichain(contentType_(MediaType.applicationJSON), () => R.closeHeaders), () => R.send(o))
+export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> {
+  return new Middleware(c => taskEither.of(tuple(f(c), c)))
 }
 
-export function redirect<M extends URIS3>(
-  R: MonadMiddleware3<M>
-): (uri: string) => Type3<M, StatusOpen, HeadersOpen, void>
-export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void>
-export function redirect<M>(R: MonadMiddleware<M>): (uri: string) => HKT3<M, StatusOpen, HeadersOpen, void> {
-  return uri => R.ichain(R.status(Status.Found), () => R.headers({ Location: uri }))
+// internal helper
+function transition<I, O, L>(f: (c: Conn<I>) => void): Middleware<I, O, L, void> {
+  return new Middleware(c =>
+    rightTaskEither(
+      new Task(() => {
+        f(c)
+        return Promise.resolve([undefined, c] as any)
+      })
+    )
+  )
 }
 
-export function param<M extends URIS3>(
-  R: MonadMiddleware3<M>
-): <A>(name: string, type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
-export function param<M>(
-  R: MonadMiddleware<M>
-): <A>(name: string, type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
-export function param<M>(
-  R: MonadMiddleware<M>
-): <A>(name: string, type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return (name, type) => R.gets(c => UnknownRecord.decode(c.getParams()).chain(params => type.decode(params[name])))
+/** Returns a middleware that writes the response status */
+export function status<L>(status: Status): Middleware<StatusOpen, HeadersOpen, L, void> {
+  return transition(c => c.setStatus(status))
 }
 
-export function params<M extends URIS3>(
-  R: MonadMiddleware3<M>
-): <A>(type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
-export function params<M>(
-  R: MonadMiddleware<M>
-): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
-export function params<M>(
-  R: MonadMiddleware<M>
-): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return type => R.gets(c => type.decode(c.getParams()))
+export function headers<L>(headers: Record<string, string>): Middleware<HeadersOpen, HeadersOpen, L, void> {
+  return transition(c => {
+    for (const field in headers) {
+      if (headers.hasOwnProperty(field)) {
+        c.setHeader(field, headers[field])
+      }
+    }
+  })
 }
 
-export function query<M extends URIS3>(
-  R: MonadMiddleware3<M>
-): <A>(type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
-export function query<M>(
-  R: MonadMiddleware<M>
-): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
-export function query<M>(
-  R: MonadMiddleware<M>
-): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return type => R.gets(c => type.decode(c.getQuery()))
+export function contentType<L>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, L, void> {
+  return headers({ 'Content-Type': mediaType })
 }
 
-export function body<M extends URIS3>(
-  R: MonadMiddleware3<M>
-): <A>(type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
-export function body<M>(
-  R: MonadMiddleware<M>
-): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
-export function body<M>(
-  R: MonadMiddleware<M>
-): <A>(type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return type => R.gets(c => type.decode(c.getBody()))
+export function cookie<L>(
+  name: string,
+  value: string,
+  options: CookieOptions
+): Middleware<HeadersOpen, HeadersOpen, L, void> {
+  return transition(c => c.setCookie(name, value, options))
 }
 
-export function header<M extends URIS3>(
-  R: MonadMiddleware3<M>
-): <A>(name: string, type: Decoder<unknown, A>) => Type3<M, StatusOpen, StatusOpen, Validation<A>>
-export function header<M>(
-  R: MonadMiddleware<M>
-): <A>(name: string, type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>>
-export function header<M>(
-  R: MonadMiddleware<M>
-): <A>(name: string, type: Decoder<unknown, A>) => HKT3<M, StatusOpen, StatusOpen, Validation<A>> {
-  return (name, type) => R.gets(c => type.decode(c.getHeader(name)))
+export function clearCookie<L>(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, L, void> {
+  return transition(c => c.clearCookie(name, options))
+}
+
+/** Return a middleware that changes the connection status to `BodyOpen` */
+export const closeHeaders: Middleware<HeadersOpen, BodyOpen, never, void> = iof(undefined)
+
+/** Return a middleware that sends `body` as response body */
+export function send<L>(body: string): Middleware<BodyOpen, ResponseEnded, L, void> {
+  return transition(c => c.setBody(body))
+}
+
+/** Return a middleware that ends the response without sending any response body */
+export const end: Middleware<BodyOpen, ResponseEnded, never, void> = transition(c => c.endResponse())
+
+/** Return a middleware that sends `body` as JSON */
+export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L, void> {
+  return contentType<L>(MediaType.applicationJSON)
+    .closeHeaders()
+    .send(body)
+}
+
+/** Return a middleware that sends a redirect to `uri` */
+export function redirect<L>(uri: string): Middleware<StatusOpen, HeadersOpen, L, void> {
+  return status<L>(Status.Found).headers({ Location: uri })
+}
+
+// internal helper
+function validate<A>(
+  f: (c: Conn<StatusOpen>) => unknown,
+  decoder: t.Decoder<unknown, A>
+): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
+  return new Middleware(c => decoder.decode(f(c)).fold(l => fromLeft(l), a => taskEither.of(tuple(a, c))))
+}
+
+/** Returns a middleware validating `connection.getParams()[name]` */
+export function param<A>(
+  name: string,
+  decoder: t.Decoder<unknown, A>
+): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
+  return validate(c => {
+    const params = c.getParams()
+    return t.UnknownRecord.is(params) ? params[name] : undefined
+  }, decoder)
+}
+
+/** Returns a middleware validating `connection.getParams()` */
+export function params<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
+  return validate(c => c.getParams(), decoder)
+}
+
+/** Returns a middleware validating `connection.getQuery()` */
+export function query<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
+  return validate(c => c.getQuery(), decoder)
+}
+
+/** Returns a middleware validating `connection.getBody()` */
+export function body<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
+  return validate(c => c.getBody(), decoder)
+}
+
+/** Returns a middleware validating `connection.getHeader(name)` */
+export function header<A>(
+  name: string,
+  decoder: t.Decoder<unknown, A>
+): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
+  return validate(c => c.getHeader(name), decoder)
 }
