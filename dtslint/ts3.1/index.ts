@@ -1,9 +1,10 @@
-import { MonadMiddleware, Status } from '../../src'
+import { headers, status, Status } from '../../src'
 
-declare const M: MonadMiddleware<'Test'>
-
-// status
-
-M.status(Status.OK)
 // $ExpectError
-M.status(1000)
+status(1000)
+
+status(Status.OK)
+  .closeHeaders()
+  .send('Hello hyper-ts!')
+  // $ExpectError
+  .ichain(() => headers({ field: 'value' }))

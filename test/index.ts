@@ -1,10 +1,30 @@
 import * as assert from 'assert'
-import { middleware, param, json, contentType, redirect, query, params, body, header } from '../src/MiddlewareTask'
-import { right, left } from 'fp-ts/lib/Either'
-import { Conn, StatusOpen, HeadersOpen, BodyOpen, MediaType, Status, CookieOptions } from '../src/index'
+import { left, right } from 'fp-ts/lib/Either'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
+import {
+  body,
+  BodyOpen,
+  Conn,
+  contentType,
+  CookieOptions,
+  header,
+  HeadersOpen,
+  json,
+  MediaType,
+  param,
+  params,
+  query,
+  redirect,
+  Status,
+  StatusOpen,
+  status,
+  headers,
+  send,
+  cookie,
+  clearCookie
+} from '../src'
 
 type MockedHeaders = { [key: string]: string }
 type MockedCookies = { [key: string]: [string | undefined, CookieOptions] }
@@ -119,10 +139,10 @@ function assertResponse(
   assert.deepEqual(res.cookies, cookies)
 }
 
-describe('MiddlewareTask', () => {
+describe('Middleware', () => {
   describe('status', () => {
     it('should write the status code', () => {
-      const m = middleware.status(200)
+      const m = status(200)
       const res = new MockResponse()
       const conn = new MockConn<StatusOpen>(new MockRequest(), res)
       return m
@@ -136,7 +156,7 @@ describe('MiddlewareTask', () => {
 
   describe('headers', () => {
     it('should write the headers', () => {
-      const m = middleware.headers({ name: 'value' })
+      const m = headers({ name: 'value' })
       const res = new MockResponse()
       const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
       return m
@@ -150,7 +170,7 @@ describe('MiddlewareTask', () => {
 
   describe('send', () => {
     it('should send the content', () => {
-      const m = middleware.send('<h1>Hello world!</h1>')
+      const m = send('<h1>Hello world!</h1>')
       const res = new MockResponse()
       const conn = new MockConn<BodyOpen>(new MockRequest(), res)
       return m
@@ -178,7 +198,7 @@ describe('MiddlewareTask', () => {
 
   describe('cookie', () => {
     it('should add the cookie', () => {
-      const m = middleware.cookie('name', 'value', {})
+      const m = cookie('name', 'value', {})
       const res = new MockResponse()
       const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
       return m
@@ -192,7 +212,7 @@ describe('MiddlewareTask', () => {
 
   describe('clearCookie', () => {
     it('should clear the cookie', () => {
-      const m = middleware.cookie('name', 'value', {}).ichain(() => middleware.clearCookie('name', {}))
+      const m = cookie('name', 'value', {}).ichain(() => clearCookie('name', {}))
       const res = new MockResponse()
       const conn = new MockConn<HeadersOpen>(new MockRequest(), res)
       return m
