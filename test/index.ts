@@ -256,7 +256,7 @@ describe('Middleware', () => {
   describe('param', () => {
     it('should validate a param (success case)', () => {
       const conn = new MockConn<StatusOpen>(new MockRequest({ foo: 1 }), new MockResponse())
-      return param('foo', t.number)
+      return param('foo', u => t.number.decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -266,7 +266,7 @@ describe('Middleware', () => {
 
     it('should validate a param (failure case)', () => {
       const conn = new MockConn<StatusOpen>(new MockRequest({ foo: 'a' }), new MockResponse())
-      return param('foo', t.number)
+      return param('foo', u => t.number.decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -278,7 +278,7 @@ describe('Middleware', () => {
   describe('params', () => {
     it('should validate all params (success case)', () => {
       const conn = new MockConn<StatusOpen>(new MockRequest({ foo: 1 }), new MockResponse())
-      return params(t.interface({ foo: t.number }))
+      return params(u => t.interface({ foo: t.number }).decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -288,7 +288,7 @@ describe('Middleware', () => {
 
     it('should validate all params (failure case)', () => {
       const conn = new MockConn<StatusOpen>(new MockRequest({ foo: 'a' }), new MockResponse())
-      return params(t.interface({ foo: t.number }))
+      return params(u => t.interface({ foo: t.number }).decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -306,7 +306,7 @@ describe('Middleware', () => {
       const Query = t.interface({
         q: t.string
       })
-      return query(Query)
+      return query(u => Query.decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -326,7 +326,7 @@ describe('Middleware', () => {
           type: t.string
         })
       })
-      return query(Query)
+      return query(u => Query.decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -339,7 +339,7 @@ describe('Middleware', () => {
       const Query = t.interface({
         q: t.number
       })
-      return query(Query)
+      return query(u => Query.decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -354,7 +354,7 @@ describe('Middleware', () => {
   describe('body', () => {
     it('should validate the body (success case)', () => {
       const conn = new MockConn<StatusOpen>(new MockRequest({}, undefined, 1), new MockResponse())
-      return body(t.number)
+      return body(u => t.number.decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -364,7 +364,7 @@ describe('Middleware', () => {
 
     it('should validate the body (failure case)', () => {
       const conn = new MockConn<StatusOpen>(new MockRequest({}, undefined, 'a'), new MockResponse())
-      return body(t.number)
+      return body(u => t.number.decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -379,7 +379,7 @@ describe('Middleware', () => {
         new MockRequest({}, undefined, undefined, { token: 'mytoken' }),
         new MockResponse()
       )
-      return header('token', t.string)
+      return header('token', u => t.string.decode(u))
         .eval(conn)
         .run()
         .then(e => {
@@ -389,7 +389,7 @@ describe('Middleware', () => {
 
     it('should validate a header (failure case)', () => {
       const conn = new MockConn<StatusOpen>(new MockRequest({}, undefined, undefined, {}), new MockResponse())
-      return header('token', t.string)
+      return header('token', u => t.string.decode(u))
         .eval(conn)
         .run()
         .then(e => {
