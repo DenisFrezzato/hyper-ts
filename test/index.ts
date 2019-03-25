@@ -65,6 +65,9 @@ class MockConn<S> implements Conn<S> {
   getOriginalUrl() {
     return this.req.getOriginalUrl()
   }
+  getMethod() {
+    return this.req.getMethod()
+  }
 }
 
 class MockRequest {
@@ -73,7 +76,8 @@ class MockRequest {
     readonly query: string = '',
     readonly body?: any,
     readonly headers: MockedHeaders = {},
-    readonly originalUrl: string = ''
+    readonly originalUrl: string = '',
+    readonly method: string = 'GET'
   ) {
     this.query = querystring.parse(query)
   }
@@ -91,6 +95,9 @@ class MockRequest {
   }
   getOriginalUrl() {
     return this.originalUrl
+  }
+  getMethod() {
+    return this.method
   }
 }
 
