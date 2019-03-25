@@ -1,5 +1,7 @@
 import * as express from 'express'
-import { CookieOptions, Conn, Status } from '.'
+import { identity } from 'fp-ts/lib/function'
+import { Task } from 'fp-ts/lib/Task'
+import { Conn, CookieOptions, Middleware, ResponseEnded, Status, StatusOpen } from '.'
 
 export class ExpressConn<S> implements Conn<S> {
   readonly _S!: S
@@ -34,4 +36,12 @@ export class ExpressConn<S> implements Conn<S> {
   setStatus(status: Status) {
     this.res.status(status)
   }
+}
+
+export function toRequestHandler(f: (c: ExpressConn<StatusOpen>) => Task<void>): express.RequestHandler {
+  return (req, res) => f(new ExpressConn<StatusOpen>(req, res)).run()
+}
+
+export function fromMiddleware(middleware: Middleware<StatusOpen, ResponseEnded, never, void>): express.RequestHandler {
+  return toRequestHandler(c => middleware.eval(c).fold(() => undefined, identity))
 }
