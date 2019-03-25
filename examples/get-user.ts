@@ -1,20 +1,48 @@
 import * as express from 'express'
-import { none, Option, some } from 'fp-ts/lib/Option'
-import * as t from 'io-ts'
-import { Middleware, of, param, Status, status, StatusOpen } from '../src'
-import { fromMiddleware } from '../src/toExpressRequestHandler'
+import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
+import { fromLeft, Middleware, of, param, Status, status, StatusOpen, ResponseEnded } from '../src'
+import { fromMiddleware } from '../src/express'
 
-interface UserIdBrand {
-  readonly UserId: unique symbol
-}
+//
+// model
+//
 
-const UserId = t.brand(t.string, (s): s is t.Branded<string, UserIdBrand> => s.length > 1, 'UserId')
+const UserId = NonEmptyString
 
-type UserId = t.TypeOf<typeof UserId>
+type UserId = NonEmptyString
 
 interface User {
   name: string
 }
+
+//
+// business logic
+//
+
+const UserNotFound: 'UserNotFound' = 'UserNotFound'
+
+const InvalidArguments: 'InvalidArguments' = 'InvalidArguments'
+
+type UserError = typeof InvalidArguments | typeof UserNotFound
+
+/** Parses the `user_id` param */
+const getUserId = param('user_id', UserId).mapLeft<UserError>(() => InvalidArguments)
+
+/** Loads a `User` from a database */
+const loadUser = (userId: UserId): Middleware<StatusOpen, StatusOpen, UserError, User> =>
+  userId === 'ab' ? of({ name: 'User name...' }) : fromLeft(UserNotFound)
+
+/** Sends a `User` to the client */
+const sendUser = <L>(user: User) =>
+  status<L>(Status.OK)
+    .closeHeaders()
+    .send(JSON.stringify(user))
+
+const getUser = getUserId.ichain(loadUser).ichain(sendUser)
+
+//
+// error handling
+//
 
 const badRequest = (message: string) =>
   status<never>(Status.BadRequest)
@@ -26,20 +54,20 @@ const notFound = (message: string) =>
     .closeHeaders()
     .send(message)
 
-const getUserId = param('user_id', UserId)
+const sendError = (err: UserError): Middleware<StatusOpen, ResponseEnded, never, void> => {
+  switch (err) {
+    case 'UserNotFound':
+      return notFound('user not found')
+    case 'InvalidArguments':
+      return badRequest('invalid arguments')
+  }
+}
 
-const loadUser = <L>(userId: UserId): Middleware<StatusOpen, StatusOpen, L, Option<User>> =>
-  userId === 'ab' ? of(some({ name: 'User name...' })) : of(none)
+//
+// express handler
+//
 
-const sendUser = <L>(user: User) =>
-  status<L>(Status.OK)
-    .closeHeaders()
-    .send(JSON.stringify(user))
-
-const user = getUserId
-  .ichain(loadUser)
-  .ichain(o => o.foldL(() => notFound('user not found'), user => sendUser(user)))
-  .orElse(() => badRequest('invalid arguments'))
+const user = getUser.orElse(sendError)
 
 express()
   .get('/:user_id', fromMiddleware(user))
