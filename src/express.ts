@@ -39,6 +39,9 @@ export class ExpressConn<S> implements Conn<S> {
   getOriginalUrl() {
     return this.req.originalUrl
   }
+  getMethod() {
+    return this.req.method
+  }
 }
 
 export function toRequestHandler(f: (c: ExpressConn<StatusOpen>) => Task<void>): express.RequestHandler {

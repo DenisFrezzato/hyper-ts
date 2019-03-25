@@ -1,8 +1,8 @@
 import * as express from 'express'
-import { Status, status, Middleware, StatusOpen, fromConnection } from '../src'
+import { Status, status, Middleware, StatusOpen, fromConn, method } from '../src'
 import { fromMiddleware } from '../src/express'
 import { str, lit, end, Parser, Route } from 'fp-ts-routing'
-import { fromOption } from 'fp-ts/lib/Either'
+import { right, left } from 'fp-ts/lib/Either'
 
 const home = lit('home').then(end)
 
@@ -20,24 +20,41 @@ const router: Parser<Location> = home.parser
   .map<Location>(() => homeLocation)
   .alt(user.parser.map(({ user_id }) => userLocation(user_id)))
 
-const throwNotFound = fromOption<'NotFound'>('NotFound')
+function fromParser<L, A extends object>(parser: Parser<A>, error: L): Middleware<StatusOpen, StatusOpen, L, A> {
+  const e = left<L, A>(error)
+  return fromConn(c =>
+    parser
+      .run(Route.parse(c.getOriginalUrl()))
+      .map(([a]) => right<L, A>(a))
+      .getOrElse(e)
+  )
+}
 
-const routingMiddleware: Middleware<StatusOpen, StatusOpen, 'NotFound', Location> = fromConnection(c =>
-  throwNotFound(router.run(Route.parse(c.getOriginalUrl())).map(([a]) => a))
-)
+const routingMiddleware = fromParser(router, 'not found')
 
 const notFound = (message: string) =>
   status<never>(Status.NotFound)
     .closeHeaders()
     .send(message)
 
+export const GET: Middleware<StatusOpen, StatusOpen, string, 'GET'> = method(s =>
+  s.toLowerCase() === 'get' ? right<string, 'GET'>('GET') : left('Unknown verb')
+)
+
 const appMiddleware = routingMiddleware
-  .ichain(route =>
-    status<never>(Status.OK)
-      .closeHeaders()
-      .send(JSON.stringify(route))
-  )
-  .orElse(() => notFound('not found'))
+  .ichain(route => {
+    switch (route.type) {
+      case 'Home':
+        return GET.ichain(() => status(Status.OK))
+          .closeHeaders()
+          .send('Welcome!')
+      case 'User':
+        return GET.ichain(() => status(Status.OK))
+          .closeHeaders()
+          .send(`Welcome ${route.id} user!`)
+    }
+  })
+  .orElse(notFound)
 
 const app = express()
 
