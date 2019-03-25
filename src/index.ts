@@ -85,6 +85,7 @@ export interface Conn<S> {
   setCookie: (name: string, value: string, options: CookieOptions) => void
   setHeader: (name: string, value: string) => void
   setStatus: (status: Status) => void
+  getOriginalUrl: () => string
 }
 
 /** Type indicating that the status-line is ready to be sent */
@@ -275,6 +276,10 @@ export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> {
   return new Middleware(c => taskEither.of(tuple(f(c), c)))
 }
 
+export function fromConnection<I, L, A>(f: (c: Conn<I>) => Either<L, A>): Middleware<I, I, L, A> {
+  return new Middleware(c => taskEitherFromEither(f(c).map(a => tuple(a, c))))
+}
+
 // internal helper
 function transition<I, O, L>(f: (c: Conn<I>) => void): Middleware<I, O, L, void> {
   return new Middleware(c =>
@@ -345,38 +350,30 @@ export function redirect<L>(uri: string): Middleware<StatusOpen, HeadersOpen, L,
   return status<L>(Status.Found).headers({ Location: uri })
 }
 
-// internal helper
-function validate<A>(
-  f: (c: Conn<StatusOpen>) => unknown,
-  decoder: t.Decoder<unknown, A>
-): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return new Middleware(c => decoder.decode(f(c)).fold(l => taskEitherFromLeft(l), a => taskEither.of(tuple(a, c))))
-}
-
 /** Returns a middleware validating `connection.getParams()[name]` */
 export function param<A>(
   name: string,
   decoder: t.Decoder<unknown, A>
 ): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return validate(c => {
+  return fromConnection(c => {
     const params = c.getParams()
-    return t.UnknownRecord.is(params) ? params[name] : undefined
-  }, decoder)
+    return decoder.decode(t.UnknownRecord.is(params) ? params[name] : undefined)
+  })
 }
 
 /** Returns a middleware validating `connection.getParams()` */
 export function params<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return validate(c => c.getParams(), decoder)
+  return fromConnection(c => decoder.decode(c.getParams()))
 }
 
 /** Returns a middleware validating `connection.getQuery()` */
 export function query<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return validate(c => c.getQuery(), decoder)
+  return fromConnection(c => decoder.decode(c.getQuery()))
 }
 
 /** Returns a middleware validating `connection.getBody()` */
 export function body<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return validate(c => c.getBody(), decoder)
+  return fromConnection(c => decoder.decode(c.getBody()))
 }
 
 /** Returns a middleware validating `connection.getHeader(name)` */
@@ -384,5 +381,5 @@ export function header<A>(
   name: string,
   decoder: t.Decoder<unknown, A>
 ): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return validate(c => c.getHeader(name), decoder)
+  return fromConnection(c => decoder.decode(c.getHeader(name)))
 }

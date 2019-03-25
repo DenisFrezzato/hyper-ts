@@ -36,6 +36,9 @@ export class ExpressConn<S> implements Conn<S> {
   setStatus(status: Status) {
     this.res.status(status)
   }
+  getOriginalUrl() {
+    return this.req.originalUrl
+  }
 }
 
 export function toRequestHandler(f: (c: ExpressConn<StatusOpen>) => Task<void>): express.RequestHandler {
