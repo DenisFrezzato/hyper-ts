@@ -11,7 +11,6 @@ import {
   fromPredicate as taskEitherFromPredicate
 } from 'fp-ts/lib/TaskEither'
 import { Task } from 'fp-ts/lib/Task'
-import * as t from 'io-ts'
 import { Either, right as eitherRight } from 'fp-ts/lib/Either'
 import { IO } from 'fp-ts/lib/IO'
 import { IOEither } from 'fp-ts/lib/IOEither'
@@ -351,30 +350,32 @@ export function redirect<L>(uri: string): Middleware<StatusOpen, HeadersOpen, L,
   return status<L>(Status.Found).headers({ Location: uri })
 }
 
+const isUnknownRecord = (u: unknown): u is { [key: string]: unknown } => u !== null && typeof u === 'object'
+
 /** Returns a middleware validating `connection.getParams()[name]` */
-export function param<A>(
+export function param<L, A>(
   name: string,
-  decoder: t.Decoder<unknown, A>
-): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
+  f: (value: unknown) => Either<L, A>
+): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConn(c => {
     const params = c.getParams()
-    return decoder.decode(t.UnknownRecord.is(params) ? params[name] : undefined)
+    return f(isUnknownRecord(params) ? params[name] : undefined)
   })
 }
 
 /** Returns a middleware validating `connection.getParams()` */
-export function params<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return fromConn(c => decoder.decode(c.getParams()))
+export function params<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+  return fromConn(c => f(c.getParams()))
 }
 
 /** Returns a middleware validating `connection.getQuery()` */
-export function query<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return fromConn(c => decoder.decode(c.getQuery()))
+export function query<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+  return fromConn(c => f(c.getQuery()))
 }
 
 /** Returns a middleware validating `connection.getBody()` */
-export function body<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return fromConn(c => decoder.decode(c.getBody()))
+export function body<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+  return fromConn(c => f(c.getBody()))
 }
 
 /** Returns a middleware validating `connection.getMethod()` */
@@ -383,9 +384,9 @@ export function method<L, A>(f: (method: string) => Either<L, A>): Middleware<St
 }
 
 /** Returns a middleware validating `connection.getHeader(name)` */
-export function header<A>(
+export function header<L, A>(
   name: string,
-  decoder: t.Decoder<unknown, A>
-): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return fromConn(c => decoder.decode(c.getHeader(name)))
+  f: (value: unknown) => Either<L, A>
+): Middleware<StatusOpen, StatusOpen, L, A> {
+  return fromConn(c => f(c.getHeader(name)))
 }
