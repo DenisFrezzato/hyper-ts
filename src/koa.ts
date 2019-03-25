@@ -1,5 +1,7 @@
-import { Conn, Status, CookieOptions } from '.'
+import { identity } from 'fp-ts/lib/function'
+import { Task } from 'fp-ts/lib/Task'
 import * as koa from 'koa'
+import { Conn, CookieOptions, Middleware, ResponseEnded, Status, StatusOpen } from '.'
 
 export class KoaConn<S> implements Conn<S> {
   readonly _S!: S
@@ -34,4 +36,12 @@ export class KoaConn<S> implements Conn<S> {
   setStatus(status: Status) {
     this.context.status = status
   }
+}
+
+export function toRequestHandler(f: (c: KoaConn<StatusOpen>) => Task<void>): koa.Middleware {
+  return ctx => f(new KoaConn<StatusOpen>(ctx)).run()
+}
+
+export function fromMiddleware(middleware: Middleware<StatusOpen, ResponseEnded, never, void>): koa.Middleware {
+  return toRequestHandler(c => middleware.eval(c).fold(() => undefined, identity))
 }

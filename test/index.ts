@@ -134,9 +134,9 @@ function assertResponse(
   cookies: MockedCookies
 ) {
   assert.strictEqual(res.status, status)
-  assert.deepEqual(res.headers, headers)
+  assert.deepStrictEqual(res.headers, headers)
   assert.strictEqual(res.body, body)
-  assert.deepEqual(res.cookies, cookies)
+  assert.deepStrictEqual(res.cookies, cookies)
 }
 
 describe('Middleware', () => {
@@ -259,7 +259,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e, right(1))
+          assert.deepStrictEqual(e, right(1))
         })
     })
 
@@ -269,7 +269,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : number']))
+          assert.deepStrictEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : number']))
         })
     })
   })
@@ -281,7 +281,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e, right({ foo: 1 }))
+          assert.deepStrictEqual(e, right({ foo: 1 }))
         })
     })
 
@@ -291,7 +291,10 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : { foo: number }/foo: number']))
+          assert.deepStrictEqual(
+            e.mapLeft(failure),
+            left(['Invalid value "a" supplied to : { foo: number }/foo: number'])
+          )
         })
     })
   })
@@ -306,7 +309,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e, right({ q: 'tobi ferret' }))
+          assert.deepStrictEqual(e, right({ q: 'tobi ferret' }))
         })
     })
 
@@ -326,7 +329,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e, right({ order: 'desc', shoe: { color: 'blue', type: 'converse' } }))
+          assert.deepStrictEqual(e, right({ order: 'desc', shoe: { color: 'blue', type: 'converse' } }))
         })
     })
 
@@ -339,7 +342,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(
+          assert.deepStrictEqual(
             e.mapLeft(failure),
             left(['Invalid value "tobi ferret" supplied to : { q: number }/q: number'])
           )
@@ -354,7 +357,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e, right(1))
+          assert.deepStrictEqual(e, right(1))
         })
     })
 
@@ -364,7 +367,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : number']))
+          assert.deepStrictEqual(e.mapLeft(failure), left(['Invalid value "a" supplied to : number']))
         })
     })
   })
@@ -379,7 +382,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e, right('mytoken'))
+          assert.deepStrictEqual(e, right('mytoken'))
         })
     })
 
@@ -389,7 +392,7 @@ describe('Middleware', () => {
         .eval(conn)
         .run()
         .then(e => {
-          assert.deepEqual(e.mapLeft(failure), left(['Invalid value undefined supplied to : string']))
+          assert.deepStrictEqual(e.mapLeft(failure), left(['Invalid value undefined supplied to : string']))
         })
     })
   })

@@ -1,6 +1,6 @@
 ---
-title: KoaConn.ts
-nav_order: 3
+title: express.ts
+nav_order: 1
 parent: Modules
 ---
 
@@ -8,7 +8,7 @@ parent: Modules
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [KoaConn (class)](#koaconn-class)
+- [ExpressConn (class)](#expressconn-class)
   - [clearCookie (method)](#clearcookie-method)
   - [endResponse (method)](#endresponse-method)
   - [getBody (method)](#getbody-method)
@@ -19,16 +19,18 @@ parent: Modules
   - [setCookie (method)](#setcookie-method)
   - [setHeader (method)](#setheader-method)
   - [setStatus (method)](#setstatus-method)
+- [fromMiddleware (function)](#frommiddleware-function)
+- [toRequestHandler (function)](#torequesthandler-function)
 
 ---
 
-# KoaConn (class)
+# ExpressConn (class)
 
 **Signature**
 
 ```ts
-export class KoaConn<S> {
-  constructor(readonly context: koa.Context) { ... }
+export class ExpressConn<S> {
+  constructor(readonly req: express.Request, readonly res: express.Response) { ... }
   ...
 }
 ```
@@ -111,4 +113,20 @@ setHeader(name: string, value: string) { ... }
 
 ```ts
 setStatus(status: Status) { ... }
+```
+
+# fromMiddleware (function)
+
+**Signature**
+
+```ts
+export function fromMiddleware(middleware: Middleware<StatusOpen, ResponseEnded, never, void>): express.RequestHandler { ... }
+```
+
+# toRequestHandler (function)
+
+**Signature**
+
+```ts
+export function toRequestHandler(f: (c: ExpressConn<StatusOpen>) => Task<void>): express.RequestHandler { ... }
 ```

@@ -1,7 +1,20 @@
-import { tuple } from 'fp-ts/lib/function'
-import { TaskEither, taskEither, right as rightTaskEither, fromLeft } from 'fp-ts/lib/TaskEither'
+import { tuple, constant, constIdentity, Refinement, Predicate } from 'fp-ts/lib/function'
+import {
+  TaskEither,
+  taskEither,
+  right as taskEitherRight,
+  left as taskEitherLeft,
+  fromLeft as taskEitherFromLeft,
+  fromEither as taskEitherFromEither,
+  fromIO as taskEitherFromIO,
+  fromIOEither as taskEitherFromIOEither,
+  fromPredicate as taskEitherFromPredicate
+} from 'fp-ts/lib/TaskEither'
 import { Task } from 'fp-ts/lib/Task'
 import * as t from 'io-ts'
+import { Either } from 'fp-ts/lib/Either'
+import { IO } from 'fp-ts/lib/IO'
+import { IOEither } from 'fp-ts/lib/IOEither'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -97,7 +110,7 @@ export class Middleware<I, O, L, A> {
     return this.run(c).map(([a]) => a)
   }
   map<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => B): Middleware<I, I, L, B> {
-    return new Middleware(cin => this.run(cin).map(([a, cout]) => tuple(f(a), cout)))
+    return new Middleware(ci => this.run(ci).map(([a, co]) => tuple(f(a), co)))
   }
   ap<I, L, A, B>(this: Middleware<I, I, L, A>, fab: Middleware<I, I, L, (a: A) => B>): Middleware<I, I, L, B> {
     return new Middleware(c =>
@@ -106,31 +119,79 @@ export class Middleware<I, O, L, A> {
         .map(b => tuple(b, c))
     )
   }
+  /**
+   * Flipped version of `ap`
+   */
+  ap_<I, B, C>(this: Middleware<I, I, L, (b: B) => C>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, C> {
+    return fb.ap(this)
+  }
+  /**
+   * Combine two (parallel) effectful actions, keeping only the result of the first
+   */
+  applyFirst<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, A> {
+    return fb.ap(this.map(constant))
+  }
+  /**
+   * Combine two (parallel) effectful actions, keeping only the result of the second
+   */
+  applySecond<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, B> {
+    return fb.ap(this.map<I, L, A, (b: B) => B>(constIdentity))
+  }
   chain<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => Middleware<I, I, L, B>): Middleware<I, I, L, B> {
     return this.ichain(f)
   }
+  /**
+   * Combine two (sequential) effectful actions, keeping only the result of the first
+   */
+  chainFirst<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, A> {
+    return this.chain(a => fb.map(() => a))
+  }
+  /**
+   * Combine two (sequential) effectful actions, keeping only the result of the second
+   */
+  chainSecond<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, B> {
+    return this.chain(() => fb)
+  }
   ichain<Z, B>(f: (a: A) => Middleware<O, Z, L, B>): Middleware<I, Z, L, B> {
-    return new Middleware(cin => this.run(cin).chain(([a, co]) => f(a).run(co)))
+    return new Middleware(ci => this.run(ci).chain(([a, co]) => f(a).run(co)))
+  }
+  foldMiddleware<Z, M, B>(
+    onLeft: (l: L) => Middleware<I, Z, M, B>,
+    onRight: (a: A) => Middleware<O, Z, M, B>
+  ): Middleware<I, Z, M, B> {
+    return new Middleware(c => this.run(c).foldTaskEither(l => onLeft(l).run(c), ([a, co]) => onRight(a).run(co)))
+  }
+  mapLeft<M>(f: (l: L) => M): Middleware<I, O, M, A> {
+    return new Middleware(c => this.run(c).mapLeft(f))
+  }
+  bimap<V, B>(f: (l: L) => V, g: (a: A) => B): Middleware<I, O, V, B> {
+    return new Middleware(c => this.run(c).bimap(f, ([a, c]) => tuple(g(a), c)))
   }
   orElse<M>(f: (l: L) => Middleware<I, O, M, A>): Middleware<I, O, M, A> {
     return new Middleware(c => this.run(c).orElse(l => f(l).run(c)))
+  }
+  alt(fy: Middleware<I, O, L, A>): Middleware<I, O, L, A> {
+    return new Middleware(c => this.run(c).alt(fy.run(c)))
   }
   /** Returns a middleware that writes the response status */
   status<I, L, A>(this: Middleware<I, StatusOpen, L, A>, s: Status): Middleware<I, HeadersOpen, L, void> {
     return this.ichain(() => status(s))
   }
+  /** Returns a middleware that writes the given headers */
   headers<I, L, A>(
     this: Middleware<I, HeadersOpen, L, A>,
     hs: Record<string, string>
   ): Middleware<I, HeadersOpen, L, void> {
     return this.ichain(() => headers(hs))
   }
+  /** Returns a middleware that sets the given `mediaType` */
   contentType<I, L, A>(
     this: Middleware<I, HeadersOpen, L, A>,
     mediaType: MediaType
   ): Middleware<I, HeadersOpen, L, void> {
     return this.ichain(() => contentType(mediaType))
   }
+  /** Return a middleware that sets the cookie `name` to `value`, with the given `options` */
   cookie<I, L, A>(
     this: Middleware<I, HeadersOpen, L, A>,
     name: string,
@@ -139,6 +200,7 @@ export class Middleware<I, O, L, A> {
   ): Middleware<I, HeadersOpen, L, void> {
     return this.ichain(() => cookie(name, value, options))
   }
+  /** Returns a middleware that clears the cookie `name` */
   clearCookie<I, L, A>(
     this: Middleware<I, HeadersOpen, L, A>,
     name: string,
@@ -173,7 +235,40 @@ export function fromTaskEither<I, L, A>(fa: TaskEither<L, A>): Middleware<I, I, 
 }
 
 export function right<I, L, A>(fa: Task<A>): Middleware<I, I, L, A> {
-  return fromTaskEither(rightTaskEither(fa))
+  return fromTaskEither(taskEitherRight(fa))
+}
+
+export function left<I, L, A>(fl: Task<L>): Middleware<I, I, L, A> {
+  return fromTaskEither(taskEitherLeft(fl))
+}
+
+export function fromLeft<I, L, A>(l: L): Middleware<I, I, L, A> {
+  return fromTaskEither(taskEitherFromLeft(l))
+}
+
+export const fromEither = <I, L, A>(fa: Either<L, A>): Middleware<I, I, L, A> => {
+  return fromTaskEither(taskEitherFromEither(fa))
+}
+
+export const fromIO = <I, L, A>(fa: IO<A>): Middleware<I, I, L, A> => {
+  return fromTaskEither(taskEitherFromIO(fa))
+}
+
+export const fromIOEither = <I, L, A>(fa: IOEither<L, A>): Middleware<I, I, L, A> => {
+  return fromTaskEither(taskEitherFromIOEither(fa))
+}
+
+export function fromPredicate<I, L, A, B extends A>(
+  predicate: Refinement<A, B>,
+  onFalse: (a: A) => L
+): (a: A) => Middleware<I, I, L, A>
+export function fromPredicate<I, L, A>(predicate: Predicate<A>, onFalse: (a: A) => L): (a: A) => Middleware<I, I, L, A>
+export function fromPredicate<I, L, A>(
+  predicate: Predicate<A>,
+  onFalse: (a: A) => L
+): (a: A) => Middleware<I, I, L, A> {
+  const f = taskEitherFromPredicate(predicate, onFalse)
+  return a => fromTaskEither(f(a))
 }
 
 export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> {
@@ -183,7 +278,7 @@ export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> {
 // internal helper
 function transition<I, O, L>(f: (c: Conn<I>) => void): Middleware<I, O, L, void> {
   return new Middleware(c =>
-    rightTaskEither(
+    taskEitherRight(
       new Task(() => {
         f(c)
         return Promise.resolve([undefined, c] as any)
@@ -197,6 +292,7 @@ export function status<L>(status: Status): Middleware<StatusOpen, HeadersOpen, L
   return transition(c => c.setStatus(status))
 }
 
+/** Returns a middleware that writes the given headers */
 export function headers<L>(headers: Record<string, string>): Middleware<HeadersOpen, HeadersOpen, L, void> {
   return transition(c => {
     for (const field in headers) {
@@ -207,10 +303,12 @@ export function headers<L>(headers: Record<string, string>): Middleware<HeadersO
   })
 }
 
+/** Returns a middleware that sets the given `mediaType` */
 export function contentType<L>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, L, void> {
   return headers({ 'Content-Type': mediaType })
 }
 
+/** Return a middleware that sets the cookie `name` to `value`, with the given `options` */
 export function cookie<L>(
   name: string,
   value: string,
@@ -219,6 +317,7 @@ export function cookie<L>(
   return transition(c => c.setCookie(name, value, options))
 }
 
+/** Returns a middleware that clears the cookie `name` */
 export function clearCookie<L>(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, L, void> {
   return transition(c => c.clearCookie(name, options))
 }
@@ -251,7 +350,7 @@ function validate<A>(
   f: (c: Conn<StatusOpen>) => unknown,
   decoder: t.Decoder<unknown, A>
 ): Middleware<StatusOpen, StatusOpen, t.Errors, A> {
-  return new Middleware(c => decoder.decode(f(c)).fold(l => fromLeft(l), a => taskEither.of(tuple(a, c))))
+  return new Middleware(c => decoder.decode(f(c)).fold(l => taskEitherFromLeft(l), a => taskEither.of(tuple(a, c))))
 }
 
 /** Returns a middleware validating `connection.getParams()[name]` */

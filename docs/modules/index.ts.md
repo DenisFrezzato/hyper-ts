@@ -19,9 +19,18 @@ parent: Modules
   - [eval (method)](#eval-method)
   - [map (method)](#map-method)
   - [ap (method)](#ap-method)
+  - [ap\_ (method)](#ap_-method)
+  - [applyFirst (method)](#applyfirst-method)
+  - [applySecond (method)](#applysecond-method)
   - [chain (method)](#chain-method)
+  - [chainFirst (method)](#chainfirst-method)
+  - [chainSecond (method)](#chainsecond-method)
   - [ichain (method)](#ichain-method)
+  - [foldMiddleware (method)](#foldmiddleware-method)
+  - [mapLeft (method)](#mapleft-method)
+  - [bimap (method)](#bimap-method)
   - [orElse (method)](#orelse-method)
+  - [alt (method)](#alt-method)
   - [status (method)](#status-method)
   - [headers (method)](#headers-method)
   - [contentType (method)](#contenttype-method)
@@ -37,12 +46,18 @@ parent: Modules
 - [clearCookie (function)](#clearcookie-function)
 - [contentType (function)](#contenttype-function)
 - [cookie (function)](#cookie-function)
+- [fromEither (function)](#fromeither-function)
+- [fromIO (function)](#fromio-function)
+- [fromIOEither (function)](#fromioeither-function)
+- [fromLeft (function)](#fromleft-function)
+- [fromPredicate (function)](#frompredicate-function)
 - [fromTaskEither (function)](#fromtaskeither-function)
 - [gets (function)](#gets-function)
 - [header (function)](#header-function)
 - [headers (function)](#headers-function)
 - [iof (function)](#iof-function)
 - [json (function)](#json-function)
+- [left (function)](#left-function)
 - [of (function)](#of-function)
 - [param (function)](#param-function)
 - [params (function)](#params-function)
@@ -182,12 +197,62 @@ map<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => B): Middleware<I, I, 
 ap<I, L, A, B>(this: Middleware<I, I, L, A>, fab: Middleware<I, I, L, (a: A) => B>): Middleware<I, I, L, B> { ... }
 ```
 
+## ap\_ (method)
+
+Flipped version of `ap`
+
+**Signature**
+
+```ts
+ap_<I, B, C>(this: Middleware<I, I, L, (b: B) => C>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, C> { ... }
+```
+
+## applyFirst (method)
+
+Combine two (parallel) effectful actions, keeping only the result of the first
+
+**Signature**
+
+```ts
+applyFirst<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, A> { ... }
+```
+
+## applySecond (method)
+
+Combine two (parallel) effectful actions, keeping only the result of the second
+
+**Signature**
+
+```ts
+applySecond<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, B> { ... }
+```
+
 ## chain (method)
 
 **Signature**
 
 ```ts
 chain<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => Middleware<I, I, L, B>): Middleware<I, I, L, B> { ... }
+```
+
+## chainFirst (method)
+
+Combine two (sequential) effectful actions, keeping only the result of the first
+
+**Signature**
+
+```ts
+chainFirst<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, A> { ... }
+```
+
+## chainSecond (method)
+
+Combine two (sequential) effectful actions, keeping only the result of the second
+
+**Signature**
+
+```ts
+chainSecond<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, B> { ... }
 ```
 
 ## ichain (method)
@@ -198,12 +263,47 @@ chain<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => Middleware<I, I, L,
 ichain<Z, B>(f: (a: A) => Middleware<O, Z, L, B>): Middleware<I, Z, L, B> { ... }
 ```
 
+## foldMiddleware (method)
+
+**Signature**
+
+```ts
+foldMiddleware<Z, M, B>(
+    onLeft: (l: L) => Middleware<I, Z, M, B>,
+    onRight: (a: A) => Middleware<O, Z, M, B>
+  ): Middleware<I, Z, M, B> { ... }
+```
+
+## mapLeft (method)
+
+**Signature**
+
+```ts
+mapLeft<M>(f: (l: L) => M): Middleware<I, O, M, A> { ... }
+```
+
+## bimap (method)
+
+**Signature**
+
+```ts
+bimap<V, B>(f: (l: L) => V, g: (a: A) => B): Middleware<I, O, V, B> { ... }
+```
+
 ## orElse (method)
 
 **Signature**
 
 ```ts
 orElse<M>(f: (l: L) => Middleware<I, O, M, A>): Middleware<I, O, M, A> { ... }
+```
+
+## alt (method)
+
+**Signature**
+
+```ts
+alt(fy: Middleware<I, O, L, A>): Middleware<I, O, L, A> { ... }
 ```
 
 ## status (method)
@@ -218,6 +318,8 @@ status<I, L, A>(this: Middleware<I, StatusOpen, L, A>, s: Status): Middleware<I,
 
 ## headers (method)
 
+Returns a middleware that writes the given headers
+
 **Signature**
 
 ```ts
@@ -229,6 +331,8 @@ headers<I, L, A>(
 
 ## contentType (method)
 
+Returns a middleware that sets the given `mediaType`
+
 **Signature**
 
 ```ts
@@ -239,6 +343,8 @@ contentType<I, L, A>(
 ```
 
 ## cookie (method)
+
+Return a middleware that sets the cookie `name` to `value`, with the given `options`
 
 **Signature**
 
@@ -252,6 +358,8 @@ cookie<I, L, A>(
 ```
 
 ## clearCookie (method)
+
+Returns a middleware that clears the cookie `name`
 
 **Signature**
 
@@ -333,6 +441,8 @@ export function body<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, 
 
 # clearCookie (function)
 
+Returns a middleware that clears the cookie `name`
+
 **Signature**
 
 ```ts
@@ -340,6 +450,8 @@ export function clearCookie<L>(name: string, options: CookieOptions): Middleware
 ```
 
 # contentType (function)
+
+Returns a middleware that sets the given `mediaType`
 
 **Signature**
 
@@ -349,6 +461,8 @@ export function contentType<L>(mediaType: MediaType): Middleware<HeadersOpen, He
 
 # cookie (function)
 
+Return a middleware that sets the cookie `name` to `value`, with the given `options`
+
 **Signature**
 
 ```ts
@@ -357,6 +471,50 @@ export function cookie<L>(
   value: string,
   options: CookieOptions
 ): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
+```
+
+# fromEither (function)
+
+**Signature**
+
+```ts
+export const fromEither = <I, L, A>(fa: Either<L, A>): Middleware<I, I, L, A> => ...
+```
+
+# fromIO (function)
+
+**Signature**
+
+```ts
+export const fromIO = <I, L, A>(fa: IO<A>): Middleware<I, I, L, A> => ...
+```
+
+# fromIOEither (function)
+
+**Signature**
+
+```ts
+export const fromIOEither = <I, L, A>(fa: IOEither<L, A>): Middleware<I, I, L, A> => ...
+```
+
+# fromLeft (function)
+
+**Signature**
+
+```ts
+export function fromLeft<I, L, A>(l: L): Middleware<I, I, L, A> { ... }
+```
+
+# fromPredicate (function)
+
+**Signature**
+
+```ts
+export function fromPredicate<I, L, A, B extends A>(
+  predicate: Refinement<A, B>,
+  onFalse: (a: A) => L
+): (a: A) => Middleware<I, I, L, A>
+export function fromPredicate<I, L, A>(predicate: Predicate<A>, onFalse: (a: A) => L): (a: A) => Middleware<I, I, L, A> { ... }
 ```
 
 # fromTaskEither (function)
@@ -390,6 +548,8 @@ export function header<A>(
 
 # headers (function)
 
+Returns a middleware that writes the given headers
+
 **Signature**
 
 ```ts
@@ -412,6 +572,14 @@ Return a middleware that sends `body` as JSON
 
 ```ts
 export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L, void> { ... }
+```
+
+# left (function)
+
+**Signature**
+
+```ts
+export function left<I, L, A>(fl: Task<L>): Middleware<I, I, L, A> { ... }
 ```
 
 # of (function)

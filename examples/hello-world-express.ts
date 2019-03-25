@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { Status, status } from '../src'
-import { fromMiddleware } from '../src/toExpressRequestHandler'
+import { fromMiddleware } from '../src/express'
 
 const hello = status<never>(Status.OK)
   .closeHeaders()
