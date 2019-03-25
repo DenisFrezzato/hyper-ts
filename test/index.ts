@@ -62,35 +62,35 @@ class MockConn<S> implements Conn<S> {
   setStatus(status: Status) {
     this.res.setStatus(status)
   }
+  getOriginalUrl() {
+    return this.req.getOriginalUrl()
+  }
 }
 
 class MockRequest {
-  body: any
-  headers: MockedHeaders
-  params: any
-  query: any
-
-  constructor(params?: any, query: string = '', body?: any, headers: MockedHeaders = {}) {
-    this.params = params
+  constructor(
+    readonly params?: any,
+    readonly query: string = '',
+    readonly body?: any,
+    readonly headers: MockedHeaders = {},
+    readonly originalUrl: string = ''
+  ) {
     this.query = querystring.parse(query)
-    this.body = body
-    this.headers = headers
   }
-
   getBody() {
     return this.body
   }
-
   getHeader(name: string) {
     return this.headers[name]
   }
-
   getParams() {
     return this.params
   }
-
   getQuery() {
     return this.query
+  }
+  getOriginalUrl() {
+    return this.originalUrl
   }
 }
 
@@ -100,27 +100,21 @@ class MockResponse {
   headers: MockedHeaders = {}
   responseEnded: boolean = false
   status: Status | undefined
-
   clearCookie(name: string, _: CookieOptions) {
     delete this.cookies[name]
   }
-
   endResponse() {
     this.responseEnded = true
   }
-
   setBody(body: any) {
     this.body = body
   }
-
   setCookie(name: string, value: string, options: CookieOptions) {
     this.cookies[name] = [value, options]
   }
-
   setHeader(name: string, value: string) {
     this.headers[name] = value
   }
-
   setStatus(status: Status) {
     this.status = status
   }
