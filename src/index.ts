@@ -11,7 +11,7 @@ import {
   fromPredicate as taskEitherFromPredicate
 } from 'fp-ts/lib/TaskEither'
 import { Task } from 'fp-ts/lib/Task'
-import { Either, right as eitherRight } from 'fp-ts/lib/Either'
+import { Either } from 'fp-ts/lib/Either'
 import { IO } from 'fp-ts/lib/IO'
 import { IOEither } from 'fp-ts/lib/IOEither'
 
@@ -67,27 +67,6 @@ export interface CookieOptions {
   signed?: boolean
 }
 
-/**
- * A `Conn`, short for "connection", models the entirety of a connection between the HTTP server and the user agent,
- * both request and response.
- * State changes are tracked by the phantom type `S`
- */
-export interface Conn<S> {
-  readonly _S: S
-  clearCookie: (name: string, options: CookieOptions) => void
-  endResponse: () => void
-  getBody: () => unknown
-  getHeader: (name: string) => unknown
-  getParams: () => unknown
-  getQuery: () => unknown
-  setBody: (body: unknown) => void
-  setCookie: (name: string, value: string, options: CookieOptions) => void
-  setHeader: (name: string, value: string) => void
-  setStatus: (status: Status) => void
-  getOriginalUrl: () => string
-  getMethod: () => string
-}
-
 /** Type indicating that the status-line is ready to be sent */
 export type StatusOpen = 'StatusOpen'
 
@@ -99,6 +78,27 @@ export type BodyOpen = 'BodyOpen'
 
 /** Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished. */
 export type ResponseEnded = 'ResponseEnded'
+
+/**
+ * A `Conn`, short for "connection", models the entirety of a connection between the HTTP server and the user agent,
+ * both request and response.
+ * State changes are tracked by the phantom type `S`
+ */
+export interface Conn<S> {
+  readonly _S: S
+  getBody: () => unknown
+  getHeader: (name: string) => unknown
+  getParams: () => unknown
+  getQuery: () => unknown
+  getOriginalUrl: () => string
+  getMethod: () => string
+  setCookie: <T>(name: string, value: string, options: CookieOptions) => Conn<T>
+  clearCookie: <T>(name: string, options: CookieOptions) => Conn<T>
+  setHeader: <T>(name: string, value: string) => Conn<T>
+  setStatus: <T>(status: Status) => Conn<T>
+  setBody: <T>(body: unknown) => Conn<T>
+  endResponse: <T>() => Conn<T>
+}
 
 /**
  * A middleware is an indexed monadic action transforming one `Conn` to another `Conn`. It operates
@@ -179,11 +179,12 @@ export class Middleware<I, O, L, A> {
     return this.ichain(() => status(s))
   }
   /** Returns a middleware that writes the given headers */
-  headers<I, L, A>(
+  header<I, L, A>(
     this: Middleware<I, HeadersOpen, L, A>,
-    hs: Record<string, string>
+    name: string,
+    value: string
   ): Middleware<I, HeadersOpen, L, void> {
-    return this.ichain(() => headers(hs))
+    return this.ichain(() => header(name, value))
   }
   /** Returns a middleware that sets the given `mediaType` */
   contentType<I, L, A>(
@@ -276,41 +277,27 @@ export function fromConn<I, L, A>(f: (c: Conn<I>) => Either<L, A>): Middleware<I
   return new Middleware(c => taskEitherFromEither(f(c).map(a => tuple(a, c))))
 }
 
-export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> {
-  return fromConn(c => eitherRight(f(c)))
+export function modifyConn<I, O, L>(f: (c: Conn<I>) => Conn<O>): Middleware<I, O, L, void> {
+  return new Middleware(c => taskEither.of(tuple(undefined, f(c))))
 }
 
-// internal helper
-function transition<I, O, L>(f: (c: Conn<I>) => void): Middleware<I, O, L, void> {
-  return new Middleware(c =>
-    taskEitherRight(
-      new Task(() => {
-        f(c)
-        return Promise.resolve([undefined, c] as any)
-      })
-    )
-  )
+export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> {
+  return new Middleware(c => taskEither.of(tuple(f(c), c)))
 }
 
 /** Returns a middleware that writes the response status */
 export function status<L>(status: Status): Middleware<StatusOpen, HeadersOpen, L, void> {
-  return transition(c => c.setStatus(status))
+  return modifyConn(c => c.setStatus(status))
 }
 
-/** Returns a middleware that writes the given headers */
-export function headers<L>(headers: Record<string, string>): Middleware<HeadersOpen, HeadersOpen, L, void> {
-  return transition(c => {
-    for (const field in headers) {
-      if (headers.hasOwnProperty(field)) {
-        c.setHeader(field, headers[field])
-      }
-    }
-  })
+/** Returns a middleware that writes the given header */
+export function header<L>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, L, void> {
+  return modifyConn(c => c.setHeader(name, value))
 }
 
 /** Returns a middleware that sets the given `mediaType` */
 export function contentType<L>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, L, void> {
-  return headers({ 'Content-Type': mediaType })
+  return header('Content-Type', mediaType)
 }
 
 /** Return a middleware that sets the cookie `name` to `value`, with the given `options` */
@@ -319,12 +306,12 @@ export function cookie<L>(
   value: string,
   options: CookieOptions
 ): Middleware<HeadersOpen, HeadersOpen, L, void> {
-  return transition(c => c.setCookie(name, value, options))
+  return modifyConn(c => c.setCookie(name, value, options))
 }
 
 /** Returns a middleware that clears the cookie `name` */
 export function clearCookie<L>(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, L, void> {
-  return transition(c => c.clearCookie(name, options))
+  return modifyConn(c => c.clearCookie(name, options))
 }
 
 /** Return a middleware that changes the connection status to `BodyOpen` */
@@ -332,11 +319,11 @@ export const closeHeaders: Middleware<HeadersOpen, BodyOpen, never, void> = iof(
 
 /** Return a middleware that sends `body` as response body */
 export function send<L>(body: string): Middleware<BodyOpen, ResponseEnded, L, void> {
-  return transition(c => c.setBody(body))
+  return modifyConn(c => c.setBody(body))
 }
 
 /** Return a middleware that ends the response without sending any response body */
-export const end: Middleware<BodyOpen, ResponseEnded, never, void> = transition(c => c.endResponse())
+export const end: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConn(c => c.endResponse())
 
 /** Return a middleware that sends `body` as JSON */
 export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L, void> {
@@ -347,7 +334,7 @@ export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L,
 
 /** Return a middleware that sends a redirect to `uri` */
 export function redirect<L>(uri: string): Middleware<StatusOpen, HeadersOpen, L, void> {
-  return status<L>(Status.Found).headers({ Location: uri })
+  return status<L>(Status.Found).header('Location', uri)
 }
 
 const isUnknownRecord = (u: unknown): u is { [key: string]: unknown } => u !== null && typeof u === 'object'
@@ -384,7 +371,7 @@ export function method<L, A>(f: (method: string) => Either<L, A>): Middleware<St
 }
 
 /** Returns a middleware validating `connection.getHeader(name)` */
-export function header<L, A>(
+export function decodeHeader<L, A>(
   name: string,
   f: (value: unknown) => Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> {

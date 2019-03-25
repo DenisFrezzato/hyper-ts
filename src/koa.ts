@@ -2,15 +2,13 @@ import { identity } from 'fp-ts/lib/function'
 import { Task } from 'fp-ts/lib/Task'
 import * as koa from 'koa'
 import { Conn, CookieOptions, Middleware, ResponseEnded, Status, StatusOpen } from '.'
+import { IO, io } from 'fp-ts/lib/IO'
 
 export class KoaConn<S> implements Conn<S> {
   readonly _S!: S
-  constructor(readonly context: koa.Context) {}
-  clearCookie(name: string, options: CookieOptions) {
-    this.context.cookies.set(name, undefined, options)
-  }
-  endResponse() {
-    return this.context.response.res.end()
+  constructor(readonly context: koa.Context, readonly action: IO<unknown> = io.of(undefined)) {}
+  chain<T>(thunk: () => void): KoaConn<T> {
+    return new KoaConn<T>(this.context, this.action.chain(() => new IO(thunk)))
   }
   getBody() {
     return this.context.request.body
@@ -24,23 +22,33 @@ export class KoaConn<S> implements Conn<S> {
   getQuery() {
     return this.context.query
   }
-  setBody(body: unknown) {
-    this.context.body = body
-  }
-  setCookie(name: string, value: string, options: CookieOptions) {
-    this.context.cookies.set(name, value, options)
-  }
-  setHeader(name: string, value: string) {
-    this.context.set(name, value)
-  }
-  setStatus(status: Status) {
-    this.context.status = status
-  }
   getOriginalUrl() {
     return this.context.originalUrl
   }
   getMethod() {
     return this.context.method
+  }
+  setCookie<T>(name: string, value: string, options: CookieOptions) {
+    return this.chain<T>(() => this.context.cookies.set(name, value, options))
+  }
+  clearCookie<T>(name: string, options: CookieOptions) {
+    return this.chain<T>(() => this.context.cookies.set(name, undefined, options))
+  }
+  setHeader<T>(name: string, value: string) {
+    return this.chain<T>(() => this.context.set(name, value))
+  }
+  setStatus<T>(status: Status) {
+    return this.chain<T>(() => (this.context.status = status))
+  }
+  setBody<T>(body: unknown) {
+    this.action.run()
+    this.context.body = body
+    return new KoaConn<T>(this.context)
+  }
+  endResponse<T>() {
+    this.action.run()
+    this.context.response.res.end()
+    return new KoaConn<T>(this.context)
   }
 }
 

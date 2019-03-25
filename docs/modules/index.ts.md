@@ -32,7 +32,7 @@ parent: Modules
   - [orElse (method)](#orelse-method)
   - [alt (method)](#alt-method)
   - [status (method)](#status-method)
-  - [headers (method)](#headers-method)
+  - [header (method)](#header-method)
   - [contentType (method)](#contenttype-method)
   - [cookie (method)](#cookie-method)
   - [clearCookie (method)](#clearcookie-method)
@@ -46,6 +46,8 @@ parent: Modules
 - [clearCookie (function)](#clearcookie-function)
 - [contentType (function)](#contenttype-function)
 - [cookie (function)](#cookie-function)
+- [decodeHeader (function)](#decodeheader-function)
+- [fromConn (function)](#fromconn-function)
 - [fromEither (function)](#fromeither-function)
 - [fromIO (function)](#fromio-function)
 - [fromIOEither (function)](#fromioeither-function)
@@ -54,10 +56,11 @@ parent: Modules
 - [fromTaskEither (function)](#fromtaskeither-function)
 - [gets (function)](#gets-function)
 - [header (function)](#header-function)
-- [headers (function)](#headers-function)
 - [iof (function)](#iof-function)
 - [json (function)](#json-function)
 - [left (function)](#left-function)
+- [method (function)](#method-function)
+- [modifyConn (function)](#modifyconn-function)
 - [of (function)](#of-function)
 - [param (function)](#param-function)
 - [params (function)](#params-function)
@@ -80,16 +83,18 @@ State changes are tracked by the phantom type `S`
 ```ts
 export interface Conn<S> {
   readonly _S: S
-  clearCookie: (name: string, options: CookieOptions) => void
-  endResponse: () => void
   getBody: () => unknown
   getHeader: (name: string) => unknown
   getParams: () => unknown
   getQuery: () => unknown
-  setBody: (body: unknown) => void
-  setCookie: (name: string, value: string, options: CookieOptions) => void
-  setHeader: (name: string, value: string) => void
-  setStatus: (status: Status) => void
+  getOriginalUrl: () => string
+  getMethod: () => string
+  setCookie: <T>(name: string, value: string, options: CookieOptions) => Conn<T>
+  clearCookie: <T>(name: string, options: CookieOptions) => Conn<T>
+  setHeader: <T>(name: string, value: string) => Conn<T>
+  setStatus: <T>(status: Status) => Conn<T>
+  setBody: <T>(body: unknown) => Conn<T>
+  endResponse: <T>() => Conn<T>
 }
 ```
 
@@ -316,16 +321,17 @@ Returns a middleware that writes the response status
 status<I, L, A>(this: Middleware<I, StatusOpen, L, A>, s: Status): Middleware<I, HeadersOpen, L, void> { ... }
 ```
 
-## headers (method)
+## header (method)
 
 Returns a middleware that writes the given headers
 
 **Signature**
 
 ```ts
-headers<I, L, A>(
+header<I, L, A>(
     this: Middleware<I, HeadersOpen, L, A>,
-    hs: Record<string, string>
+    name: string,
+    value: string
   ): Middleware<I, HeadersOpen, L, void> { ... }
 ```
 
@@ -436,7 +442,7 @@ Returns a middleware validating `connection.getBody()`
 **Signature**
 
 ```ts
-export function body<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> { ... }
+export function body<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # clearCookie (function)
@@ -471,6 +477,27 @@ export function cookie<L>(
   value: string,
   options: CookieOptions
 ): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
+```
+
+# decodeHeader (function)
+
+Returns a middleware validating `connection.getHeader(name)`
+
+**Signature**
+
+```ts
+export function decodeHeader<L, A>(
+  name: string,
+  f: (value: unknown) => Either<L, A>
+): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+```
+
+# fromConn (function)
+
+**Signature**
+
+```ts
+export function fromConn<I, L, A>(f: (c: Conn<I>) => Either<L, A>): Middleware<I, I, L, A> { ... }
 ```
 
 # fromEither (function)
@@ -535,25 +562,12 @@ export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> { ..
 
 # header (function)
 
-Returns a middleware validating `connection.getHeader(name)`
+Returns a middleware that writes the given header
 
 **Signature**
 
 ```ts
-export function header<A>(
-  name: string,
-  decoder: t.Decoder<unknown, A>
-): Middleware<StatusOpen, StatusOpen, t.Errors, A> { ... }
-```
-
-# headers (function)
-
-Returns a middleware that writes the given headers
-
-**Signature**
-
-```ts
-export function headers<L>(headers: Record<string, string>): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
+export function header<L>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
 ```
 
 # iof (function)
@@ -582,6 +596,24 @@ export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L,
 export function left<I, L, A>(fl: Task<L>): Middleware<I, I, L, A> { ... }
 ```
 
+# method (function)
+
+Returns a middleware validating `connection.getMethod()`
+
+**Signature**
+
+```ts
+export function method<L, A>(f: (method: string) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+```
+
+# modifyConn (function)
+
+**Signature**
+
+```ts
+export function modifyConn<I, O, L>(f: (c: Conn<I>) => Conn<O>): Middleware<I, O, L, void> { ... }
+```
+
 # of (function)
 
 **Signature**
@@ -597,10 +629,10 @@ Returns a middleware validating `connection.getParams()[name]`
 **Signature**
 
 ```ts
-export function param<A>(
+export function param<L, A>(
   name: string,
-  decoder: t.Decoder<unknown, A>
-): Middleware<StatusOpen, StatusOpen, t.Errors, A> { ... }
+  f: (value: unknown) => Either<L, A>
+): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # params (function)
@@ -610,7 +642,7 @@ Returns a middleware validating `connection.getParams()`
 **Signature**
 
 ```ts
-export function params<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> { ... }
+export function params<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # query (function)
@@ -620,7 +652,7 @@ Returns a middleware validating `connection.getQuery()`
 **Signature**
 
 ```ts
-export function query<A>(decoder: t.Decoder<unknown, A>): Middleware<StatusOpen, StatusOpen, t.Errors, A> { ... }
+export function query<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # redirect (function)
