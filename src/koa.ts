@@ -36,6 +36,9 @@ export class KoaConn<S> implements Conn<S> {
   setStatus(status: Status) {
     this.context.status = status
   }
+  getOriginalUrl() {
+    return this.context.originalUrl
+  }
 }
 
 export function toRequestHandler(f: (c: KoaConn<StatusOpen>) => Task<void>): koa.Middleware {
