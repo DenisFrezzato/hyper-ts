@@ -9,16 +9,19 @@ parent: Modules
 <h2 class="text-delta">Table of contents</h2>
 
 - [KoaConn (class)](#koaconn-class)
-  - [clearCookie (method)](#clearcookie-method)
-  - [endResponse (method)](#endresponse-method)
+  - [run (method)](#run-method)
   - [getBody (method)](#getbody-method)
   - [getHeader (method)](#getheader-method)
   - [getParams (method)](#getparams-method)
   - [getQuery (method)](#getquery-method)
-  - [setBody (method)](#setbody-method)
+  - [getOriginalUrl (method)](#getoriginalurl-method)
+  - [getMethod (method)](#getmethod-method)
   - [setCookie (method)](#setcookie-method)
+  - [clearCookie (method)](#clearcookie-method)
   - [setHeader (method)](#setheader-method)
   - [setStatus (method)](#setstatus-method)
+  - [setBody (method)](#setbody-method)
+  - [endResponse (method)](#endresponse-method)
 - [fromMiddleware (function)](#frommiddleware-function)
 - [toRequestHandler (function)](#torequesthandler-function)
 
@@ -30,25 +33,17 @@ parent: Modules
 
 ```ts
 export class KoaConn<S> {
-  constructor(readonly context: koa.Context) { ... }
+  constructor(readonly context: koa.Context, readonly thunks: Array<() => void>) { ... }
   ...
 }
 ```
 
-## clearCookie (method)
+## run (method)
 
 **Signature**
 
 ```ts
-clearCookie(name: string, options: CookieOptions) { ... }
-```
-
-## endResponse (method)
-
-**Signature**
-
-```ts
-endResponse() { ... }
+run() { ... }
 ```
 
 ## getBody (method)
@@ -83,12 +78,20 @@ getParams() { ... }
 getQuery() { ... }
 ```
 
-## setBody (method)
+## getOriginalUrl (method)
 
 **Signature**
 
 ```ts
-setBody(body: unknown) { ... }
+getOriginalUrl() { ... }
+```
+
+## getMethod (method)
+
+**Signature**
+
+```ts
+getMethod() { ... }
 ```
 
 ## setCookie (method)
@@ -96,7 +99,15 @@ setBody(body: unknown) { ... }
 **Signature**
 
 ```ts
-setCookie(name: string, value: string, options: CookieOptions) { ... }
+setCookie<T>(name: string, value: string, options: CookieOptions) { ... }
+```
+
+## clearCookie (method)
+
+**Signature**
+
+```ts
+clearCookie<T>(name: string, options: CookieOptions) { ... }
 ```
 
 ## setHeader (method)
@@ -104,7 +115,7 @@ setCookie(name: string, value: string, options: CookieOptions) { ... }
 **Signature**
 
 ```ts
-setHeader(name: string, value: string) { ... }
+setHeader<T>(name: string, value: string) { ... }
 ```
 
 ## setStatus (method)
@@ -112,7 +123,23 @@ setHeader(name: string, value: string) { ... }
 **Signature**
 
 ```ts
-setStatus(status: Status) { ... }
+setStatus<T>(status: Status) { ... }
+```
+
+## setBody (method)
+
+**Signature**
+
+```ts
+setBody<T>(body: unknown) { ... }
+```
+
+## endResponse (method)
+
+**Signature**
+
+```ts
+endResponse<T>() { ... }
 ```
 
 # fromMiddleware (function)
