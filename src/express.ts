@@ -2,15 +2,17 @@ import * as express from 'express'
 import { identity } from 'fp-ts/lib/function'
 import { Task } from 'fp-ts/lib/Task'
 import { Conn, CookieOptions, Middleware, ResponseEnded, Status, StatusOpen } from '.'
+import { IO, io } from 'fp-ts/lib/IO'
 
 export class ExpressConn<S> implements Conn<S> {
   readonly _S!: S
-  constructor(readonly req: express.Request, readonly res: express.Response) {}
-  clearCookie(name: string, options: CookieOptions) {
-    this.res.clearCookie(name, options)
-  }
-  endResponse() {
-    return this.res.end()
+  constructor(
+    readonly req: express.Request,
+    readonly res: express.Response,
+    readonly action: IO<unknown> = io.of(undefined)
+  ) {}
+  chain<T>(thunk: () => void): ExpressConn<T> {
+    return new ExpressConn<T>(this.req, this.res, this.action.chain(() => new IO(thunk)))
   }
   getBody() {
     return this.req.body
@@ -24,23 +26,33 @@ export class ExpressConn<S> implements Conn<S> {
   getQuery() {
     return this.req.query
   }
-  setBody(body: unknown) {
-    this.res.send(body)
-  }
-  setCookie(name: string, value: string, options: CookieOptions) {
-    this.res.cookie(name, value, options)
-  }
-  setHeader(name: string, value: string) {
-    this.res.setHeader(name, value)
-  }
-  setStatus(status: Status) {
-    this.res.status(status)
-  }
   getOriginalUrl() {
     return this.req.originalUrl
   }
   getMethod() {
     return this.req.method
+  }
+  setCookie<T>(name: string, value: string, options: CookieOptions) {
+    return this.chain<T>(() => this.res.cookie(name, value, options))
+  }
+  clearCookie<T>(name: string, options: CookieOptions) {
+    return this.chain<T>(() => this.res.clearCookie(name, options))
+  }
+  setHeader<T>(name: string, value: string) {
+    return this.chain<T>(() => this.res.setHeader(name, value))
+  }
+  setStatus<T>(status: Status) {
+    return this.chain<T>(() => this.res.status(status))
+  }
+  setBody<T>(body: unknown) {
+    this.action.run()
+    this.res.send(body)
+    return new ExpressConn<T>(this.req, this.res)
+  }
+  endResponse<T>() {
+    this.action.run()
+    this.res.end()
+    return new ExpressConn<T>(this.req, this.res)
   }
 }
 
