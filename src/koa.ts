@@ -6,7 +6,7 @@ import { IO, io } from 'fp-ts/lib/IO'
 
 export class KoaConnection<S> implements Connection<S> {
   readonly _S!: S
-  constructor(readonly context: koa.Context, readonly action: IO<unknown> = io.of(undefined)) {}
+  constructor(readonly context: koa.Context, readonly action: IO<void> = io.of(undefined)) {}
   chain<T>(thunk: () => void): KoaConnection<T> {
     return new KoaConnection<T>(this.context, this.action.chain(() => new IO(thunk)))
   }
