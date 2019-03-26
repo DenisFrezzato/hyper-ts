@@ -8,16 +8,16 @@ parent: Modules
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [BodyOpen (interface)](#bodyopen-interface)
 - [Connection (interface)](#connection-interface)
 - [CookieOptions (interface)](#cookieoptions-interface)
+- [HeadersOpen (interface)](#headersopen-interface)
 - [JSONArray (interface)](#jsonarray-interface)
-- [BodyOpen (type alias)](#bodyopen-type-alias)
-- [HeadersOpen (type alias)](#headersopen-type-alias)
+- [ResponseEnded (interface)](#responseended-interface)
+- [StatusOpen (interface)](#statusopen-interface)
 - [JSON (type alias)](#json-type-alias)
 - [JSONObject (type alias)](#jsonobject-type-alias)
-- [ResponseEnded (type alias)](#responseended-type-alias)
 - [Status (type alias)](#status-type-alias)
-- [StatusOpen (type alias)](#statusopen-type-alias)
 - [Middleware (class)](#middleware-class)
   - [eval (method)](#eval-method)
   - [map (method)](#map-method)
@@ -76,6 +76,18 @@ parent: Modules
 
 ---
 
+# BodyOpen (interface)
+
+Type indicating that headers have already been sent, and that the body is currently streaming
+
+**Signature**
+
+```ts
+export interface BodyOpen {
+  readonly BodyOpen: unique symbol
+}
+```
+
 # Connection (interface)
 
 A `Connection`, models the entirety of a connection between the HTTP server and the user agent,
@@ -119,6 +131,18 @@ export interface CookieOptions {
 }
 ```
 
+# HeadersOpen (interface)
+
+Type indicating that headers are ready to be sent, i.e. the body streaming has not been started
+
+**Signature**
+
+```ts
+export interface HeadersOpen {
+  readonly HeadersOpen: unique symbol
+}
+```
+
 # JSONArray (interface)
 
 **Signature**
@@ -127,24 +151,28 @@ export interface CookieOptions {
 export interface JSONArray extends Array<JSON> {}
 ```
 
-# BodyOpen (type alias)
+# ResponseEnded (interface)
 
-Type indicating that headers have already been sent, and that the body is currently streaming
+Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished.
 
 **Signature**
 
 ```ts
-export type BodyOpen = 'BodyOpen'
+export interface ResponseEnded {
+  readonly ResponseEnded: unique symbol
+}
 ```
 
-# HeadersOpen (type alias)
+# StatusOpen (interface)
 
-Type indicating that headers are ready to be sent, i.e. the body streaming has not been started
+Type indicating that the status-line is ready to be sent
 
 **Signature**
 
 ```ts
-export type HeadersOpen = 'HeadersOpen'
+export interface StatusOpen {
+  readonly StatusOpen: unique symbol
+}
 ```
 
 # JSON (type alias)
@@ -163,32 +191,12 @@ export type JSON = null | string | number | boolean | JSONArray | JSONObject
 export type JSONObject = { [key: string]: JSON }
 ```
 
-# ResponseEnded (type alias)
-
-Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished.
-
-**Signature**
-
-```ts
-export type ResponseEnded = 'ResponseEnded'
-```
-
 # Status (type alias)
 
 **Signature**
 
 ```ts
 export type Status = typeof Status[keyof typeof Status]
-```
-
-# StatusOpen (type alias)
-
-Type indicating that the status-line is ready to be sent
-
-**Signature**
-
-```ts
-export type StatusOpen = 'StatusOpen'
 ```
 
 # Middleware (class)

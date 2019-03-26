@@ -1,28 +1,27 @@
 import * as express from 'express'
 import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
-import { fromLeft, iof, Middleware, of, decodeParam, ResponseEnded, Status, status, StatusOpen } from '../src'
+import { fromLeft, Middleware, of, decodeParam, ResponseEnded, Status, status, StatusOpen } from '../src'
 import { fromMiddleware } from '../src/express'
 
 //
 // Authentication state
 //
 
-/** The new connection state */
-type AuthenticatedOpen = 'Authenticated'
-
-/** Use this middleware where you want to ensure a successful authentication process upstream */
-const requireAuthentication = <L>(): Middleware<AuthenticatedOpen, StatusOpen, L, void> => iof(undefined)
+/** The new connection constraint */
+interface AuthenticatedOpen {
+  readonly AuthenticatedOpen: unique symbol
+}
 
 const AuthenticationError: 'AuthenticationError' = 'AuthenticationError'
 
 type AuthenticationError = typeof AuthenticationError
 
 /**
- * Returns a middleware that proves statically that the authentication process succeeded (`Some`) or failed (`None`)
+ * Returns a middleware that either succeded with a `AuthenticatedOpen` output or returns an `AuthenticationError` error
  */
 function withAuthentication<L, A>(
   middleware: Middleware<StatusOpen, StatusOpen, L, A>
-): Middleware<StatusOpen, AuthenticatedOpen, AuthenticationError | L, A> {
+): Middleware<StatusOpen, StatusOpen & AuthenticatedOpen, AuthenticationError | L, A> {
   return new Middleware(c => {
     // dummy authentication logic
     if (NonEmptyString.is(c.getHeader('token'))) {
@@ -64,15 +63,13 @@ const sendUser = (user: User) =>
 
 /**
  * Loads a `User` from a database. The resulting middleware requires a successful authentication upstream because of the
- * `requireAuthentication` middleware
+ * `AuthenticatedOpen` constraint
  */
-const loadUser = (userId: UserId): Middleware<AuthenticatedOpen, StatusOpen, UserError, User> =>
-  requireAuthentication<UserError>().ichain(() =>
-    userId === 'ab' ? of({ name: 'User name...' }) : fromLeft(UserNotFound)
-  )
+const loadUser = (userId: UserId): Middleware<StatusOpen & AuthenticatedOpen, StatusOpen, UserError, User> =>
+  userId === 'ab' ? of({ name: 'User name...' }) : fromLeft(UserNotFound)
 
 // const getUser = getUserId
-//   .ichain(loadUser) // static error! Type '"StatusOpen"' is not assignable to type '"Authenticated"'
+//   .ichain(loadUser) // static error! Property 'AuthenticatedOpen' is missing in type 'StatusOpen' but required in type 'AuthenticatedOpen'
 //   .ichain(sendUser)
 
 const getUser = withAuthentication(getUserId)
