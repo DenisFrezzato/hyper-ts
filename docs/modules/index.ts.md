@@ -8,10 +8,13 @@ parent: Modules
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Conn (interface)](#conn-interface)
+- [Connection (interface)](#connection-interface)
 - [CookieOptions (interface)](#cookieoptions-interface)
+- [JSONArray (interface)](#jsonarray-interface)
 - [BodyOpen (type alias)](#bodyopen-type-alias)
 - [HeadersOpen (type alias)](#headersopen-type-alias)
+- [JSON (type alias)](#json-type-alias)
+- [JSONObject (type alias)](#jsonobject-type-alias)
 - [ResponseEnded (type alias)](#responseended-type-alias)
 - [Status (type alias)](#status-type-alias)
 - [StatusOpen (type alias)](#statusopen-type-alias)
@@ -38,16 +41,21 @@ parent: Modules
   - [clearCookie (method)](#clearcookie-method)
   - [closeHeaders (method)](#closeheaders-method)
   - [send (method)](#send-method)
+  - [json (method)](#json-method)
   - [end (method)](#end-method)
 - [Status (constant)](#status-constant)
 - [closeHeaders (constant)](#closeheaders-constant)
 - [end (constant)](#end-constant)
-- [body (function)](#body-function)
 - [clearCookie (function)](#clearcookie-function)
 - [contentType (function)](#contenttype-function)
 - [cookie (function)](#cookie-function)
+- [decodeBody (function)](#decodebody-function)
 - [decodeHeader (function)](#decodeheader-function)
-- [fromConn (function)](#fromconn-function)
+- [decodeMethod (function)](#decodemethod-function)
+- [decodeParam (function)](#decodeparam-function)
+- [decodeParams (function)](#decodeparams-function)
+- [decodeQuery (function)](#decodequery-function)
+- [fromConnection (function)](#fromconnection-function)
 - [fromEither (function)](#fromeither-function)
 - [fromIO (function)](#fromio-function)
 - [fromIOEither (function)](#fromioeither-function)
@@ -59,12 +67,8 @@ parent: Modules
 - [iof (function)](#iof-function)
 - [json (function)](#json-function)
 - [left (function)](#left-function)
-- [method (function)](#method-function)
-- [modifyConn (function)](#modifyconn-function)
+- [modifyConnection (function)](#modifyconnection-function)
 - [of (function)](#of-function)
-- [param (function)](#param-function)
-- [params (function)](#params-function)
-- [query (function)](#query-function)
 - [redirect (function)](#redirect-function)
 - [right (function)](#right-function)
 - [send (function)](#send-function)
@@ -72,16 +76,16 @@ parent: Modules
 
 ---
 
-# Conn (interface)
+# Connection (interface)
 
-A `Conn`, short for "connection", models the entirety of a connection between the HTTP server and the user agent,
+A `Connection`, models the entirety of a connection between the HTTP server and the user agent,
 both request and response.
 State changes are tracked by the phantom type `S`
 
 **Signature**
 
 ```ts
-export interface Conn<S> {
+export interface Connection<S> {
   readonly _S: S
   getBody: () => unknown
   getHeader: (name: string) => unknown
@@ -89,12 +93,12 @@ export interface Conn<S> {
   getQuery: () => unknown
   getOriginalUrl: () => string
   getMethod: () => string
-  setCookie: <T>(name: string, value: string, options: CookieOptions) => Conn<T>
-  clearCookie: <T>(name: string, options: CookieOptions) => Conn<T>
-  setHeader: <T>(name: string, value: string) => Conn<T>
-  setStatus: <T>(status: Status) => Conn<T>
-  setBody: <T>(body: unknown) => Conn<T>
-  endResponse: <T>() => Conn<T>
+  setCookie: <T>(name: string, value: string, options: CookieOptions) => Connection<T>
+  clearCookie: <T>(name: string, options: CookieOptions) => Connection<T>
+  setHeader: <T>(name: string, value: string) => Connection<T>
+  setStatus: <T>(status: Status) => Connection<T>
+  setBody: <T>(body: unknown) => Connection<T>
+  endResponse: <T>() => Connection<T>
 }
 ```
 
@@ -115,6 +119,14 @@ export interface CookieOptions {
 }
 ```
 
+# JSONArray (interface)
+
+**Signature**
+
+```ts
+export interface JSONArray extends Array<JSON> {}
+```
+
 # BodyOpen (type alias)
 
 Type indicating that headers have already been sent, and that the body is currently streaming
@@ -133,6 +145,22 @@ Type indicating that headers are ready to be sent, i.e. the body streaming has n
 
 ```ts
 export type HeadersOpen = 'HeadersOpen'
+```
+
+# JSON (type alias)
+
+**Signature**
+
+```ts
+export type JSON = null | string | number | boolean | JSONArray | JSONObject
+```
+
+# JSONObject (type alias)
+
+**Signature**
+
+```ts
+export type JSONObject = { [key: string]: JSON }
 ```
 
 # ResponseEnded (type alias)
@@ -173,7 +201,7 @@ middleware action.
 
 ```ts
 export class Middleware<I, O, L, A> {
-  constructor(readonly run: (c: Conn<I>) => TaskEither<L, [A, Conn<O>]>) { ... }
+  constructor(readonly run: (c: Connection<I>) => TaskEither<L, [A, Connection<O>]>) { ... }
   ...
 }
 ```
@@ -183,7 +211,7 @@ export class Middleware<I, O, L, A> {
 **Signature**
 
 ```ts
-eval(c: Conn<I>): TaskEither<L, A> { ... }
+eval(c: Connection<I>): TaskEither<L, A> { ... }
 ```
 
 ## map (method)
@@ -397,6 +425,16 @@ Return a middleware that sends `body` as response body
 send<I, L, A>(this: Middleware<I, BodyOpen, L, A>, body: string): Middleware<I, ResponseEnded, L, void> { ... }
 ```
 
+## json (method)
+
+Return a middleware that sends `body` as JSON
+
+**Signature**
+
+```ts
+json<I, L, A>(this: Middleware<I, HeadersOpen, L, A>, body: JSON): Middleware<I, ResponseEnded, L, void> { ... }
+```
+
 ## end (method)
 
 Return a middleware that ends the response without sending any response body
@@ -435,16 +473,6 @@ Return a middleware that ends the response without sending any response body
 export const end: Middleware<BodyOpen, ResponseEnded, never, void> = ...
 ```
 
-# body (function)
-
-Returns a middleware validating `connection.getBody()`
-
-**Signature**
-
-```ts
-export function body<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
-```
-
 # clearCookie (function)
 
 Returns a middleware that clears the cookie `name`
@@ -479,9 +507,19 @@ export function cookie<L>(
 ): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
 ```
 
+# decodeBody (function)
+
+Returns a middleware that tries to decode `connection.getBody()`
+
+**Signature**
+
+```ts
+export function decodeBody<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+```
+
 # decodeHeader (function)
 
-Returns a middleware validating `connection.getHeader(name)`
+Returns a middleware that tries to decode `connection.getHeader(name)`
 
 **Signature**
 
@@ -492,12 +530,55 @@ export function decodeHeader<L, A>(
 ): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
-# fromConn (function)
+# decodeMethod (function)
+
+Returns a middleware that tries to decode `connection.getMethod()`
 
 **Signature**
 
 ```ts
-export function fromConn<I, L, A>(f: (c: Conn<I>) => Either<L, A>): Middleware<I, I, L, A> { ... }
+export function decodeMethod<L, A>(f: (method: string) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+```
+
+# decodeParam (function)
+
+Returns a middleware that tries to decode `connection.getParams()[name]`
+
+**Signature**
+
+```ts
+export function decodeParam<L, A>(
+  name: string,
+  f: (value: unknown) => Either<L, A>
+): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+```
+
+# decodeParams (function)
+
+Returns a middleware that tries to decode `connection.getParams()`
+
+**Signature**
+
+```ts
+export function decodeParams<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+```
+
+# decodeQuery (function)
+
+Returns a middleware that tries to decode `connection.getQuery()`
+
+**Signature**
+
+```ts
+export function decodeQuery<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+```
+
+# fromConnection (function)
+
+**Signature**
+
+```ts
+export function fromConnection<I, L, A>(f: (c: Connection<I>) => Either<L, A>): Middleware<I, I, L, A> { ... }
 ```
 
 # fromEither (function)
@@ -557,7 +638,7 @@ export function fromTaskEither<I, L, A>(fa: TaskEither<L, A>): Middleware<I, I, 
 **Signature**
 
 ```ts
-export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> { ... }
+export function gets<I, L, A>(f: (c: Connection<I>) => A): Middleware<I, I, L, A> { ... }
 ```
 
 # header (function)
@@ -585,7 +666,7 @@ Return a middleware that sends `body` as JSON
 **Signature**
 
 ```ts
-export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L, void> { ... }
+export function json<L>(body: JSON): Middleware<HeadersOpen, ResponseEnded, L, void> { ... }
 ```
 
 # left (function)
@@ -596,22 +677,12 @@ export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L,
 export function left<I, L, A>(fl: Task<L>): Middleware<I, I, L, A> { ... }
 ```
 
-# method (function)
-
-Returns a middleware validating `connection.getMethod()`
+# modifyConnection (function)
 
 **Signature**
 
 ```ts
-export function method<L, A>(f: (method: string) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
-```
-
-# modifyConn (function)
-
-**Signature**
-
-```ts
-export function modifyConn<I, O, L>(f: (c: Conn<I>) => Conn<O>): Middleware<I, O, L, void> { ... }
+export function modifyConnection<I, O, L>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, L, void> { ... }
 ```
 
 # of (function)
@@ -620,39 +691,6 @@ export function modifyConn<I, O, L>(f: (c: Conn<I>) => Conn<O>): Middleware<I, O
 
 ```ts
 export function of<I, L, A>(a: A): Middleware<I, I, L, A> { ... }
-```
-
-# param (function)
-
-Returns a middleware validating `connection.getParams()[name]`
-
-**Signature**
-
-```ts
-export function param<L, A>(
-  name: string,
-  f: (value: unknown) => Either<L, A>
-): Middleware<StatusOpen, StatusOpen, L, A> { ... }
-```
-
-# params (function)
-
-Returns a middleware validating `connection.getParams()`
-
-**Signature**
-
-```ts
-export function params<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
-```
-
-# query (function)
-
-Returns a middleware validating `connection.getQuery()`
-
-**Signature**
-
-```ts
-export function query<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # redirect (function)
