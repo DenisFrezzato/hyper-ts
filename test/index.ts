@@ -7,7 +7,7 @@ import {
   body,
   BodyOpen,
   clearCookie,
-  Conn,
+  Connection,
   contentType,
   cookie,
   CookieOptions,
@@ -29,7 +29,7 @@ import {
 
 type MockedHeaders = { [key: string]: string }
 
-class MockConn<S> implements Conn<S> {
+class MockConnection<S> implements Connection<S> {
   readonly _S!: S
   constructor(readonly req: MockRequest, readonly logger: Array<string> = []) {}
   getBody() {
@@ -51,22 +51,25 @@ class MockConn<S> implements Conn<S> {
     return this.req.getMethod()
   }
   setCookie<T>(name: string, value: string, options: CookieOptions) {
-    return new MockConn<T>(this.req, [...this.logger, `setCookie(${name}, ${value}, ${JSON.stringify(options)}})`])
+    return new MockConnection<T>(this.req, [
+      ...this.logger,
+      `setCookie(${name}, ${value}, ${JSON.stringify(options)}})`
+    ])
   }
   clearCookie<T>(name: string, options: CookieOptions) {
-    return new MockConn<T>(this.req, [...this.logger, `clearCookie(${name}, ${JSON.stringify(options)})`])
+    return new MockConnection<T>(this.req, [...this.logger, `clearCookie(${name}, ${JSON.stringify(options)})`])
   }
   setHeader<T>(name: string, value: string) {
-    return new MockConn<T>(this.req, [...this.logger, `setHeader(${name}, ${value})`])
+    return new MockConnection<T>(this.req, [...this.logger, `setHeader(${name}, ${value})`])
   }
   setStatus<T>(status: Status) {
-    return new MockConn<T>(this.req, [...this.logger, `setStatus(${status})`])
+    return new MockConnection<T>(this.req, [...this.logger, `setStatus(${status})`])
   }
   setBody<T>(body: unknown) {
-    return new MockConn<T>(this.req, [...this.logger, `setBody(${body})`])
+    return new MockConnection<T>(this.req, [...this.logger, `setBody(${body})`])
   }
   endResponse<T>() {
-    return new MockConn<T>(this.req, [...this.logger, `endResponse()`])
+    return new MockConnection<T>(this.req, [...this.logger, `endResponse()`])
   }
 }
 
@@ -101,7 +104,7 @@ class MockRequest {
   }
 }
 
-function assertSuccess<I, A>(m: Middleware<I, any, any, A>, conn: MockConn<I>, a: A, logger: Array<string>) {
+function assertSuccess<I, A>(m: Middleware<I, any, any, A>, conn: MockConnection<I>, a: A, logger: Array<string>) {
   return m
     .run(conn)
     .run()
@@ -110,7 +113,7 @@ function assertSuccess<I, A>(m: Middleware<I, any, any, A>, conn: MockConn<I>, a
     })
 }
 
-function assertFailure<I, L>(m: Middleware<I, any, L, any>, conn: MockConn<I>, f: (l: L) => void) {
+function assertFailure<I, L>(m: Middleware<I, any, L, any>, conn: MockConnection<I>, f: (l: L) => void) {
   return m
     .run(conn)
     .run()
@@ -123,7 +126,7 @@ describe('Middleware', () => {
   describe('status', () => {
     it('should write the status code', () => {
       const m = status(200)
-      const c = new MockConn<StatusOpen>(new MockRequest())
+      const c = new MockConnection<StatusOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, ['setStatus(200)'])
     })
   })
@@ -131,7 +134,7 @@ describe('Middleware', () => {
   describe('headers', () => {
     it('should write the headers', () => {
       const m = header('name', 'value')
-      const c = new MockConn<HeadersOpen>(new MockRequest())
+      const c = new MockConnection<HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, ['setHeader(name, value)'])
     })
   })
@@ -139,7 +142,7 @@ describe('Middleware', () => {
   describe('send', () => {
     it('should send the content', () => {
       const m = send('<h1>Hello world!</h1>')
-      const c = new MockConn<BodyOpen>(new MockRequest())
+      const c = new MockConnection<BodyOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, ['setBody(<h1>Hello world!</h1>)'])
     })
   })
@@ -147,7 +150,7 @@ describe('Middleware', () => {
   describe('json', () => {
     it('should add the proper header and send the content', () => {
       const m = json('{}')
-      const c = new MockConn<HeadersOpen>(new MockRequest())
+      const c = new MockConnection<HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, ['setHeader(Content-Type, application/json)', 'setBody({})'])
     })
   })
@@ -155,7 +158,7 @@ describe('Middleware', () => {
   describe('cookie', () => {
     it('should add the cookie', () => {
       const m = cookie('name', 'value', {})
-      const c = new MockConn<HeadersOpen>(new MockRequest())
+      const c = new MockConnection<HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, ['setCookie(name, value, {}})'])
     })
   })
@@ -163,7 +166,7 @@ describe('Middleware', () => {
   describe('clearCookie', () => {
     it('should clear the cookie', () => {
       const m = cookie('name', 'value', {}).ichain(() => clearCookie('name', {}))
-      const c = new MockConn<HeadersOpen>(new MockRequest())
+      const c = new MockConnection<HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, ['setCookie(name, value, {}})', 'clearCookie(name, {})'])
     })
   })
@@ -171,7 +174,7 @@ describe('Middleware', () => {
   describe('contentType', () => {
     it('should add the `Content-Type` header', () => {
       const m = contentType(MediaType.applicationXML)
-      const c = new MockConn<HeadersOpen>(new MockRequest())
+      const c = new MockConnection<HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, ['setHeader(Content-Type, application/xml)'])
     })
   })
@@ -179,7 +182,7 @@ describe('Middleware', () => {
   describe('redirect', () => {
     it('should add the correct status / header', () => {
       const m = redirect('/users')
-      const c = new MockConn<StatusOpen>(new MockRequest())
+      const c = new MockConnection<StatusOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, ['setStatus(302)', 'setHeader(Location, /users)'])
     })
   })
@@ -187,13 +190,13 @@ describe('Middleware', () => {
   describe('param', () => {
     it('should validate a param (success case)', () => {
       const m = param('foo', t.number.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({ foo: 1 }))
+      const c = new MockConnection<StatusOpen>(new MockRequest({ foo: 1 }))
       return assertSuccess(m, c, 1, [])
     })
 
     it('should validate a param (failure case)', () => {
       const m = param('foo', t.number.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({ foo: 'a' }))
+      const c = new MockConnection<StatusOpen>(new MockRequest({ foo: 'a' }))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : number'])
       })
@@ -202,13 +205,13 @@ describe('Middleware', () => {
     describe('params', () => {
       it('should validate all params (success case)', () => {
         const m = params(t.interface({ foo: t.number }).decode)
-        const c = new MockConn<StatusOpen>(new MockRequest({ foo: 1 }))
+        const c = new MockConnection<StatusOpen>(new MockRequest({ foo: 1 }))
         return assertSuccess(m, c, { foo: 1 }, [])
       })
 
       it('should validate all params (failure case)', () => {
         const m = params(t.interface({ foo: t.number }).decode)
-        const c = new MockConn<StatusOpen>(new MockRequest({ foo: 'a' }))
+        const c = new MockConnection<StatusOpen>(new MockRequest({ foo: 'a' }))
         return assertFailure(m, c, errors => {
           assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : { foo: number }/foo: number'])
         })
@@ -222,7 +225,7 @@ describe('Middleware', () => {
         q: t.string
       })
       const m = query(Query.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
+      const c = new MockConnection<StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
       return assertSuccess(m, c, { q: 'tobi ferret' }, [])
     })
 
@@ -235,7 +238,7 @@ describe('Middleware', () => {
         })
       })
       const m = query(Query.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({}, 'order=desc&shoe[color]=blue&shoe[type]=converse'))
+      const c = new MockConnection<StatusOpen>(new MockRequest({}, 'order=desc&shoe[color]=blue&shoe[type]=converse'))
       return assertSuccess(m, c, { order: 'desc', shoe: { color: 'blue', type: 'converse' } }, [])
     })
 
@@ -244,7 +247,7 @@ describe('Middleware', () => {
         q: t.number
       })
       const m = query(Query.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
+      const c = new MockConnection<StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "tobi ferret" supplied to : { q: number }/q: number'])
       })
@@ -254,13 +257,13 @@ describe('Middleware', () => {
   describe('body', () => {
     it('should validate the body (success case)', () => {
       const m = body(t.number.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({}, undefined, 1))
+      const c = new MockConnection<StatusOpen>(new MockRequest({}, undefined, 1))
       return assertSuccess(m, c, 1, [])
     })
 
     it('should validate the body (failure case)', () => {
       const m = body(t.number.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({}, undefined, 'a'))
+      const c = new MockConnection<StatusOpen>(new MockRequest({}, undefined, 'a'))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : number'])
       })
@@ -270,13 +273,13 @@ describe('Middleware', () => {
   describe('header', () => {
     it('should validate a header (success case)', () => {
       const m = decodeHeader('token', t.string.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({}, undefined, undefined, { token: 'mytoken' }))
+      const c = new MockConnection<StatusOpen>(new MockRequest({}, undefined, undefined, { token: 'mytoken' }))
       return assertSuccess(m, c, 'mytoken', [])
     })
 
     it('should validate a header (failure case)', () => {
       const m = decodeHeader('token', t.string.decode)
-      const c = new MockConn<StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      const c = new MockConnection<StatusOpen>(new MockRequest({}, undefined, undefined, {}))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value undefined supplied to : string'])
       })

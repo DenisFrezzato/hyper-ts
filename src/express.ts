@@ -1,18 +1,18 @@
 import * as express from 'express'
 import { identity } from 'fp-ts/lib/function'
 import { Task } from 'fp-ts/lib/Task'
-import { Conn, CookieOptions, Middleware, ResponseEnded, Status, StatusOpen } from '.'
+import { Connection, CookieOptions, Middleware, ResponseEnded, Status, StatusOpen } from '.'
 import { IO, io } from 'fp-ts/lib/IO'
 
-export class ExpressConn<S> implements Conn<S> {
+export class ExpressConnection<S> implements Connection<S> {
   readonly _S!: S
   constructor(
     readonly req: express.Request,
     readonly res: express.Response,
     readonly action: IO<unknown> = io.of(undefined)
   ) {}
-  chain<T>(thunk: () => void): ExpressConn<T> {
-    return new ExpressConn<T>(this.req, this.res, this.action.chain(() => new IO(thunk)))
+  chain<T>(thunk: () => void): ExpressConnection<T> {
+    return new ExpressConnection<T>(this.req, this.res, this.action.chain(() => new IO(thunk)))
   }
   getBody() {
     return this.req.body
@@ -47,17 +47,17 @@ export class ExpressConn<S> implements Conn<S> {
   setBody<T>(body: unknown) {
     this.action.run()
     this.res.send(body)
-    return new ExpressConn<T>(this.req, this.res)
+    return new ExpressConnection<T>(this.req, this.res)
   }
   endResponse<T>() {
     this.action.run()
     this.res.end()
-    return new ExpressConn<T>(this.req, this.res)
+    return new ExpressConnection<T>(this.req, this.res)
   }
 }
 
-export function toRequestHandler(f: (c: ExpressConn<StatusOpen>) => Task<void>): express.RequestHandler {
-  return (req, res) => f(new ExpressConn<StatusOpen>(req, res)).run()
+export function toRequestHandler(f: (c: ExpressConnection<StatusOpen>) => Task<void>): express.RequestHandler {
+  return (req, res) => f(new ExpressConnection<StatusOpen>(req, res)).run()
 }
 
 export function fromMiddleware(middleware: Middleware<StatusOpen, ResponseEnded, never, void>): express.RequestHandler {
