@@ -80,11 +80,11 @@ export type BodyOpen = 'BodyOpen'
 export type ResponseEnded = 'ResponseEnded'
 
 /**
- * A `Conn`, short for "connection", models the entirety of a connection between the HTTP server and the user agent,
+ * A `Connection`, models the entirety of a connection between the HTTP server and the user agent,
  * both request and response.
  * State changes are tracked by the phantom type `S`
  */
-export interface Conn<S> {
+export interface Connection<S> {
   readonly _S: S
   getBody: () => unknown
   getHeader: (name: string) => unknown
@@ -92,12 +92,12 @@ export interface Conn<S> {
   getQuery: () => unknown
   getOriginalUrl: () => string
   getMethod: () => string
-  setCookie: <T>(name: string, value: string, options: CookieOptions) => Conn<T>
-  clearCookie: <T>(name: string, options: CookieOptions) => Conn<T>
-  setHeader: <T>(name: string, value: string) => Conn<T>
-  setStatus: <T>(status: Status) => Conn<T>
-  setBody: <T>(body: unknown) => Conn<T>
-  endResponse: <T>() => Conn<T>
+  setCookie: <T>(name: string, value: string, options: CookieOptions) => Connection<T>
+  clearCookie: <T>(name: string, options: CookieOptions) => Connection<T>
+  setHeader: <T>(name: string, value: string) => Connection<T>
+  setStatus: <T>(status: Status) => Connection<T>
+  setBody: <T>(body: unknown) => Connection<T>
+  endResponse: <T>() => Connection<T>
 }
 
 /**
@@ -106,8 +106,8 @@ export interface Conn<S> {
  * middleware action.
  */
 export class Middleware<I, O, L, A> {
-  constructor(readonly run: (c: Conn<I>) => TaskEither<L, [A, Conn<O>]>) {}
-  eval(c: Conn<I>): TaskEither<L, A> {
+  constructor(readonly run: (c: Connection<I>) => TaskEither<L, [A, Connection<O>]>) {}
+  eval(c: Connection<I>): TaskEither<L, A> {
     return this.run(c).map(([a]) => a)
   }
   map<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => B): Middleware<I, I, L, B> {
@@ -273,15 +273,15 @@ export function fromPredicate<I, L, A>(
   return a => fromTaskEither(f(a))
 }
 
-export function fromConn<I, L, A>(f: (c: Conn<I>) => Either<L, A>): Middleware<I, I, L, A> {
+export function fromConn<I, L, A>(f: (c: Connection<I>) => Either<L, A>): Middleware<I, I, L, A> {
   return new Middleware(c => taskEitherFromEither(f(c).map(a => tuple(a, c))))
 }
 
-export function modifyConn<I, O, L>(f: (c: Conn<I>) => Conn<O>): Middleware<I, O, L, void> {
+export function modifyConn<I, O, L>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, L, void> {
   return new Middleware(c => taskEither.of(tuple(undefined, f(c))))
 }
 
-export function gets<I, L, A>(f: (c: Conn<I>) => A): Middleware<I, I, L, A> {
+export function gets<I, L, A>(f: (c: Connection<I>) => A): Middleware<I, I, L, A> {
   return new Middleware(c => taskEither.of(tuple(f(c), c)))
 }
 
