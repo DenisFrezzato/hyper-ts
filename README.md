@@ -31,7 +31,7 @@ The stable version is tested against TypeScript 3.1.6, but should run with TypeS
 A `Conn`, short for “connection”, models the entirety of a connection between the HTTP server and the user agent, both
 request and response.
 
-State changes are tracked by the phanton type `S`.
+State changes are tracked by the phantom type `S`.
 
 ```ts
 class Conn<S> {
