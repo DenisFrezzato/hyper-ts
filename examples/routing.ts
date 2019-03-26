@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { Status, status, Middleware, StatusOpen, fromConn, method } from '../src'
+import { Status, status, Middleware, StatusOpen, fromConnection, decodeMethod } from '../src'
 import { fromMiddleware } from '../src/express'
 import { str, lit, end, Parser, Route } from 'fp-ts-routing'
 import { right, left } from 'fp-ts/lib/Either'
@@ -22,7 +22,7 @@ const router: Parser<Location> = home.parser
 
 function fromParser<L, A extends object>(parser: Parser<A>, error: L): Middleware<StatusOpen, StatusOpen, L, A> {
   const e = left<L, A>(error)
-  return fromConn(c =>
+  return fromConnection(c =>
     parser
       .run(Route.parse(c.getOriginalUrl()))
       .map(([a]) => right<L, A>(a))
@@ -37,7 +37,7 @@ const notFound = (message: string) =>
     .closeHeaders()
     .send(message)
 
-export const GET: Middleware<StatusOpen, StatusOpen, string, 'GET'> = method(s =>
+export const GET: Middleware<StatusOpen, StatusOpen, string, 'GET'> = decodeMethod(s =>
   s.toLowerCase() === 'get' ? right<string, 'GET'>('GET') : left('Unknown verb')
 )
 

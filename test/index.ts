@@ -4,7 +4,7 @@ import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
 import {
-  body,
+  decodeBody,
   BodyOpen,
   clearCookie,
   Connection,
@@ -17,9 +17,9 @@ import {
   json,
   MediaType,
   Middleware,
-  param,
-  params,
-  query,
+  decodeParam,
+  decodeParams,
+  decodeQuery,
   redirect,
   send,
   Status,
@@ -131,7 +131,7 @@ describe('Middleware', () => {
     })
   })
 
-  describe('headers', () => {
+  describe('header', () => {
     it('should write the headers', () => {
       const m = header('name', 'value')
       const c = new MockConnection<HeadersOpen>(new MockRequest())
@@ -187,30 +187,30 @@ describe('Middleware', () => {
     })
   })
 
-  describe('param', () => {
+  describe('decodeParam', () => {
     it('should validate a param (success case)', () => {
-      const m = param('foo', t.number.decode)
+      const m = decodeParam('foo', t.number.decode)
       const c = new MockConnection<StatusOpen>(new MockRequest({ foo: 1 }))
       return assertSuccess(m, c, 1, [])
     })
 
     it('should validate a param (failure case)', () => {
-      const m = param('foo', t.number.decode)
+      const m = decodeParam('foo', t.number.decode)
       const c = new MockConnection<StatusOpen>(new MockRequest({ foo: 'a' }))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : number'])
       })
     })
 
-    describe('params', () => {
+    describe('decodeParams', () => {
       it('should validate all params (success case)', () => {
-        const m = params(t.interface({ foo: t.number }).decode)
+        const m = decodeParams(t.interface({ foo: t.number }).decode)
         const c = new MockConnection<StatusOpen>(new MockRequest({ foo: 1 }))
         return assertSuccess(m, c, { foo: 1 }, [])
       })
 
       it('should validate all params (failure case)', () => {
-        const m = params(t.interface({ foo: t.number }).decode)
+        const m = decodeParams(t.interface({ foo: t.number }).decode)
         const c = new MockConnection<StatusOpen>(new MockRequest({ foo: 'a' }))
         return assertFailure(m, c, errors => {
           assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : { foo: number }/foo: number'])
@@ -219,12 +219,12 @@ describe('Middleware', () => {
     })
   })
 
-  describe('query', () => {
+  describe('decodeQuery', () => {
     it('should validate a query (success case 1)', () => {
       const Query = t.interface({
         q: t.string
       })
-      const m = query(Query.decode)
+      const m = decodeQuery(Query.decode)
       const c = new MockConnection<StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
       return assertSuccess(m, c, { q: 'tobi ferret' }, [])
     })
@@ -237,7 +237,7 @@ describe('Middleware', () => {
           type: t.string
         })
       })
-      const m = query(Query.decode)
+      const m = decodeQuery(Query.decode)
       const c = new MockConnection<StatusOpen>(new MockRequest({}, 'order=desc&shoe[color]=blue&shoe[type]=converse'))
       return assertSuccess(m, c, { order: 'desc', shoe: { color: 'blue', type: 'converse' } }, [])
     })
@@ -246,7 +246,7 @@ describe('Middleware', () => {
       const Query = t.interface({
         q: t.number
       })
-      const m = query(Query.decode)
+      const m = decodeQuery(Query.decode)
       const c = new MockConnection<StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "tobi ferret" supplied to : { q: number }/q: number'])
@@ -254,15 +254,15 @@ describe('Middleware', () => {
     })
   })
 
-  describe('body', () => {
+  describe('decodeBody', () => {
     it('should validate the body (success case)', () => {
-      const m = body(t.number.decode)
+      const m = decodeBody(t.number.decode)
       const c = new MockConnection<StatusOpen>(new MockRequest({}, undefined, 1))
       return assertSuccess(m, c, 1, [])
     })
 
     it('should validate the body (failure case)', () => {
-      const m = body(t.number.decode)
+      const m = decodeBody(t.number.decode)
       const c = new MockConnection<StatusOpen>(new MockRequest({}, undefined, 'a'))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : number'])
@@ -270,7 +270,7 @@ describe('Middleware', () => {
     })
   })
 
-  describe('header', () => {
+  describe('decodeHeader', () => {
     it('should validate a header (success case)', () => {
       const m = decodeHeader('token', t.string.decode)
       const c = new MockConnection<StatusOpen>(new MockRequest({}, undefined, undefined, { token: 'mytoken' }))
