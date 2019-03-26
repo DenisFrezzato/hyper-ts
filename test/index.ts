@@ -149,9 +149,9 @@ describe('Middleware', () => {
 
   describe('json', () => {
     it('should add the proper header and send the content', () => {
-      const m = json('{}')
+      const m = json({ a: 1 })
       const c = new MockConnection<HeadersOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setHeader(Content-Type, application/json)', 'setBody({})'])
+      return assertSuccess(m, c, undefined, ['setHeader(Content-Type, application/json)', 'setBody({"a":1})'])
     })
   })
 

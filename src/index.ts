@@ -230,6 +230,10 @@ export class Middleware<I, O, L, A> {
   send<I, L, A>(this: Middleware<I, BodyOpen, L, A>, body: string): Middleware<I, ResponseEnded, L, void> {
     return this.ichain(() => send(body))
   }
+  /** Return a middleware that sends `body` as JSON */
+  json<I, L, A>(this: Middleware<I, HeadersOpen, L, A>, body: JSON): Middleware<I, ResponseEnded, L, void> {
+    return this.ichain(() => json(body))
+  }
   /** Return a middleware that ends the response without sending any response body */
   end<I, L, A>(this: Middleware<I, BodyOpen, L, A>): Middleware<I, ResponseEnded, L, void> {
     return this.ichain(() => end)
@@ -337,11 +341,15 @@ export const end: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConne
 // derived middlewares
 //
 
+export type JSONObject = { [key: string]: JSON }
+export interface JSONArray extends Array<JSON> {}
+export type JSON = null | string | number | boolean | JSONArray | JSONObject
+
 /** Return a middleware that sends `body` as JSON */
-export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L, void> {
+export function json<L>(body: JSON): Middleware<HeadersOpen, ResponseEnded, L, void> {
   return contentType<L>(MediaType.applicationJSON)
     .closeHeaders()
-    .send(body)
+    .send(JSON.stringify(body))
 }
 
 /** Return a middleware that sends a redirect to `uri` */
