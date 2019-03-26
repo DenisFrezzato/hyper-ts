@@ -68,16 +68,24 @@ export interface CookieOptions {
 }
 
 /** Type indicating that the status-line is ready to be sent */
-export type StatusOpen = 'StatusOpen'
+export interface StatusOpen {
+  readonly StatusOpen: unique symbol
+}
 
 /** Type indicating that headers are ready to be sent, i.e. the body streaming has not been started */
-export type HeadersOpen = 'HeadersOpen'
+export interface HeadersOpen {
+  readonly HeadersOpen: unique symbol
+}
 
 /** Type indicating that headers have already been sent, and that the body is currently streaming */
-export type BodyOpen = 'BodyOpen'
+export interface BodyOpen {
+  readonly BodyOpen: unique symbol
+}
 
 /** Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished. */
-export type ResponseEnded = 'ResponseEnded'
+export interface ResponseEnded {
+  readonly ResponseEnded: unique symbol
+}
 
 /**
  * A `Connection`, models the entirety of a connection between the HTTP server and the user agent,
