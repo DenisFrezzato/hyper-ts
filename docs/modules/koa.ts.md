@@ -8,8 +8,8 @@ parent: Modules
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [KoaConn (class)](#koaconn-class)
-  - [run (method)](#run-method)
+- [KoaConnection (class)](#koaconnection-class)
+  - [chain (method)](#chain-method)
   - [getBody (method)](#getbody-method)
   - [getHeader (method)](#getheader-method)
   - [getParams (method)](#getparams-method)
@@ -27,23 +27,23 @@ parent: Modules
 
 ---
 
-# KoaConn (class)
+# KoaConnection (class)
 
 **Signature**
 
 ```ts
-export class KoaConn<S> {
-  constructor(readonly context: koa.Context, readonly thunks: Array<() => void>) { ... }
+export class KoaConnection<S> {
+  constructor(readonly context: koa.Context, readonly action: IO<unknown> = io.of(undefined)) { ... }
   ...
 }
 ```
 
-## run (method)
+## chain (method)
 
 **Signature**
 
 ```ts
-run() { ... }
+chain<T>(thunk: () => void): KoaConnection<T> { ... }
 ```
 
 ## getBody (method)
@@ -155,5 +155,5 @@ export function fromMiddleware(middleware: Middleware<StatusOpen, ResponseEnded,
 **Signature**
 
 ```ts
-export function toRequestHandler(f: (c: KoaConn<StatusOpen>) => Task<void>): koa.Middleware { ... }
+export function toRequestHandler(f: (c: KoaConnection<StatusOpen>) => Task<void>): koa.Middleware { ... }
 ```
