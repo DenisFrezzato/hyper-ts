@@ -33,7 +33,7 @@ function fromParser<L, A extends object>(parser: Parser<A>, error: L): Middlewar
 const routingMiddleware = fromParser(router, 'not found')
 
 const notFound = (message: string) =>
-  status<never>(Status.NotFound)
+  status(Status.NotFound)
     .closeHeaders()
     .send(message)
 

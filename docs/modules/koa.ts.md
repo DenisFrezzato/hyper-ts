@@ -33,7 +33,7 @@ parent: Modules
 
 ```ts
 export class KoaConnection<S> {
-  constructor(readonly context: koa.Context, readonly action: IO<unknown> = io.of(undefined)) { ... }
+  constructor(readonly context: koa.Context, readonly action: IO<void> = io.of(undefined)) { ... }
   ...
 }
 ```

@@ -298,31 +298,31 @@ export function fromPredicate<I, L, A>(
 //
 
 /** Returns a middleware that writes the response status */
-export function status<L>(status: Status): Middleware<StatusOpen, HeadersOpen, L, void> {
+export function status(status: Status): Middleware<StatusOpen, HeadersOpen, never, void> {
   return modifyConnection(c => c.setStatus(status))
 }
 
 /** Returns a middleware that writes the given header */
-export function header<L>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, L, void> {
+export function header(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, never, void> {
   return modifyConnection(c => c.setHeader(name, value))
 }
 
 /** Returns a middleware that sets the given `mediaType` */
-export function contentType<L>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, L, void> {
+export function contentType(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, never, void> {
   return header('Content-Type', mediaType)
 }
 
 /** Return a middleware that sets the cookie `name` to `value`, with the given `options` */
-export function cookie<L>(
+export function cookie(
   name: string,
   value: string,
   options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, L, void> {
+): Middleware<HeadersOpen, HeadersOpen, never, void> {
   return modifyConnection(c => c.setCookie(name, value, options))
 }
 
 /** Returns a middleware that clears the cookie `name` */
-export function clearCookie<L>(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, L, void> {
+export function clearCookie(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, never, void> {
   return modifyConnection(c => c.clearCookie(name, options))
 }
 
@@ -330,7 +330,7 @@ export function clearCookie<L>(name: string, options: CookieOptions): Middleware
 export const closeHeaders: Middleware<HeadersOpen, BodyOpen, never, void> = iof(undefined)
 
 /** Return a middleware that sends `body` as response body */
-export function send<L>(body: string): Middleware<BodyOpen, ResponseEnded, L, void> {
+export function send(body: string): Middleware<BodyOpen, ResponseEnded, never, void> {
   return modifyConnection(c => c.setBody(body))
 }
 
@@ -346,15 +346,15 @@ export interface JSONArray extends Array<JSON> {}
 export type JSON = null | string | number | boolean | JSONArray | JSONObject
 
 /** Return a middleware that sends `body` as JSON */
-export function json<L>(body: JSON): Middleware<HeadersOpen, ResponseEnded, L, void> {
-  return contentType<L>(MediaType.applicationJSON)
+export function json(body: JSON): Middleware<HeadersOpen, ResponseEnded, never, void> {
+  return contentType(MediaType.applicationJSON)
     .closeHeaders()
     .send(JSON.stringify(body))
 }
 
 /** Return a middleware that sends a redirect to `uri` */
-export function redirect<L>(uri: string): Middleware<StatusOpen, HeadersOpen, L, void> {
-  return status<L>(Status.Found).header('Location', uri)
+export function redirect(uri: string): Middleware<StatusOpen, HeadersOpen, never, void> {
+  return status(Status.Found).header('Location', uri)
 }
 
 //
