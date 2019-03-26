@@ -20,13 +20,13 @@ const Body = t.strict({
 const bodyDecoder = decodeBody(u => Body.decode(u).mapLeft(errors => `invalid body: ${failure(errors).join('\n')}`))
 
 const badRequest = (message: string) =>
-  status<never>(Status.BadRequest)
+  status(Status.BadRequest)
     .closeHeaders()
     .send(message)
 
 const hello = withJsonBody(bodyDecoder)
   .ichain(({ name }) =>
-    status<never>(Status.OK)
+    status(Status.OK)
       .closeHeaders()
       .send(`Hello ${name}!`)
   )

@@ -2,7 +2,7 @@ import * as express from 'express'
 import { Status, status } from '../src'
 import { fromMiddleware } from '../src/express'
 
-const hello = status<never>(Status.OK)
+const hello = status(Status.OK)
   .closeHeaders()
   .send('Hello hyper-ts on express!')
 
