@@ -11,7 +11,7 @@ export class ExpressConnection<S> implements Connection<S> {
     readonly req: express.Request,
     readonly res: express.Response,
     readonly next: express.NextFunction,
-    readonly action: IO<unknown> = io.of(undefined)
+    readonly action: IO<void> = io.of(undefined)
   ) {}
   chain<T>(thunk: () => void): ExpressConnection<T> {
     return new ExpressConnection<T>(this.req, this.res, this.next, this.action.chain(() => new IO(thunk)))
