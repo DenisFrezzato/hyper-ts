@@ -58,7 +58,7 @@ const getUserId = decodeParam('user_id', NonEmptyString.decode).mapLeft<UserErro
 
 /** Sends a `User` to the client */
 const sendUser = (user: User) =>
-  status<never>(Status.OK)
+  status(Status.OK)
     .closeHeaders()
     .send(`Hello ${user.name}!`)
 
@@ -84,17 +84,17 @@ const getUser = withAuthentication(getUserId)
 //
 
 const badRequest = (message: string) =>
-  status<never>(Status.BadRequest)
+  status(Status.BadRequest)
     .closeHeaders()
     .send(message)
 
 const notFound = (message: string) =>
-  status<never>(Status.NotFound)
+  status(Status.NotFound)
     .closeHeaders()
     .send(message)
 
 const unauthorized = (message: string) =>
-  status<never>(Status.Unauthorized)
+  status(Status.Unauthorized)
     .closeHeaders()
     .send(message)
 

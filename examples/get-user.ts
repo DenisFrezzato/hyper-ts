@@ -33,8 +33,8 @@ const loadUser = (userId: UserId): Middleware<StatusOpen, StatusOpen, UserError,
   userId === 'ab' ? of({ name: 'User name...' }) : fromLeft(UserNotFound)
 
 /** Sends a `User` to the client */
-const sendUser = <L>(user: User) =>
-  status<L>(Status.OK)
+const sendUser = (user: User) =>
+  status(Status.OK)
     .closeHeaders()
     .send(JSON.stringify(user))
 
@@ -45,12 +45,12 @@ const getUser = getUserId.ichain(loadUser).ichain(sendUser)
 //
 
 const badRequest = (message: string) =>
-  status<never>(Status.BadRequest)
+  status(Status.BadRequest)
     .closeHeaders()
     .send(message)
 
 const notFound = (message: string) =>
-  status<never>(Status.NotFound)
+  status(Status.NotFound)
     .closeHeaders()
     .send(message)
 

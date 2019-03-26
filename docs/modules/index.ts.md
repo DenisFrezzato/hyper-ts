@@ -480,7 +480,7 @@ Returns a middleware that clears the cookie `name`
 **Signature**
 
 ```ts
-export function clearCookie<L>(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
+export function clearCookie(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
 ```
 
 # contentType (function)
@@ -490,7 +490,7 @@ Returns a middleware that sets the given `mediaType`
 **Signature**
 
 ```ts
-export function contentType<L>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
+export function contentType(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
 ```
 
 # cookie (function)
@@ -500,11 +500,11 @@ Return a middleware that sets the cookie `name` to `value`, with the given `opti
 **Signature**
 
 ```ts
-export function cookie<L>(
+export function cookie(
   name: string,
   value: string,
   options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
+): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
 ```
 
 # decodeBody (function)
@@ -648,7 +648,7 @@ Returns a middleware that writes the given header
 **Signature**
 
 ```ts
-export function header<L>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, L, void> { ... }
+export function header(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
 ```
 
 # iof (function)
@@ -666,7 +666,7 @@ Return a middleware that sends `body` as JSON
 **Signature**
 
 ```ts
-export function json<L>(body: JSON): Middleware<HeadersOpen, ResponseEnded, L, void> { ... }
+export function json(body: JSON): Middleware<HeadersOpen, ResponseEnded, never, void> { ... }
 ```
 
 # left (function)
@@ -700,7 +700,7 @@ Return a middleware that sends a redirect to `uri`
 **Signature**
 
 ```ts
-export function redirect<L>(uri: string): Middleware<StatusOpen, HeadersOpen, L, void> { ... }
+export function redirect(uri: string): Middleware<StatusOpen, HeadersOpen, never, void> { ... }
 ```
 
 # right (function)
@@ -718,7 +718,7 @@ Return a middleware that sends `body` as response body
 **Signature**
 
 ```ts
-export function send<L>(body: string): Middleware<BodyOpen, ResponseEnded, L, void> { ... }
+export function send(body: string): Middleware<BodyOpen, ResponseEnded, never, void> { ... }
 ```
 
 # status (function)
@@ -728,5 +728,5 @@ Returns a middleware that writes the response status
 **Signature**
 
 ```ts
-export function status<L>(status: Status): Middleware<StatusOpen, HeadersOpen, L, void> { ... }
+export function status(status: Status): Middleware<StatusOpen, HeadersOpen, never, void> { ... }
 ```
