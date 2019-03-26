@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
-import { fromLeft, Middleware, of, param, Status, status, StatusOpen, ResponseEnded } from '../src'
+import { fromLeft, Middleware, of, decodeParam, Status, status, StatusOpen, ResponseEnded } from '../src'
 import { fromMiddleware } from '../src/express'
 
 //
@@ -26,7 +26,7 @@ const InvalidArguments: 'InvalidArguments' = 'InvalidArguments'
 type UserError = typeof InvalidArguments | typeof UserNotFound
 
 /** Parses the `user_id` param */
-const getUserId = param('user_id', UserId).mapLeft<UserError>(() => InvalidArguments)
+const getUserId = decodeParam('user_id', UserId.decode).mapLeft<UserError>(() => InvalidArguments)
 
 /** Loads a `User` from a database */
 const loadUser = (userId: UserId): Middleware<StatusOpen, StatusOpen, UserError, User> =>

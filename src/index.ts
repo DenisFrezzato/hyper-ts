@@ -100,6 +100,18 @@ export interface Connection<S> {
   endResponse: <T>() => Connection<T>
 }
 
+export function gets<I, L, A>(f: (c: Connection<I>) => A): Middleware<I, I, L, A> {
+  return new Middleware(c => taskEither.of(tuple(f(c), c)))
+}
+
+export function fromConnection<I, L, A>(f: (c: Connection<I>) => Either<L, A>): Middleware<I, I, L, A> {
+  return new Middleware(c => taskEitherFromEither(f(c).map(a => tuple(a, c))))
+}
+
+export function modifyConnection<I, O, L>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, L, void> {
+  return new Middleware(c => taskEither.of(tuple(undefined, f(c))))
+}
+
 /**
  * A middleware is an indexed monadic action transforming one `Conn` to another `Conn`. It operates
  * in the `TaskEither` monad, and is indexed by `I` and `O`, the input and output `Conn` types of the
@@ -232,6 +244,10 @@ export function iof<I, O, L, A>(a: A): Middleware<I, O, L, A> {
   return new Middleware<I, O, L, A>(c => taskEither.of(tuple(a, c as any)))
 }
 
+//
+// lifting helpers
+//
+
 export function fromTaskEither<I, L, A>(fa: TaskEither<L, A>): Middleware<I, I, L, A> {
   return new Middleware(c => fa.map(a => tuple(a, c)))
 }
@@ -273,26 +289,18 @@ export function fromPredicate<I, L, A>(
   return a => fromTaskEither(f(a))
 }
 
-export function fromConn<I, L, A>(f: (c: Connection<I>) => Either<L, A>): Middleware<I, I, L, A> {
-  return new Middleware(c => taskEitherFromEither(f(c).map(a => tuple(a, c))))
-}
-
-export function modifyConn<I, O, L>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, L, void> {
-  return new Middleware(c => taskEither.of(tuple(undefined, f(c))))
-}
-
-export function gets<I, L, A>(f: (c: Connection<I>) => A): Middleware<I, I, L, A> {
-  return new Middleware(c => taskEither.of(tuple(f(c), c)))
-}
+//
+// primitive middlewares
+//
 
 /** Returns a middleware that writes the response status */
 export function status<L>(status: Status): Middleware<StatusOpen, HeadersOpen, L, void> {
-  return modifyConn(c => c.setStatus(status))
+  return modifyConnection(c => c.setStatus(status))
 }
 
 /** Returns a middleware that writes the given header */
 export function header<L>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, L, void> {
-  return modifyConn(c => c.setHeader(name, value))
+  return modifyConnection(c => c.setHeader(name, value))
 }
 
 /** Returns a middleware that sets the given `mediaType` */
@@ -306,12 +314,12 @@ export function cookie<L>(
   value: string,
   options: CookieOptions
 ): Middleware<HeadersOpen, HeadersOpen, L, void> {
-  return modifyConn(c => c.setCookie(name, value, options))
+  return modifyConnection(c => c.setCookie(name, value, options))
 }
 
 /** Returns a middleware that clears the cookie `name` */
 export function clearCookie<L>(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, L, void> {
-  return modifyConn(c => c.clearCookie(name, options))
+  return modifyConnection(c => c.clearCookie(name, options))
 }
 
 /** Return a middleware that changes the connection status to `BodyOpen` */
@@ -319,11 +327,15 @@ export const closeHeaders: Middleware<HeadersOpen, BodyOpen, never, void> = iof(
 
 /** Return a middleware that sends `body` as response body */
 export function send<L>(body: string): Middleware<BodyOpen, ResponseEnded, L, void> {
-  return modifyConn(c => c.setBody(body))
+  return modifyConnection(c => c.setBody(body))
 }
 
 /** Return a middleware that ends the response without sending any response body */
-export const end: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConn(c => c.endResponse())
+export const end: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConnection(c => c.endResponse())
+
+//
+// derived middlewares
+//
 
 /** Return a middleware that sends `body` as JSON */
 export function json<L>(body: string): Middleware<HeadersOpen, ResponseEnded, L, void> {
@@ -337,43 +349,47 @@ export function redirect<L>(uri: string): Middleware<StatusOpen, HeadersOpen, L,
   return status<L>(Status.Found).header('Location', uri)
 }
 
+//
+// decoders
+//
+
 const isUnknownRecord = (u: unknown): u is { [key: string]: unknown } => u !== null && typeof u === 'object'
 
-/** Returns a middleware validating `connection.getParams()[name]` */
-export function param<L, A>(
+/** Returns a middleware that tries to decode `connection.getParams()[name]` */
+export function decodeParam<L, A>(
   name: string,
   f: (value: unknown) => Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> {
-  return fromConn(c => {
+  return fromConnection(c => {
     const params = c.getParams()
     return f(isUnknownRecord(params) ? params[name] : undefined)
   })
 }
 
-/** Returns a middleware validating `connection.getParams()` */
-export function params<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
-  return fromConn(c => f(c.getParams()))
+/** Returns a middleware that tries to decode `connection.getParams()` */
+export function decodeParams<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+  return fromConnection(c => f(c.getParams()))
 }
 
-/** Returns a middleware validating `connection.getQuery()` */
-export function query<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
-  return fromConn(c => f(c.getQuery()))
+/** Returns a middleware that tries to decode `connection.getQuery()` */
+export function decodeQuery<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+  return fromConnection(c => f(c.getQuery()))
 }
 
-/** Returns a middleware validating `connection.getBody()` */
-export function body<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
-  return fromConn(c => f(c.getBody()))
+/** Returns a middleware that tries to decode `connection.getBody()` */
+export function decodeBody<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+  return fromConnection(c => f(c.getBody()))
 }
 
-/** Returns a middleware validating `connection.getMethod()` */
-export function method<L, A>(f: (method: string) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
-  return fromConn(c => f(c.getMethod()))
+/** Returns a middleware that tries to decode `connection.getMethod()` */
+export function decodeMethod<L, A>(f: (method: string) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+  return fromConnection(c => f(c.getMethod()))
 }
 
-/** Returns a middleware validating `connection.getHeader(name)` */
+/** Returns a middleware that tries to decode `connection.getHeader(name)` */
 export function decodeHeader<L, A>(
   name: string,
   f: (value: unknown) => Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> {
-  return fromConn(c => f(c.getHeader(name)))
+  return fromConnection(c => f(c.getHeader(name)))
 }

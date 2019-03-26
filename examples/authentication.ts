@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
-import { fromLeft, iof, Middleware, of, param, ResponseEnded, Status, status, StatusOpen } from '../src'
+import { fromLeft, iof, Middleware, of, decodeParam, ResponseEnded, Status, status, StatusOpen } from '../src'
 import { fromMiddleware } from '../src/express'
 
 //
@@ -54,7 +54,7 @@ const InvalidArguments: 'InvalidArguments' = 'InvalidArguments'
 type UserError = typeof InvalidArguments | typeof UserNotFound | AuthenticationError
 
 /** Parses the `user_id` param */
-const getUserId = param('user_id', NonEmptyString).mapLeft<UserError>(() => InvalidArguments)
+const getUserId = decodeParam('user_id', NonEmptyString.decode).mapLeft<UserError>(() => InvalidArguments)
 
 /** Sends a `User` to the client */
 const sendUser = (user: User) =>
