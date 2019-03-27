@@ -32,6 +32,9 @@ type MockedHeaders = { [key: string]: string }
 class MockConnection<S> implements Connection<S> {
   readonly _S!: S
   constructor(readonly req: MockRequest, readonly logger: Array<string> = []) {}
+  getRequest() {
+    return this.req as any
+  }
   getBody() {
     return this.req.getBody()
   }
