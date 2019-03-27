@@ -10,6 +10,7 @@ parent: Modules
 
 - [ExpressConnection (class)](#expressconnection-class)
   - [chain (method)](#chain-method)
+  - [getRequest (method)](#getrequest-method)
   - [getBody (method)](#getbody-method)
   - [getHeader (method)](#getheader-method)
   - [getParams (method)](#getparams-method)
@@ -50,12 +51,20 @@ export class ExpressConnection<S> {
 chain<T>(thunk: () => void): ExpressConnection<T> { ... }
 ```
 
+## getRequest (method)
+
+**Signature**
+
+```ts
+getRequest(): IncomingMessage { ... }
+```
+
 ## getBody (method)
 
 **Signature**
 
 ```ts
-getBody() { ... }
+getBody(): unknown { ... }
 ```
 
 ## getHeader (method)
@@ -63,7 +72,7 @@ getBody() { ... }
 **Signature**
 
 ```ts
-getHeader(name: string) { ... }
+getHeader(name: string): unknown { ... }
 ```
 
 ## getParams (method)
@@ -71,7 +80,7 @@ getHeader(name: string) { ... }
 **Signature**
 
 ```ts
-getParams() { ... }
+getParams(): unknown { ... }
 ```
 
 ## getQuery (method)
@@ -79,7 +88,7 @@ getParams() { ... }
 **Signature**
 
 ```ts
-getQuery() { ... }
+getQuery(): unknown { ... }
 ```
 
 ## getOriginalUrl (method)
@@ -87,7 +96,7 @@ getQuery() { ... }
 **Signature**
 
 ```ts
-getOriginalUrl() { ... }
+getOriginalUrl(): string { ... }
 ```
 
 ## getMethod (method)
@@ -95,7 +104,7 @@ getOriginalUrl() { ... }
 **Signature**
 
 ```ts
-getMethod() { ... }
+getMethod(): string { ... }
 ```
 
 ## setCookie (method)
@@ -103,7 +112,7 @@ getMethod() { ... }
 **Signature**
 
 ```ts
-setCookie<T>(name: string, value: string, options: CookieOptions) { ... }
+setCookie<T>(name: string, value: string, options: CookieOptions): Connection<T> { ... }
 ```
 
 ## clearCookie (method)
@@ -111,7 +120,7 @@ setCookie<T>(name: string, value: string, options: CookieOptions) { ... }
 **Signature**
 
 ```ts
-clearCookie<T>(name: string, options: CookieOptions) { ... }
+clearCookie<T>(name: string, options: CookieOptions): Connection<T> { ... }
 ```
 
 ## setHeader (method)
@@ -119,7 +128,7 @@ clearCookie<T>(name: string, options: CookieOptions) { ... }
 **Signature**
 
 ```ts
-setHeader<T>(name: string, value: string) { ... }
+setHeader<T>(name: string, value: string): Connection<T> { ... }
 ```
 
 ## setStatus (method)
@@ -127,7 +136,7 @@ setHeader<T>(name: string, value: string) { ... }
 **Signature**
 
 ```ts
-setStatus<T>(status: Status) { ... }
+setStatus<T>(status: Status): Connection<T> { ... }
 ```
 
 ## setBody (method)
@@ -135,7 +144,7 @@ setStatus<T>(status: Status) { ... }
 **Signature**
 
 ```ts
-setBody<T>(body: unknown) { ... }
+setBody<T>(body: unknown): Connection<T> { ... }
 ```
 
 ## endResponse (method)
@@ -143,7 +152,7 @@ setBody<T>(body: unknown) { ... }
 **Signature**
 
 ```ts
-endResponse<T>() { ... }
+endResponse<T>(): Connection<T> { ... }
 ```
 
 # fromMiddleware (function)

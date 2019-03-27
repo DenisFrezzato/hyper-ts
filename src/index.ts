@@ -1,19 +1,20 @@
-import { tuple, constant, constIdentity, Refinement, Predicate } from 'fp-ts/lib/function'
+import { Either } from 'fp-ts/lib/Either'
+import { constant, constIdentity, Predicate, Refinement, tuple } from 'fp-ts/lib/function'
+import { IO } from 'fp-ts/lib/IO'
+import { IOEither } from 'fp-ts/lib/IOEither'
+import { Task } from 'fp-ts/lib/Task'
 import {
-  TaskEither,
-  taskEither,
-  right as taskEitherRight,
-  left as taskEitherLeft,
-  fromLeft as taskEitherFromLeft,
   fromEither as taskEitherFromEither,
   fromIO as taskEitherFromIO,
   fromIOEither as taskEitherFromIOEither,
-  fromPredicate as taskEitherFromPredicate
+  fromLeft as taskEitherFromLeft,
+  fromPredicate as taskEitherFromPredicate,
+  left as taskEitherLeft,
+  right as taskEitherRight,
+  TaskEither,
+  taskEither
 } from 'fp-ts/lib/TaskEither'
-import { Task } from 'fp-ts/lib/Task'
-import { Either } from 'fp-ts/lib/Either'
-import { IO } from 'fp-ts/lib/IO'
-import { IOEither } from 'fp-ts/lib/IOEither'
+import { IncomingMessage } from 'http'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export enum MediaType {
@@ -94,6 +95,7 @@ export interface ResponseEnded {
  */
 export interface Connection<S> {
   readonly _S: S
+  getRequest: () => IncomingMessage
   getBody: () => unknown
   getHeader: (name: string) => unknown
   getParams: () => unknown

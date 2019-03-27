@@ -4,6 +4,7 @@ import { tuple } from 'fp-ts/lib/function'
 import { IO, io } from 'fp-ts/lib/IO'
 import { Task } from 'fp-ts/lib/Task'
 import { TaskEither } from 'fp-ts/lib/TaskEither'
+import { IncomingMessage } from 'http'
 import { Connection, CookieOptions, Middleware, ResponseEnded, Status, StatusOpen } from '.'
 
 export class ExpressConnection<S> implements Connection<S> {
@@ -16,42 +17,45 @@ export class ExpressConnection<S> implements Connection<S> {
   chain<T>(thunk: () => void): ExpressConnection<T> {
     return new ExpressConnection<T>(this.req, this.res, this.action.chain(() => new IO(thunk)))
   }
-  getBody() {
+  getRequest(): IncomingMessage {
+    return this.req
+  }
+  getBody(): unknown {
     return this.req.body
   }
-  getHeader(name: string) {
+  getHeader(name: string): unknown {
     return this.req.header(name)
   }
-  getParams() {
+  getParams(): unknown {
     return this.req.params
   }
-  getQuery() {
+  getQuery(): unknown {
     return this.req.query
   }
-  getOriginalUrl() {
+  getOriginalUrl(): string {
     return this.req.originalUrl
   }
-  getMethod() {
+  getMethod(): string {
     return this.req.method
   }
-  setCookie<T>(name: string, value: string, options: CookieOptions) {
+  setCookie<T>(name: string, value: string, options: CookieOptions): Connection<T> {
     return this.chain<T>(() => this.res.cookie(name, value, options))
   }
-  clearCookie<T>(name: string, options: CookieOptions) {
+  clearCookie<T>(name: string, options: CookieOptions): Connection<T> {
     return this.chain<T>(() => this.res.clearCookie(name, options))
   }
-  setHeader<T>(name: string, value: string) {
+  setHeader<T>(name: string, value: string): Connection<T> {
     return this.chain<T>(() => this.res.setHeader(name, value))
   }
-  setStatus<T>(status: Status) {
+  setStatus<T>(status: Status): Connection<T> {
     return this.chain<T>(() => this.res.status(status))
   }
-  setBody<T>(body: unknown) {
+  setBody<T>(body: unknown): Connection<T> {
     this.action.run()
     this.res.send(body)
     return new ExpressConnection<T>(this.req, this.res)
   }
-  endResponse<T>() {
+  endResponse<T>(): Connection<T> {
     this.action.run()
     this.res.end()
     return new ExpressConnection<T>(this.req, this.res)

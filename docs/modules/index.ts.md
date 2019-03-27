@@ -99,6 +99,7 @@ State changes are tracked by the phantom type `S`
 ```ts
 export interface Connection<S> {
   readonly _S: S
+  getRequest: () => IncomingMessage
   getBody: () => unknown
   getHeader: (name: string) => unknown
   getParams: () => unknown
