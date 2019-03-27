@@ -28,7 +28,7 @@ type UserError = typeof InvalidArguments | typeof UserNotFound
 /** Parses the `user_id` param */
 const getUserId = decodeParam('user_id', UserId.decode).mapLeft<UserError>(() => InvalidArguments)
 
-/** Loads a `User` from a database */
+/** Loads a `User` from a database (fake) */
 const loadUser = (userId: UserId): Middleware<StatusOpen, StatusOpen, UserError, User> =>
   userId === 'ab' ? of({ name: 'User name...' }) : fromLeft(UserNotFound)
 
@@ -64,7 +64,7 @@ const sendError = (err: UserError): Middleware<StatusOpen, ResponseEnded, never,
 }
 
 //
-// express handler
+// route
 //
 
 const user = getUser.orElse(sendError)

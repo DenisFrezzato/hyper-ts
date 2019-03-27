@@ -1,3 +1,5 @@
+**IMPORTANT**. Version 0.4 is under active development.
+
 A partial porting of https://github.com/owickstrom/hyper to TypeScript
 
 `hyper-ts` is an experimental middleware architecture for HTTP servers written in TypeScript.
@@ -22,37 +24,40 @@ cannot be made. A few examples of such mistakes could be:
 
 # TypeScript compatibility
 
-The stable version is tested against TypeScript 3.1.6, but should run with TypeScript 3.0.1+ too
+The stable version is tested against TypeScript 3.3.4000, but should run with TypeScript 3.0.1+ too
 
 # Core API
 
-## Conn
+## Connection
 
-A `Conn`, short for "connection", models the entirety of a connection between the HTTP server and the user agent, both
+A `Connection` models the entirety of a connection between the HTTP server and the user agent, both
 request and response.
 
 State changes are tracked by the phantom type `S`.
 
 ```ts
-interface Conn<S> {
+export interface Connection<S> {
   readonly _S: S
-  clearCookie: (name: string, options: CookieOptions) => void
-  endResponse: () => void
+  getRequest: () => IncomingMessage
   getBody: () => unknown
   getHeader: (name: string) => unknown
   getParams: () => unknown
   getQuery: () => unknown
-  setBody: (body: unknown) => void
-  setCookie: (name: string, value: string, options: CookieOptions) => void
-  setHeader: (name: string, value: string) => void
-  setStatus: (status: Status) => void
+  getOriginalUrl: () => string
+  getMethod: () => string
+  setCookie: <T>(name: string, value: string, options: CookieOptions) => Connection<T>
+  clearCookie: <T>(name: string, options: CookieOptions) => Connection<T>
+  setHeader: <T>(name: string, value: string) => Connection<T>
+  setStatus: <T>(status: Status) => Connection<T>
+  setBody: <T>(body: unknown) => Connection<T>
+  endResponse: <T>() => Connection<T>
 }
 ```
 
 ## Middleware
 
-A middleware is an indexed monadic action transforming one `Conn` to another `Conn`. It operates in the `TaskEither` monad,
-and is indexed by `I` and `O`, the input and output `Conn` types of the middleware action.
+A middleware is an indexed monadic action transforming one `Connection` to another `Connection`. It operates in the `TaskEither` monad,
+and is indexed by `I` and `O`, the input and output `Connection` types of the middleware action.
 
 ```ts
 class Middleware<I, O, L, A> {
@@ -61,7 +66,7 @@ class Middleware<I, O, L, A> {
 }
 ```
 
-The input and output type parameters are used to ensure that a `Conn` is transformed, and that side-effects are
+The input and output type parameters are used to ensure that a `Connection` is transformed, and that side-effects are
 performed, correctly, throughout the middleware chain.
 
 Middlewares are composed using `ichain`, the indexed monadic version of `chain`.
@@ -71,11 +76,11 @@ Middlewares are composed using `ichain`, the indexed monadic version of `chain`.
 ```ts
 import * as express from 'express'
 import { Status, status } from 'hyper-ts'
-import { fromMiddleware } from 'hyper-ts/lib/toExpressRequestHandler'
+import { fromMiddleware } from 'hyper-ts/lib/express'
 
-const hello = status<never>(Status.OK)
+const hello = status(Status.OK)
   .closeHeaders()
-  .send('Hello hyper-ts!')
+  .send('Hello hyper-ts on express!')
 
 express()
   .get('/', fromMiddleware(hello))
@@ -93,19 +98,14 @@ status(Status.OK)
   .closeHeaders()
   .send('Hello hyper-ts!')
   // try to write a header after sending the body
-  .ichain(() => headers({ field: 'value' })) // error: Type '"ResponseEnded"' is not assignable to type '"HeadersOpen"'
+  .ichain(() => header('field', 'value')) // error: Property 'HeadersOpen' is missing in type 'ResponseEnded' but required in type 'HeadersOpen'
 ```
 
 No more `"Can't set headers after they are sent."` errors.
 
-# Validating params, query and body
+# Decoding params, query and body
 
-Validations leverage [io-ts](https://github.com/gcanti/io-ts) types
-
-```ts
-import { param, params, query, body } from 'hyper-ts/lib/MiddlewareTask'
-import * as t from 'io-ts'
-```
+Input validation/decoding can leverage [io-ts](https://github.com/gcanti/io-ts) types
 
 **A single param**
 
@@ -113,7 +113,7 @@ import * as t from 'io-ts'
 import { param } from 'hyper-ts'
 
 // returns a middleware validating `req.param.user_id`
-const middleware = param('user_id', t.string)
+const middleware = param('user_id', t.string.decode)
 ```
 
 Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
@@ -122,7 +122,7 @@ Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
 import { IntFromString } from 'io-ts-types/lib/IntFromString'
 
 // validation succeeds only if `req.param.user_id` can be parsed to an integer
-const middleware = param('user_id', IntFromString)
+const middleware = param('user_id', IntFromString.decode)
 ```
 
 **Multiple params**
@@ -132,11 +132,11 @@ import { params } from 'hyper-ts'
 
 // returns a middleware validating both `req.param.user_id` and `req.param.user_name`
 const middleware = params(
-  t.type({
+  t.strict({
     user_id: t.string,
     user_name: t.string
   })
-)
+).decode
 ```
 
 **Query**
@@ -146,14 +146,14 @@ import { query } from 'hyper-ts'
 
 // return a middleware validating the query "order=desc&shoe[color]=blue&shoe[type]=converse"
 const middleware = query(
-  t.type({
+  t.strict({
     order: t.string,
-    shoe: t.type({
+    shoe: t.strict({
       color: t.string,
       type: t.string
     })
   })
-)
+).decode
 ```
 
 **Body**
@@ -162,109 +162,88 @@ const middleware = query(
 import { body } from 'hyper-ts'
 
 // return a middleware validating `req.body`
-const middleware = body(t.string)
+const middleware = body(t.string.decode)
 ```
 
-# Advanced topics
-
-## Defining custom connection states: authentication
-
-Let's say there are some middlewares that must be executed only if the authentication process succeded. Here's how to
-ensure this requirement statically
+# Error handling
 
 ```ts
 import * as express from 'express'
-import { tuple } from 'fp-ts/lib/function'
-import { none, Option, some } from 'fp-ts/lib/Option'
-import { taskEither } from 'fp-ts/lib/TaskEither'
-import * as t from 'io-ts'
-import { IntFromString } from 'io-ts-types/lib/IntFromString'
-import { iof, Middleware, of, param, Status, status, StatusOpen } from 'hyper-ts'
-import { fromMiddleware } from 'hyper-ts/lib/toExpressRequestHandler'
-
-/** The new connection state */
-type AuthenticatedOpen = 'Authenticated'
-
-/** Use this middleware where you want to ensure a successful authentication process upstream */
-const requireAuthentication: Middleware<AuthenticatedOpen, StatusOpen, never, void> = iof(undefined)
-
-/**
- * The resulting middleware requires a successful authentication upstream since the first operation is
- * `requireAuthentication`
- */
-const loadUser = (userId: number) =>
-  requireAuthentication.ichain(() => of(userId === 1 ? some<User>({ name: 'Giulio' }) : none))
-
-const isAuthenticated: Middleware<StatusOpen, StatusOpen, never, boolean> = new Middleware(c => {
-  // dummy authentication logic
-  if (t.string.is(c.getHeader('token'))) {
-    return taskEither.of(tuple(true, c))
-  } else {
-    return taskEither.of(tuple(false, c))
-  }
-})
-
-/**
- * Returns a middleware that proves statically that the authentication process succeeded (`Some`) or failed (`None`)
- */
-function withAuthentication<L, A>(
-  middleware: Middleware<StatusOpen, StatusOpen, L, A>
-): Middleware<StatusOpen, StatusOpen, L, Option<Middleware<StatusOpen, AuthenticatedOpen, L, A>>> {
-  return isAuthenticated.map(b => (b ? some(middleware as any) : none))
-}
-
-const badRequest = (message: string) =>
-  status<never>(Status.BadRequest)
-    .closeHeaders()
-    .send(message)
-
-const notFound = (message: string) =>
-  status<never>(Status.NotFound)
-    .closeHeaders()
-    .send(message)
-
-const unauthorized = (message: string) =>
-  status<never>(Status.Unauthorized)
-    .closeHeaders()
-    .send(message)
+import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
+import { fromLeft, Middleware, of, decodeParam, Status, status, StatusOpen, ResponseEnded } from 'hyper-ts'
+import { fromMiddleware } from 'hyper-ts/lib/express'
 
 //
-// API
+// model
 //
+
+const UserId = NonEmptyString
+
+type UserId = NonEmptyString
 
 interface User {
   name: string
 }
 
-const getUserId = param('user_id', IntFromString)
+//
+// business logic
+//
 
-/** send the user to the client */
+const UserNotFound: 'UserNotFound' = 'UserNotFound'
+
+const InvalidArguments: 'InvalidArguments' = 'InvalidArguments'
+
+type UserError = typeof InvalidArguments | typeof UserNotFound
+
+/** Parses the `user_id` param */
+const getUserId = decodeParam('user_id', UserId.decode).mapLeft<UserError>(() => InvalidArguments)
+
+/** Loads a `User` from a database (fake) */
+const loadUser = (userId: UserId): Middleware<StatusOpen, StatusOpen, UserError, User> =>
+  userId === 'ab' ? of({ name: 'User name...' }) : fromLeft(UserNotFound)
+
+/** Sends a `User` to the client */
 const sendUser = (user: User) =>
-  status<never>(Status.OK)
+  status(Status.OK)
     .closeHeaders()
-    .send(`Hello ${user.name}!`)
+    .send(JSON.stringify(user))
 
-// const user = getUserId
-//   .ichain(loadUser) // static error!
+const getUser = getUserId.ichain(loadUser).ichain(sendUser)
 
-const user = withAuthentication(getUserId)
-  .ichain(o =>
-    o.foldL(
-      () => unauthorized('Unauthorized user'),
-      userId => userId.ichain(loadUser).ichain(o => o.foldL(() => notFound('User not found'), sendUser))
-    )
-  )
-  .orElse(() => badRequest('Invalid user id'))
+//
+// error handling
+//
+
+const badRequest = (message: string) =>
+  status(Status.BadRequest)
+    .closeHeaders()
+    .send(message)
+
+const notFound = (message: string) =>
+  status(Status.NotFound)
+    .closeHeaders()
+    .send(message)
+
+const sendError = (err: UserError): Middleware<StatusOpen, ResponseEnded, never, void> => {
+  switch (err) {
+    case 'UserNotFound':
+      return notFound('user not found')
+    case 'InvalidArguments':
+      return badRequest('invalid arguments')
+  }
+}
+
+//
+// route
+//
+
+const user = getUser.orElse(sendError)
 
 express()
   .get('/:user_id', fromMiddleware(user))
   // tslint:disable-next-line: no-console
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /:user_id'))
 ```
-
-## Writing tests
-
-TODO
 
 # Documentation
 
