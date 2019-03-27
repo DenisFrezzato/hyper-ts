@@ -24,7 +24,6 @@ parent: Modules
   - [endResponse (method)](#endresponse-method)
 - [fromMiddleware (function)](#frommiddleware-function)
 - [toMiddleware (function)](#tomiddleware-function)
-- [toRequestHandler (function)](#torequesthandler-function)
 
 ---
 
@@ -37,7 +36,6 @@ export class ExpressConnection<S> {
   constructor(
     readonly req: express.Request,
     readonly res: express.Response,
-    readonly next: express.NextFunction,
     readonly action: IO<void> = io.of(undefined)
   ) { ... }
   ...
@@ -153,7 +151,7 @@ endResponse<T>() { ... }
 **Signature**
 
 ```ts
-export function fromMiddleware(middleware: Middleware<StatusOpen, ResponseEnded, never, void>): express.RequestHandler { ... }
+export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnded, L, void>): express.RequestHandler { ... }
 ```
 
 # toMiddleware (function)
@@ -165,12 +163,4 @@ export function toMiddleware<L>(
   f: express.RequestHandler,
   onError: (err: unknown) => L
 ): Middleware<StatusOpen, StatusOpen, L, void> { ... }
-```
-
-# toRequestHandler (function)
-
-**Signature**
-
-```ts
-export function toRequestHandler(f: (c: ExpressConnection<StatusOpen>) => Task<void>): express.RequestHandler { ... }
 ```
