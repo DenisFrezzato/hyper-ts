@@ -70,10 +70,11 @@ export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnd
       })
 }
 
-export function toMiddleware<L>(
-  f: RequestHandler,
-  onError: (err: unknown) => L
-): Middleware<StatusOpen, StatusOpen, L, void> {
+export function toMiddleware<L, A>(
+  requestHandler: RequestHandler,
+  onSuccess: (req: Request) => A,
+  onError: (err: unknown, req: Request) => L
+): Middleware<StatusOpen, StatusOpen, L, A> {
   return new Middleware(
     c =>
       new TaskEither(
@@ -81,11 +82,11 @@ export function toMiddleware<L>(
           () =>
             new Promise(resolve => {
               const ec: ExpressConnection<StatusOpen> = c as any
-              f(ec.req, ec.res, err => {
+              requestHandler(ec.req, ec.res, err => {
                 if (err !== undefined) {
-                  resolve(left(onError(err)))
+                  resolve(left(onError(err, ec.req)))
                 } else {
-                  resolve(right(tuple(undefined, c)))
+                  resolve(right(tuple(onSuccess(ec.req), c)))
                 }
               })
             })

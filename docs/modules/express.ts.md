@@ -34,11 +34,7 @@ parent: Modules
 
 ```ts
 export class ExpressConnection<S> {
-  constructor(
-    readonly req: express.Request,
-    readonly res: express.Response,
-    readonly action: IO<void> = io.of(undefined)
-  ) { ... }
+  constructor(readonly req: Request, readonly res: Response, readonly action: IO<void> = io.of(undefined)) { ... }
   ...
 }
 ```
@@ -160,7 +156,7 @@ endResponse<T>(): Connection<T> { ... }
 **Signature**
 
 ```ts
-export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnded, L, void>): express.RequestHandler { ... }
+export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnded, L, void>): RequestHandler { ... }
 ```
 
 # toMiddleware (function)
@@ -168,8 +164,9 @@ export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnd
 **Signature**
 
 ```ts
-export function toMiddleware<L>(
-  f: express.RequestHandler,
-  onError: (err: unknown) => L
-): Middleware<StatusOpen, StatusOpen, L, void> { ... }
+export function toMiddleware<L, A>(
+  requestHandler: RequestHandler,
+  onSuccess: (req: Request) => A,
+  onError: (err: unknown, req: Request) => L
+): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
