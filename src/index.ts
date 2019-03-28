@@ -136,11 +136,7 @@ export class Middleware<I, O, L, A> {
     return new Middleware(ci => this.run(ci).map(([a, co]) => tuple(f(a), co)))
   }
   ap<I, L, A, B>(this: Middleware<I, I, L, A>, fab: Middleware<I, I, L, (a: A) => B>): Middleware<I, I, L, B> {
-    return new Middleware(c =>
-      this.eval(c)
-        .ap(fab.eval(c))
-        .map(b => tuple(b, c))
-    )
+    return new Middleware(c => fab.run(c).chain(([f, co1]) => this.run(co1).map(([a, co2]) => tuple(f(a), co2))))
   }
   /**
    * Flipped version of `ap`

@@ -126,6 +126,14 @@ function assertFailure<I, L>(m: Middleware<I, any, L, any>, conn: MockConnection
 }
 
 describe('Middleware', () => {
+  it('ap', () => {
+    const fab = header('a', 'a').map(() => (s: string): number => s.length)
+    const fa = header('b', 'b').map(() => 'foo')
+    const m = fa.ap(fab)
+    const c = new MockConnection<HeadersOpen>(new MockRequest())
+    return assertSuccess(m, c, 3, ['setHeader(a, a)', 'setHeader(b, b)'])
+  })
+
   describe('status', () => {
     it('should write the status code', () => {
       const m = status(200)
