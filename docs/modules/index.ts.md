@@ -106,9 +106,9 @@ export interface Connection<S> {
   getQuery: () => unknown
   getOriginalUrl: () => string
   getMethod: () => string
-  setCookie: <T>(name: string, value: string, options: CookieOptions) => Connection<T>
-  clearCookie: <T>(name: string, options: CookieOptions) => Connection<T>
-  setHeader: <T>(name: string, value: string) => Connection<T>
+  setCookie: (name: string, value: string, options: CookieOptions) => Connection<S>
+  clearCookie: (name: string, options: CookieOptions) => Connection<S>
+  setHeader: (name: string, value: string) => Connection<S>
   setStatus: <T>(status: Status) => Connection<T>
   setBody: <T>(body: unknown) => Connection<T>
   endResponse: <T>() => Connection<T>
