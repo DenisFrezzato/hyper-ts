@@ -54,6 +54,8 @@ export interface Connection<S> {
 }
 ```
 
+`hyper-ts` exports a `Connection` for [express 4.x](http://expressjs.com/) from the `hyper-ts/lib/express` module.
+
 ## Middleware
 
 A middleware is an indexed monadic action transforming one `Connection` to another `Connection`. It operates in the `TaskEither` monad,
@@ -78,9 +80,9 @@ import * as express from 'express'
 import { Status, status } from 'hyper-ts'
 import { fromMiddleware } from 'hyper-ts/lib/express'
 
-const hello = status(Status.OK)
-  .closeHeaders()
-  .send('Hello hyper-ts on express!')
+const hello = status(Status.OK) // writes the response status
+  .closeHeaders() // tells hyper-ts that we're done with the headers
+  .send('Hello hyper-ts on express!') // sends the response
 
 express()
   .get('/', fromMiddleware(hello))
@@ -241,7 +243,6 @@ const user = getUser.orElse(sendError)
 
 express()
   .get('/:user_id', fromMiddleware(user))
-  // tslint:disable-next-line: no-console
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /:user_id'))
 ```
 

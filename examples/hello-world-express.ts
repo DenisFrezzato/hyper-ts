@@ -2,9 +2,9 @@ import * as express from 'express'
 import { Status, status } from '../src'
 import { fromMiddleware } from '../src/express'
 
-const hello = status(Status.OK)
-  .closeHeaders()
-  .send('Hello hyper-ts on express!')
+const hello = status(Status.OK) // writes the response status
+  .closeHeaders() // tells hyper-ts that we're done with the headers
+  .send('Hello hyper-ts on express!') // sends the response
 
 express()
   .get('/', fromMiddleware(hello))
