@@ -1,4 +1,4 @@
-import * as express from 'express'
+import { Request, Response, RequestHandler } from 'express'
 import { left, right } from 'fp-ts/lib/Either'
 import { tuple } from 'fp-ts/lib/function'
 import { IO, io } from 'fp-ts/lib/IO'
@@ -9,11 +9,7 @@ import { Connection, CookieOptions, Middleware, ResponseEnded, Status, StatusOpe
 
 export class ExpressConnection<S> implements Connection<S> {
   readonly _S!: S
-  constructor(
-    readonly req: express.Request,
-    readonly res: express.Response,
-    readonly action: IO<void> = io.of(undefined)
-  ) {}
+  constructor(readonly req: Request, readonly res: Response, readonly action: IO<void> = io.of(undefined)) {}
   chain<T>(thunk: () => void): ExpressConnection<T> {
     return new ExpressConnection<T>(this.req, this.res, this.action.chain(() => new IO(thunk)))
   }
@@ -62,7 +58,7 @@ export class ExpressConnection<S> implements Connection<S> {
   }
 }
 
-export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnded, L, void>): express.RequestHandler {
+export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnded, L, void>): RequestHandler {
   return (req, res, next) =>
     middleware
       .eval(new ExpressConnection<StatusOpen>(req, res))
@@ -75,7 +71,7 @@ export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnd
 }
 
 export function toMiddleware<L>(
-  f: express.RequestHandler,
+  f: RequestHandler,
   onError: (err: unknown) => L
 ): Middleware<StatusOpen, StatusOpen, L, void> {
   return new Middleware(

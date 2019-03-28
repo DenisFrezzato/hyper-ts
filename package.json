@@ -36,7 +36,6 @@
     "@types/qs": "^6.5.2",
     "docs-ts": "0.0.1",
     "dtslint": "github:gcanti/dtslint",
-    "express": "^4.16.4",
     "fp-ts": "^1.15.0",
     "fp-ts-routing": "^0.4.1",
     "io-ts": "^1.8.4",
