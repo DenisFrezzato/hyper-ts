@@ -3,11 +3,16 @@ import { log } from 'fp-ts/lib/Console'
 import { fromIO, StatusOpen } from '../src'
 import { fromMiddleware } from '../src/express'
 
-export const myLogger = fromIO<StatusOpen, StatusOpen, void>(log('LOGGED'))
+// "Middleware function myLogger" example on http://expressjs.com/en/guide/writing-middleware.html
 
-express()
-  .get('/', fromMiddleware(myLogger), (_, res) => {
-    res.send('hello')
-  })
-  // tslint:disable-next-line: no-console
-  .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))
+const app = express()
+
+const myLogger = fromIO<StatusOpen, StatusOpen, void>(log('LOGGED'))
+
+app.use(fromMiddleware(myLogger))
+
+app.get('/', fromMiddleware(myLogger), (_, res) => {
+  res.send('hello')
+})
+
+app.listen(3000)

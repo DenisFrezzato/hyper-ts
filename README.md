@@ -135,6 +135,17 @@ Input validation/decoding is done by defining a decoding function with the follo
 **Example** (decoding a param)
 
 ```ts
+import { decodeParam } from 'hyper-ts'
+import { right, left } from 'fp-ts/lib/Either'
+
+const isUnknownRecord = (u: unknown): u is Record<string, unknown> => typeof u === 'object' && u !== null
+
+// returns a middleware validating `req.param.user_id`
+const middleware = decodeParam('user_id', u =>
+  isUnknownRecord(u) && typeof u.user_id === 'string'
+    ? right<string, string>(u.user_id)
+    : left<string, string>('cannot read param user_id')
+)
 ```
 
 You can also use [io-ts](https://github.com/gcanti/io-ts) codecs.
