@@ -20,6 +20,7 @@ parent: Modules
 - [Status (type alias)](#status-type-alias)
 - [Middleware (class)](#middleware-class)
   - [eval (method)](#eval-method)
+  - [exec (method)](#exec-method)
   - [map (method)](#map-method)
   - [ap (method)](#ap-method)
   - [chain (method)](#chain-method)
@@ -218,6 +219,14 @@ export class Middleware<I, O, L, A> {
 
 ```ts
 eval(c: Connection<I>): TaskEither<L, A> { ... }
+```
+
+## exec (method)
+
+**Signature**
+
+```ts
+exec(c: Connection<I>): TaskEither<L, Connection<O>> { ... }
 ```
 
 ## map (method)

@@ -57,10 +57,10 @@ export class ExpressConnection<S> implements Connection<S> {
 export function fromMiddleware<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler {
   return (req, res, next) =>
     middleware
-      .run(new ExpressConnection<I>(req, res))
+      .exec(new ExpressConnection<I>(req, res))
       .run()
       .then(e =>
-        e.fold(next, ([, c]) => {
+        e.fold(next, c => {
           const ec = c as ExpressConnection<O>
           ec.action.run()
           next()

@@ -132,6 +132,9 @@ export class Middleware<I, O, L, A> {
   eval(c: Connection<I>): TaskEither<L, A> {
     return this.run(c).map(([a]) => a)
   }
+  exec(c: Connection<I>): TaskEither<L, Connection<O>> {
+    return this.run(c).map(([, c]) => c)
+  }
   map<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => B): Middleware<I, I, L, B> {
     return new Middleware(ci => this.run(ci).map(([a, co]) => tuple(f(a), co)))
   }
