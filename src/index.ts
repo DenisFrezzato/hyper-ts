@@ -354,7 +354,7 @@ const isUnknownRecord = (u: unknown): u is { [key: string]: unknown } => u !== n
 /** Returns a middleware that tries to decode `connection.getParams()[name]` */
 export function decodeParam<L, A>(
   name: string,
-  f: (value: unknown) => Either<L, A>
+  f: (input: unknown) => Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => {
     const params = c.getParams()
@@ -363,17 +363,17 @@ export function decodeParam<L, A>(
 }
 
 /** Returns a middleware that tries to decode `connection.getParams()` */
-export function decodeParams<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+export function decodeParams<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getParams()))
 }
 
 /** Returns a middleware that tries to decode `connection.getQuery()` */
-export function decodeQuery<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+export function decodeQuery<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getQuery()))
 }
 
 /** Returns a middleware that tries to decode `connection.getBody()` */
-export function decodeBody<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+export function decodeBody<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getBody()))
 }
 
@@ -385,7 +385,7 @@ export function decodeMethod<L, A>(f: (method: string) => Either<L, A>): Middlew
 /** Returns a middleware that tries to decode `connection.getHeader(name)` */
 export function decodeHeader<L, A>(
   name: string,
-  f: (value: unknown) => Either<L, A>
+  f: (input: unknown) => Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getHeader(name)))
 }

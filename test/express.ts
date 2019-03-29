@@ -7,7 +7,7 @@ describe('express', () => {
   it('should propagate express middleware errors', () => {
     const m = toMiddleware((_req, _res, next) => next('error'), e => String(e), () => undefined)
     return m
-      .run(new ExpressConnection(null as any, null as any))
+      .run(new ExpressConnection<StatusOpen>(null as any, null as any))
       .run()
       .then(e => {
         assert.deepStrictEqual(e, left('error'))

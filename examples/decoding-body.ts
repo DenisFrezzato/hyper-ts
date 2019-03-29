@@ -10,9 +10,11 @@ const json = express.json()
 function withJsonBody<L, A>(
   middleware: Middleware<StatusOpen, StatusOpen, string, A>
 ): Middleware<StatusOpen, StatusOpen, string, A> {
-  return toMiddleware(json, err => `cannot mount json middleware: ${String(err)}`, () => undefined).ichain(
-    () => middleware
-  )
+  return toMiddleware<StatusOpen, string, void>(
+    json,
+    err => `cannot mount json middleware: ${String(err)}`,
+    () => undefined
+  ).ichain(() => middleware)
 }
 
 const Body = t.strict({

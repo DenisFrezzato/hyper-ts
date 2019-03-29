@@ -490,7 +490,7 @@ Returns a middleware that tries to decode `connection.getBody()`
 **Signature**
 
 ```ts
-export function decodeBody<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+export function decodeBody<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # decodeHeader (function)
@@ -502,7 +502,7 @@ Returns a middleware that tries to decode `connection.getHeader(name)`
 ```ts
 export function decodeHeader<L, A>(
   name: string,
-  f: (value: unknown) => Either<L, A>
+  f: (input: unknown) => Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
@@ -525,7 +525,7 @@ Returns a middleware that tries to decode `connection.getParams()[name]`
 ```ts
 export function decodeParam<L, A>(
   name: string,
-  f: (value: unknown) => Either<L, A>
+  f: (input: unknown) => Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
@@ -536,7 +536,7 @@ Returns a middleware that tries to decode `connection.getParams()`
 **Signature**
 
 ```ts
-export function decodeParams<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+export function decodeParams<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # decodeQuery (function)
@@ -546,7 +546,7 @@ Returns a middleware that tries to decode `connection.getQuery()`
 **Signature**
 
 ```ts
-export function decodeQuery<L, A>(f: (value: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+export function decodeQuery<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # fromConnection (function)

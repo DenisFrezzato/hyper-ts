@@ -5,7 +5,7 @@ import { IO, io } from 'fp-ts/lib/IO'
 import { Task } from 'fp-ts/lib/Task'
 import { TaskEither } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
-import { Connection, CookieOptions, Middleware, ResponseEnded, Status, StatusOpen } from '.'
+import { Connection, CookieOptions, Middleware, Status } from '.'
 
 export class ExpressConnection<S> implements Connection<S> {
   readonly _S!: S
@@ -54,26 +54,32 @@ export class ExpressConnection<S> implements Connection<S> {
   }
 }
 
-export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnded, L, void>): RequestHandler {
+export function fromMiddleware<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler {
   return (req, res, next) =>
     middleware
-      .run(new ExpressConnection<StatusOpen>(req, res))
+      .run(new ExpressConnection<I>(req, res))
       .run()
-      .then(e => e.fold(next, ([, c]) => (c as ExpressConnection<ResponseEnded>).action.run()))
+      .then(e =>
+        e.fold(next, ([, c]) => {
+          const ec = c as ExpressConnection<O>
+          ec.action.run()
+          next()
+        })
+      )
 }
 
-export function toMiddleware<L, A>(
+export function toMiddleware<I, L, A>(
   requestHandler: RequestHandler,
   onFailure: (err: unknown, req: Request) => L,
   onSuccess: (req: Request) => A
-): Middleware<StatusOpen, StatusOpen, L, A> {
+): Middleware<I, I, L, A> {
   return new Middleware(
     c =>
       new TaskEither(
         new Task(
           () =>
             new Promise(resolve => {
-              const ec: ExpressConnection<StatusOpen> = c as any
+              const ec = c as ExpressConnection<I>
               requestHandler(ec.req, ec.res, err => {
                 if (err !== undefined) {
                   resolve(left(onFailure(err, ec.req)))

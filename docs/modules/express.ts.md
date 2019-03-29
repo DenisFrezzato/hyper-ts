@@ -156,7 +156,7 @@ endResponse<T>(): Connection<T> { ... }
 **Signature**
 
 ```ts
-export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnded, L, void>): RequestHandler { ... }
+export function fromMiddleware<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler { ... }
 ```
 
 # toMiddleware (function)
@@ -164,9 +164,9 @@ export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnd
 **Signature**
 
 ```ts
-export function toMiddleware<L, A>(
+export function toMiddleware<I, L, A>(
   requestHandler: RequestHandler,
   onFailure: (err: unknown, req: Request) => L,
   onSuccess: (req: Request) => A
-): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+): Middleware<I, I, L, A> { ... }
 ```

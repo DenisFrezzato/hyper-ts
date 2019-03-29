@@ -26,6 +26,22 @@ cannot be made. A few examples of such mistakes could be:
 
 The stable version is tested against TypeScript 3.3.4000, but should run with TypeScript 3.0.1+ too
 
+# Hello world
+
+```ts
+import * as express from 'express'
+import { Status, status } from 'hyper-ts'
+import { fromMiddleware } from 'hyper-ts/lib/express'
+
+const hello = status(Status.OK) // writes the response status
+  .closeHeaders() // tells hyper-ts that we're done with the headers
+  .send('Hello hyper-ts on express!') // sends the response
+
+express()
+  .get('/', fromMiddleware(hello))
+  .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))
+```
+
 # Core API
 
 ## Connection
@@ -73,23 +89,26 @@ performed, correctly, throughout the middleware chain.
 
 Middlewares are composed using `ichain`, the indexed monadic version of `chain`.
 
-# Hello world
+**Example** (myLogger)
+
+Here is a simple example of a middleware called "myLogger". This function just prints `'LOGGED'` when a request to the app passes through it.
 
 ```ts
 import * as express from 'express'
-import { Status, status } from 'hyper-ts'
+import { log } from 'fp-ts/lib/Console'
+import { fromIO, StatusOpen } from 'hyper-ts'
 import { fromMiddleware } from 'hyper-ts/lib/express'
 
-const hello = status(Status.OK) // writes the response status
-  .closeHeaders() // tells hyper-ts that we're done with the headers
-  .send('Hello hyper-ts on express!') // sends the response
+export const myLogger = fromIO<StatusOpen, StatusOpen, void>(log('LOGGED'))
 
 express()
-  .get('/', fromMiddleware(hello))
+  .get('/', fromMiddleware(myLogger), (_, res) => {
+    res.send('hello')
+  })
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))
 ```
 
-## Type safety
+# Type safety
 
 Invalid operations are prevented statically
 
@@ -107,15 +126,27 @@ No more `"Can't set headers after they are sent."` errors.
 
 # Decoding params, query and body
 
-Input validation/decoding can leverage [io-ts](https://github.com/gcanti/io-ts) types
+Input validation/decoding is done by defining a decoding function with the following signature
+
+```ts
+(input: unknown) => Either<L, A>
+```
+
+**Example** (decoding a param)
+
+```ts
+```
+
+You can also use [io-ts](https://github.com/gcanti/io-ts) codecs.
 
 **A single param**
 
 ```ts
-import { param } from 'hyper-ts'
+import * as t from 'io-ts'
+import { decodeParam } from 'hyper-ts'
 
 // returns a middleware validating `req.param.user_id`
-const middleware = param('user_id', t.string.decode)
+const middleware = decodeParam('user_id', t.string.decode)
 ```
 
 Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
@@ -124,16 +155,17 @@ Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
 import { IntFromString } from 'io-ts-types/lib/IntFromString'
 
 // validation succeeds only if `req.param.user_id` can be parsed to an integer
-const middleware = param('user_id', IntFromString.decode)
+const middleware = decodeParam('user_id', IntFromString.decode)
 ```
 
 **Multiple params**
 
 ```ts
-import { params } from 'hyper-ts'
+import * as t from 'io-ts'
+import { decodeParams } from 'hyper-ts'
 
 // returns a middleware validating both `req.param.user_id` and `req.param.user_name`
-const middleware = params(
+const middleware = decodeParams(
   t.strict({
     user_id: t.string,
     user_name: t.string
@@ -144,10 +176,11 @@ const middleware = params(
 **Query**
 
 ```ts
-import { query } from 'hyper-ts'
+import * as t from 'io-ts'
+import { decodeQuery } from 'hyper-ts'
 
 // return a middleware validating the query "order=desc&shoe[color]=blue&shoe[type]=converse"
-const middleware = query(
+const middleware = decodeQuery(
   t.strict({
     order: t.string,
     shoe: t.strict({
@@ -161,10 +194,11 @@ const middleware = query(
 **Body**
 
 ```ts
-import { body } from 'hyper-ts'
+import * as t from 'io-ts'
+import { decodeBody } from 'hyper-ts'
 
 // return a middleware validating `req.body`
-const middleware = body(t.string.decode)
+const middleware = decodeBody(t.string.decode)
 ```
 
 # Error handling
