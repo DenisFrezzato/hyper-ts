@@ -166,7 +166,7 @@ export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnd
 ```ts
 export function toMiddleware<L, A>(
   requestHandler: RequestHandler,
-  onSuccess: (req: Request) => A,
-  onError: (err: unknown, req: Request) => L
+  onFailure: (err: unknown, req: Request) => L,
+  onSuccess: (req: Request) => A
 ): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```

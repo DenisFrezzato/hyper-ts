@@ -22,9 +22,6 @@ parent: Modules
   - [eval (method)](#eval-method)
   - [map (method)](#map-method)
   - [ap (method)](#ap-method)
-  - [ap\_ (method)](#ap_-method)
-  - [applyFirst (method)](#applyfirst-method)
-  - [applySecond (method)](#applysecond-method)
   - [chain (method)](#chain-method)
   - [chainFirst (method)](#chainfirst-method)
   - [chainSecond (method)](#chainsecond-method)
@@ -239,36 +236,6 @@ map<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => B): Middleware<I, I, 
 ap<I, L, A, B>(this: Middleware<I, I, L, A>, fab: Middleware<I, I, L, (a: A) => B>): Middleware<I, I, L, B> { ... }
 ```
 
-## ap\_ (method)
-
-Flipped version of `ap`
-
-**Signature**
-
-```ts
-ap_<I, B, C>(this: Middleware<I, I, L, (b: B) => C>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, C> { ... }
-```
-
-## applyFirst (method)
-
-Combine two (parallel) effectful actions, keeping only the result of the first
-
-**Signature**
-
-```ts
-applyFirst<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, A> { ... }
-```
-
-## applySecond (method)
-
-Combine two (parallel) effectful actions, keeping only the result of the second
-
-**Signature**
-
-```ts
-applySecond<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, B> { ... }
-```
-
 ## chain (method)
 
 **Signature**
@@ -279,7 +246,7 @@ chain<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => Middleware<I, I, L,
 
 ## chainFirst (method)
 
-Combine two (sequential) effectful actions, keeping only the result of the first
+Combine two effectful actions, keeping only the result of the first
 
 **Signature**
 
@@ -289,7 +256,7 @@ chainFirst<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>)
 
 ## chainSecond (method)
 
-Combine two (sequential) effectful actions, keeping only the result of the second
+Combine two effectful actions, keeping only the result of the second
 
 **Signature**
 

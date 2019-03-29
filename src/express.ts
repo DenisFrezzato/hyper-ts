@@ -47,33 +47,25 @@ export class ExpressConnection<S> implements Connection<S> {
     return this.chain<T>(() => this.res.status(status))
   }
   setBody<T>(body: unknown): Connection<T> {
-    this.action.run()
-    this.res.send(body)
-    return new ExpressConnection<T>(this.req, this.res)
+    return this.chain<T>(() => this.res.send(body))
   }
   endResponse<T>(): Connection<T> {
-    this.action.run()
-    this.res.end()
-    return new ExpressConnection<T>(this.req, this.res)
+    return this.chain<T>(() => this.res.end())
   }
 }
 
 export function fromMiddleware<L>(middleware: Middleware<StatusOpen, ResponseEnded, L, void>): RequestHandler {
   return (req, res, next) =>
     middleware
-      .eval(new ExpressConnection<StatusOpen>(req, res))
+      .run(new ExpressConnection<StatusOpen>(req, res))
       .run()
-      .then(e => {
-        if (e.isLeft()) {
-          next(e.value)
-        }
-      })
+      .then(e => e.fold(next, ([, c]) => (c as ExpressConnection<ResponseEnded>).action.run()))
 }
 
 export function toMiddleware<L, A>(
   requestHandler: RequestHandler,
-  onSuccess: (req: Request) => A,
-  onError: (err: unknown, req: Request) => L
+  onFailure: (err: unknown, req: Request) => L,
+  onSuccess: (req: Request) => A
 ): Middleware<StatusOpen, StatusOpen, L, A> {
   return new Middleware(
     c =>
@@ -84,7 +76,7 @@ export function toMiddleware<L, A>(
               const ec: ExpressConnection<StatusOpen> = c as any
               requestHandler(ec.req, ec.res, err => {
                 if (err !== undefined) {
-                  resolve(left(onError(err, ec.req)))
+                  resolve(left(onFailure(err, ec.req)))
                 } else {
                   resolve(right(tuple(onSuccess(ec.req), c)))
                 }

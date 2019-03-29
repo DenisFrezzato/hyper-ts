@@ -1,5 +1,5 @@
 import { Either } from 'fp-ts/lib/Either'
-import { constant, constIdentity, Predicate, Refinement, tuple } from 'fp-ts/lib/function'
+import { Predicate, Refinement, tuple } from 'fp-ts/lib/function'
 import { IO } from 'fp-ts/lib/IO'
 import { IOEither } from 'fp-ts/lib/IOEither'
 import { Task } from 'fp-ts/lib/Task'
@@ -138,35 +138,17 @@ export class Middleware<I, O, L, A> {
   ap<I, L, A, B>(this: Middleware<I, I, L, A>, fab: Middleware<I, I, L, (a: A) => B>): Middleware<I, I, L, B> {
     return new Middleware(c => fab.run(c).chain(([f, co1]) => this.run(co1).map(([a, co2]) => tuple(f(a), co2))))
   }
-  /**
-   * Flipped version of `ap`
-   */
-  ap_<I, B, C>(this: Middleware<I, I, L, (b: B) => C>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, C> {
-    return fb.ap(this)
-  }
-  /**
-   * Combine two (parallel) effectful actions, keeping only the result of the first
-   */
-  applyFirst<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, A> {
-    return fb.ap(this.map(constant))
-  }
-  /**
-   * Combine two (parallel) effectful actions, keeping only the result of the second
-   */
-  applySecond<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, B> {
-    return fb.ap(this.map<I, L, A, (b: B) => B>(constIdentity))
-  }
   chain<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => Middleware<I, I, L, B>): Middleware<I, I, L, B> {
     return this.ichain(f)
   }
   /**
-   * Combine two (sequential) effectful actions, keeping only the result of the first
+   * Combine two effectful actions, keeping only the result of the first
    */
   chainFirst<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, A> {
     return this.chain(a => fb.map(() => a))
   }
   /**
-   * Combine two (sequential) effectful actions, keeping only the result of the second
+   * Combine two effectful actions, keeping only the result of the second
    */
   chainSecond<I, L, A, B>(this: Middleware<I, I, L, A>, fb: Middleware<I, I, L, B>): Middleware<I, I, L, B> {
     return this.chain(() => fb)

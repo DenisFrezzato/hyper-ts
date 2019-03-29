@@ -5,7 +5,7 @@ import { fromLeft, StatusOpen, Status } from '../src'
 
 describe('express', () => {
   it('should propagate express middleware errors', () => {
-    const m = toMiddleware((_req, _res, next) => next('error'), () => undefined, e => String(e))
+    const m = toMiddleware((_req, _res, next) => next('error'), e => String(e), () => undefined)
     return m
       .run(new ExpressConnection(null as any, null as any))
       .run()
