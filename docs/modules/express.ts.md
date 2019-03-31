@@ -164,9 +164,5 @@ export function fromMiddleware<I, O, L>(middleware: Middleware<I, O, L, void>): 
 **Signature**
 
 ```ts
-export function toMiddleware<I, L, A>(
-  requestHandler: RequestHandler,
-  onFailure: (err: unknown, req: Request) => L,
-  onSuccess: (req: Request) => A
-): Middleware<I, I, L, A> { ... }
+export function toMiddleware<I, A>(requestHandler: RequestHandler, f: (req: Request) => A): Middleware<I, I, never, A> { ... }
 ```

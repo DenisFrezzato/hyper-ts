@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { Middleware, Status, status, decodeBody, StatusOpen } from '../src'
+import { Middleware, Status, status, decodeBody, StatusOpen, ResponseEnded } from '../src'
 import { fromMiddleware, toMiddleware } from '../src/express'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
@@ -7,14 +7,10 @@ import { failure } from 'io-ts/lib/PathReporter'
 // Express middleware
 const json = express.json()
 
-function withJsonBody<L, A>(
-  middleware: Middleware<StatusOpen, StatusOpen, string, A>
-): Middleware<StatusOpen, StatusOpen, string, A> {
-  return toMiddleware<StatusOpen, string, void>(
-    json,
-    err => `cannot mount json middleware: ${String(err)}`,
-    () => undefined
-  ).ichain(() => middleware)
+function withJsonBody<A>(
+  middleware: Middleware<StatusOpen, ResponseEnded, never, A>
+): Middleware<StatusOpen, ResponseEnded, never, A> {
+  return toMiddleware<StatusOpen, void>(json, () => undefined).ichain(() => middleware)
 }
 
 const Body = t.strict({
@@ -28,13 +24,15 @@ const badRequest = (message: string) =>
     .closeHeaders()
     .send(message)
 
-const hello = withJsonBody(bodyDecoder)
-  .ichain(({ name }) =>
-    status(Status.OK)
-      .closeHeaders()
-      .send(`Hello ${name}!`)
-  )
-  .orElse(badRequest)
+const hello = withJsonBody(
+  bodyDecoder
+    .ichain(({ name }) =>
+      status(Status.OK)
+        .closeHeaders()
+        .send(`Hello ${name}!`)
+    )
+    .orElse(badRequest)
+)
 
 const app = express()
 

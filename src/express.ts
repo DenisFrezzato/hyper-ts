@@ -1,9 +1,7 @@
 import { Request, Response, RequestHandler } from 'express'
-import { left, right } from 'fp-ts/lib/Either'
-import { tuple } from 'fp-ts/lib/function'
 import { IO, io } from 'fp-ts/lib/IO'
 import { Task } from 'fp-ts/lib/Task'
-import { TaskEither } from 'fp-ts/lib/TaskEither'
+import { right } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
 import { Connection, CookieOptions, Middleware, Status } from '.'
 
@@ -68,27 +66,16 @@ export function fromMiddleware<I, O, L>(middleware: Middleware<I, O, L, void>): 
       )
 }
 
-export function toMiddleware<I, L, A>(
-  requestHandler: RequestHandler,
-  onFailure: (err: unknown, req: Request) => L,
-  onSuccess: (req: Request) => A
-): Middleware<I, I, L, A> {
-  return new Middleware(
-    c =>
-      new TaskEither(
-        new Task(
-          () =>
-            new Promise(resolve => {
-              const ec = c as ExpressConnection<I>
-              requestHandler(ec.req, ec.res, err => {
-                if (err !== undefined) {
-                  resolve(left(onFailure(err, ec.req)))
-                } else {
-                  resolve(right(tuple(onSuccess(ec.req), c)))
-                }
-              })
-            })
-        )
+export function toMiddleware<I, A>(requestHandler: RequestHandler, f: (req: Request) => A): Middleware<I, I, never, A> {
+  return new Middleware(c =>
+    right(
+      new Task(
+        () =>
+          new Promise(resolve => {
+            const { req, res } = c as ExpressConnection<I>
+            requestHandler(req, res, () => resolve([f(req), c]))
+          })
       )
+    )
   )
 }

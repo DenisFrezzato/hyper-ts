@@ -14,11 +14,9 @@ const requestTime: express.RequestHandler = function(req: any, _, next) {
 
 const decodeNumber = (u: unknown): Either<string, number> => (typeof u === 'number' ? right(u) : left('Invalid number'))
 
-const parseRequestTime = toMiddleware<StatusOpen, string, unknown>(
-  requestTime,
-  () => 'Unknown error',
-  (req: any) => req.requestTime
-).chain(u => fromEither(decodeNumber(u)))
+const parseRequestTime = toMiddleware<StatusOpen, unknown>(requestTime, (req: any) => req.requestTime).chain(u =>
+  fromEither(decodeNumber(u))
+)
 
 const sendRequestTime = (requestTime: number) =>
   status(Status.OK)
