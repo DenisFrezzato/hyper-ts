@@ -34,7 +34,7 @@ parent: Modules
 
 ```ts
 export class ExpressConnection<S> {
-  constructor(readonly req: Request, readonly res: Response, readonly action: IO<void> = io.of(undefined)) { ... }
+  constructor(readonly req: Request, readonly res: Response, readonly actions: Array<Action>) { ... }
   ...
 }
 ```
@@ -44,7 +44,7 @@ export class ExpressConnection<S> {
 **Signature**
 
 ```ts
-chain<T>(thunk: () => void): ExpressConnection<T> { ... }
+chain<T>(action: Action): ExpressConnection<T> { ... }
 ```
 
 ## getRequest (method)
