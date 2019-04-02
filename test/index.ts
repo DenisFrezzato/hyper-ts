@@ -4,115 +4,55 @@ import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
 import {
-  decodeBody,
   BodyOpen,
   clearCookie,
-  Connection,
   contentType,
   cookie,
-  CookieOptions,
+  decodeBody,
   decodeHeader,
+  decodeParam,
+  decodeParams,
+  decodeQuery,
   header,
   HeadersOpen,
   json,
   MediaType,
   Middleware,
-  decodeParam,
-  decodeParams,
-  decodeQuery,
   redirect,
   send,
-  Status,
   status,
   StatusOpen
 } from '../src'
-
-type MockedHeaders = { [key: string]: string }
-
-class MockConnection<S> implements Connection<S> {
-  readonly _S!: S
-  constructor(readonly req: MockRequest, readonly logger: Array<string> = []) {}
-  getRequest() {
-    return this.req as any
-  }
-  getBody() {
-    return this.req.getBody()
-  }
-  getHeader(name: string) {
-    return this.req.getHeader(name)
-  }
-  getParams() {
-    return this.req.getParams()
-  }
-  getQuery() {
-    return this.req.getQuery()
-  }
-  getOriginalUrl() {
-    return this.req.getOriginalUrl()
-  }
-  getMethod() {
-    return this.req.getMethod()
-  }
-  setCookie<T>(name: string, value: string, options: CookieOptions) {
-    return new MockConnection<T>(this.req, [
-      ...this.logger,
-      `setCookie(${name}, ${value}, ${JSON.stringify(options)}})`
-    ])
-  }
-  clearCookie<T>(name: string, options: CookieOptions) {
-    return new MockConnection<T>(this.req, [...this.logger, `clearCookie(${name}, ${JSON.stringify(options)})`])
-  }
-  setHeader<T>(name: string, value: string) {
-    return new MockConnection<T>(this.req, [...this.logger, `setHeader(${name}, ${value})`])
-  }
-  setStatus<T>(status: Status) {
-    return new MockConnection<T>(this.req, [...this.logger, `setStatus(${status})`])
-  }
-  setBody<T>(body: unknown) {
-    return new MockConnection<T>(this.req, [...this.logger, `setBody(${body})`])
-  }
-  endResponse<T>() {
-    return new MockConnection<T>(this.req, [...this.logger, `endResponse()`])
-  }
-}
+import { Action, ExpressConnection } from '../src/express'
 
 class MockRequest {
   constructor(
-    readonly params?: any,
+    readonly params?: unknown,
     readonly query: string = '',
-    readonly body?: any,
-    readonly headers: MockedHeaders = {},
+    readonly body?: unknown,
+    readonly headers: Record<string, string> = {},
     readonly originalUrl: string = '',
     readonly method: string = 'GET'
   ) {
     this.query = querystring.parse(query)
   }
-  getBody() {
-    return this.body
-  }
-  getHeader(name: string) {
+  header(name: string) {
     return this.headers[name]
-  }
-  getParams() {
-    return this.params
-  }
-  getQuery() {
-    return this.query
-  }
-  getOriginalUrl() {
-    return this.originalUrl
-  }
-  getMethod() {
-    return this.method
   }
 }
 
-function assertSuccess<I, A>(m: Middleware<I, any, any, A>, conn: MockConnection<I>, a: A, logger: Array<string>) {
+class MockConnection<S> extends ExpressConnection<S> {
+  constructor(req: MockRequest) {
+    super(req as any, null as any)
+  }
+}
+
+function assertSuccess<I, O, A>(m: Middleware<I, O, any, A>, cin: MockConnection<I>, a: A, actions: Array<Action>) {
   return m
-    .run(conn)
+    .run(cin)
     .run()
     .then(e => {
-      assert.deepStrictEqual(e.map(([a, conn]) => [a, (conn as any).logger]), right([a, logger]))
+      assert.deepStrictEqual(e.map(([a, cout]) => [a, (cout as MockConnection<O>).actions]), right([a, actions]))
     })
 }
 
@@ -131,14 +71,17 @@ describe('Middleware', () => {
     const fa = header('b', 'b').map(() => 'foo')
     const m = fa.ap(fab)
     const c = new MockConnection<HeadersOpen>(new MockRequest())
-    return assertSuccess(m, c, 3, ['setHeader(a, a)', 'setHeader(b, b)'])
+    return assertSuccess(m, c, 3, [
+      { type: 'setHeader', name: 'a', value: 'a' },
+      { type: 'setHeader', name: 'b', value: 'b' }
+    ])
   })
 
   describe('status', () => {
     it('should write the status code', () => {
       const m = status(200)
       const c = new MockConnection<StatusOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setStatus(200)'])
+      return assertSuccess(m, c, undefined, [{ type: 'setStatus', status: 200 }])
     })
   })
 
@@ -146,7 +89,7 @@ describe('Middleware', () => {
     it('should write the headers', () => {
       const m = header('name', 'value')
       const c = new MockConnection<HeadersOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setHeader(name, value)'])
+      return assertSuccess(m, c, undefined, [{ type: 'setHeader', name: 'name', value: 'value' }])
     })
   })
 
@@ -154,7 +97,7 @@ describe('Middleware', () => {
     it('should send the content', () => {
       const m = send('<h1>Hello world!</h1>')
       const c = new MockConnection<BodyOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setBody(<h1>Hello world!</h1>)'])
+      return assertSuccess(m, c, undefined, [{ type: 'setBody', body: '<h1>Hello world!</h1>' }])
     })
   })
 
@@ -162,7 +105,10 @@ describe('Middleware', () => {
     it('should add the proper header and send the content', () => {
       const m = json({ a: 1 })
       const c = new MockConnection<HeadersOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setHeader(Content-Type, application/json)', 'setBody({"a":1})'])
+      return assertSuccess(m, c, undefined, [
+        { type: 'setHeader', name: 'Content-Type', value: 'application/json' },
+        { type: 'setBody', body: `{"a":1}` }
+      ])
     })
   })
 
@@ -170,7 +116,7 @@ describe('Middleware', () => {
     it('should add the cookie', () => {
       const m = cookie('name', 'value', {})
       const c = new MockConnection<HeadersOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setCookie(name, value, {}})'])
+      return assertSuccess(m, c, undefined, [{ type: 'setCookie', name: 'name', value: 'value', options: {} }])
     })
   })
 
@@ -178,7 +124,10 @@ describe('Middleware', () => {
     it('should clear the cookie', () => {
       const m = cookie('name', 'value', {}).ichain(() => clearCookie('name', {}))
       const c = new MockConnection<HeadersOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setCookie(name, value, {}})', 'clearCookie(name, {})'])
+      return assertSuccess(m, c, undefined, [
+        { type: 'setCookie', name: 'name', value: 'value', options: {} },
+        { type: 'clearCookie', name: 'name', options: {} }
+      ])
     })
   })
 
@@ -186,7 +135,7 @@ describe('Middleware', () => {
     it('should add the `Content-Type` header', () => {
       const m = contentType(MediaType.applicationXML)
       const c = new MockConnection<HeadersOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setHeader(Content-Type, application/xml)'])
+      return assertSuccess(m, c, undefined, [{ type: 'setHeader', name: 'Content-Type', value: 'application/xml' }])
     })
   })
 
@@ -194,7 +143,10 @@ describe('Middleware', () => {
     it('should add the correct status / header', () => {
       const m = redirect('/users')
       const c = new MockConnection<StatusOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, ['setStatus(302)', 'setHeader(Location, /users)'])
+      return assertSuccess(m, c, undefined, [
+        { type: 'setStatus', status: 302 },
+        { type: 'setHeader', name: 'Location', value: '/users' }
+      ])
     })
   })
 

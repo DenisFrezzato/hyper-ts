@@ -8,6 +8,7 @@ parent: Modules
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Action (type alias)](#action-type-alias)
 - [ExpressConnection (class)](#expressconnection-class)
   - [chain (method)](#chain-method)
   - [getRequest (method)](#getrequest-method)
@@ -28,13 +29,27 @@ parent: Modules
 
 ---
 
+# Action (type alias)
+
+**Signature**
+
+```ts
+export type Action =
+  | { type: 'setBody'; body: unknown }
+  | { type: 'endResponse' }
+  | { type: 'setStatus'; status: Status }
+  | { type: 'setHeader'; name: string; value: string }
+  | { type: 'clearCookie'; name: string; options: CookieOptions }
+  | { type: 'setCookie'; name: string; value: string; options: CookieOptions }
+```
+
 # ExpressConnection (class)
 
 **Signature**
 
 ```ts
 export class ExpressConnection<S> {
-  constructor(readonly req: Request, readonly res: Response, readonly actions: Array<Action>) { ... }
+  constructor(readonly req: Request, readonly res: Response, readonly actions: Array<Action> = empty) { ... }
   ...
 }
 ```

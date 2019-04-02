@@ -4,7 +4,7 @@ import { right } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
 import { Connection, CookieOptions, Middleware, Status } from '.'
 
-type Action =
+export type Action =
   | { type: 'setBody'; body: unknown }
   | { type: 'endResponse' }
   | { type: 'setStatus'; status: Status }
@@ -14,9 +14,11 @@ type Action =
 
 const endResponse: Action = { type: 'endResponse' }
 
+const empty: Array<Action> = []
+
 export class ExpressConnection<S> implements Connection<S> {
   readonly _S!: S
-  constructor(readonly req: Request, readonly res: Response, readonly actions: Array<Action>) {}
+  constructor(readonly req: Request, readonly res: Response, readonly actions: Array<Action> = empty) {}
   chain<T>(action: Action): ExpressConnection<T> {
     return new ExpressConnection<T>(this.req, this.res, [...this.actions, action])
   }
@@ -80,12 +82,10 @@ const run = (res: Response, action: Action): Response => {
   }
 }
 
-const empty: Array<Action> = []
-
 export function fromMiddleware<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler {
   return (req, res, next) =>
     middleware
-      .exec(new ExpressConnection<I>(req, res, empty))
+      .exec(new ExpressConnection<I>(req, res))
       .run()
       .then(e =>
         e.fold(next, c => {
