@@ -1,5 +1,9 @@
 **IMPORTANT**. Version 0.4 is under active development.
 
+For a sneak preview: `npm i gcanti/hyper-ts#lib`
+
+---
+
 A partial porting of https://github.com/owickstrom/hyper to TypeScript
 
 `hyper-ts` is an experimental middleware architecture for HTTP servers written in TypeScript.
@@ -113,13 +117,14 @@ express()
 Invalid operations are prevented statically
 
 ```ts
-import { headers, Status, status } from 'hyper-ts'
+import { Status, status } from 'hyper-ts'
 
 status(Status.OK)
+  .header('name', 'value') // ok
   .closeHeaders()
   .send('Hello hyper-ts!')
   // try to write a header after sending the body
-  .ichain(() => header('field', 'value')) // error: Property 'HeadersOpen' is missing in type 'ResponseEnded' but required in type 'HeadersOpen'
+  .header('name', 'value') // static error
 ```
 
 No more `"Can't set headers after they are sent."` errors.
