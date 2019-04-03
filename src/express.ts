@@ -43,19 +43,19 @@ export class ExpressConnection<S> implements Connection<S> {
   getMethod(): string {
     return this.req.method
   }
-  setCookie(name: string, value: string, options: CookieOptions): Connection<HeadersOpen> {
+  setCookie(name: string, value: string, options: CookieOptions): ExpressConnection<HeadersOpen> {
     return this.chain({ type: 'setCookie', name, value, options })
   }
-  clearCookie(name: string, options: CookieOptions): Connection<HeadersOpen> {
+  clearCookie(name: string, options: CookieOptions): ExpressConnection<HeadersOpen> {
     return this.chain({ type: 'clearCookie', name, options })
   }
-  setHeader(name: string, value: string): Connection<HeadersOpen> {
+  setHeader(name: string, value: string): ExpressConnection<HeadersOpen> {
     return this.chain({ type: 'setHeader', name, value })
   }
-  setStatus(status: Status): Connection<HeadersOpen> {
+  setStatus(status: Status): ExpressConnection<HeadersOpen> {
     return this.chain({ type: 'setStatus', status })
   }
-  setBody(body: unknown): Connection<ResponseEnded> {
+  setBody(body: unknown): ExpressConnection<ResponseEnded> {
     return this.chain({ type: 'setBody', body })
   }
   endResponse(): ExpressConnection<ResponseEnded> {

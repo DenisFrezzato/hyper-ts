@@ -123,7 +123,7 @@ getMethod(): string { ... }
 **Signature**
 
 ```ts
-setCookie(name: string, value: string, options: CookieOptions): Connection<HeadersOpen> { ... }
+setCookie(name: string, value: string, options: CookieOptions): ExpressConnection<HeadersOpen> { ... }
 ```
 
 ## clearCookie (method)
@@ -131,7 +131,7 @@ setCookie(name: string, value: string, options: CookieOptions): Connection<Heade
 **Signature**
 
 ```ts
-clearCookie(name: string, options: CookieOptions): Connection<HeadersOpen> { ... }
+clearCookie(name: string, options: CookieOptions): ExpressConnection<HeadersOpen> { ... }
 ```
 
 ## setHeader (method)
@@ -139,7 +139,7 @@ clearCookie(name: string, options: CookieOptions): Connection<HeadersOpen> { ...
 **Signature**
 
 ```ts
-setHeader(name: string, value: string): Connection<HeadersOpen> { ... }
+setHeader(name: string, value: string): ExpressConnection<HeadersOpen> { ... }
 ```
 
 ## setStatus (method)
@@ -147,7 +147,7 @@ setHeader(name: string, value: string): Connection<HeadersOpen> { ... }
 **Signature**
 
 ```ts
-setStatus(status: Status): Connection<HeadersOpen> { ... }
+setStatus(status: Status): ExpressConnection<HeadersOpen> { ... }
 ```
 
 ## setBody (method)
@@ -155,7 +155,7 @@ setStatus(status: Status): Connection<HeadersOpen> { ... }
 **Signature**
 
 ```ts
-setBody(body: unknown): Connection<ResponseEnded> { ... }
+setBody(body: unknown): ExpressConnection<ResponseEnded> { ... }
 ```
 
 ## endResponse (method)
