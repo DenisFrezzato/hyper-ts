@@ -123,7 +123,7 @@ getMethod(): string { ... }
 **Signature**
 
 ```ts
-setCookie<T>(name: string, value: string, options: CookieOptions): Connection<T> { ... }
+setCookie(name: string, value: string, options: CookieOptions): Connection<HeadersOpen> { ... }
 ```
 
 ## clearCookie (method)
@@ -131,7 +131,7 @@ setCookie<T>(name: string, value: string, options: CookieOptions): Connection<T>
 **Signature**
 
 ```ts
-clearCookie<T>(name: string, options: CookieOptions): Connection<T> { ... }
+clearCookie(name: string, options: CookieOptions): Connection<HeadersOpen> { ... }
 ```
 
 ## setHeader (method)
@@ -139,7 +139,7 @@ clearCookie<T>(name: string, options: CookieOptions): Connection<T> { ... }
 **Signature**
 
 ```ts
-setHeader<T>(name: string, value: string): Connection<T> { ... }
+setHeader(name: string, value: string): Connection<HeadersOpen> { ... }
 ```
 
 ## setStatus (method)
@@ -147,7 +147,7 @@ setHeader<T>(name: string, value: string): Connection<T> { ... }
 **Signature**
 
 ```ts
-setStatus<T>(status: Status): Connection<T> { ... }
+setStatus(status: Status): Connection<HeadersOpen> { ... }
 ```
 
 ## setBody (method)
@@ -155,7 +155,7 @@ setStatus<T>(status: Status): Connection<T> { ... }
 **Signature**
 
 ```ts
-setBody<T>(body: unknown): Connection<T> { ... }
+setBody(body: unknown): Connection<ResponseEnded> { ... }
 ```
 
 ## endResponse (method)
@@ -163,7 +163,7 @@ setBody<T>(body: unknown): Connection<T> { ... }
 **Signature**
 
 ```ts
-endResponse<T>(): Connection<T> { ... }
+endResponse(): ExpressConnection<ResponseEnded> { ... }
 ```
 
 # fromMiddleware (function)

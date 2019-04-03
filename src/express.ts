@@ -1,8 +1,8 @@
-import { Request, Response, RequestHandler } from 'express'
+import { Request, RequestHandler, Response } from 'express'
 import { Task } from 'fp-ts/lib/Task'
 import { right } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
-import { Connection, CookieOptions, Middleware, Status } from '.'
+import { Connection, CookieOptions, HeadersOpen, Middleware, ResponseEnded, Status } from '.'
 
 export type Action =
   | { type: 'setBody'; body: unknown }
@@ -43,22 +43,22 @@ export class ExpressConnection<S> implements Connection<S> {
   getMethod(): string {
     return this.req.method
   }
-  setCookie<T>(name: string, value: string, options: CookieOptions): Connection<T> {
+  setCookie(name: string, value: string, options: CookieOptions): Connection<HeadersOpen> {
     return this.chain({ type: 'setCookie', name, value, options })
   }
-  clearCookie<T>(name: string, options: CookieOptions): Connection<T> {
+  clearCookie(name: string, options: CookieOptions): Connection<HeadersOpen> {
     return this.chain({ type: 'clearCookie', name, options })
   }
-  setHeader<T>(name: string, value: string): Connection<T> {
+  setHeader(name: string, value: string): Connection<HeadersOpen> {
     return this.chain({ type: 'setHeader', name, value })
   }
-  setStatus<T>(status: Status): Connection<T> {
+  setStatus(status: Status): Connection<HeadersOpen> {
     return this.chain({ type: 'setStatus', status })
   }
-  setBody<T>(body: unknown): Connection<T> {
+  setBody(body: unknown): Connection<ResponseEnded> {
     return this.chain({ type: 'setBody', body })
   }
-  endResponse<T>(): Connection<T> {
+  endResponse(): ExpressConnection<ResponseEnded> {
     return this.chain(endResponse)
   }
 }
