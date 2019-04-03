@@ -83,7 +83,7 @@ export interface BodyOpen {
   readonly BodyOpen: unique symbol
 }
 
-/** Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished. */
+/** Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished */
 export interface ResponseEnded {
   readonly ResponseEnded: unique symbol
 }
