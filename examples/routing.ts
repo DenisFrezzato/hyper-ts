@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { Status, status, Middleware, StatusOpen, fromConnection, decodeMethod } from '../src'
-import { fromMiddleware } from '../src/express'
+import { toRequestHandler } from '../src/express'
 import { str, lit, end, Parser, Route } from 'fp-ts-routing'
 import { right, left } from 'fp-ts/lib/Either'
 
@@ -58,7 +58,7 @@ const appMiddleware = routingMiddleware
 
 const app = express()
 
-app.use(fromMiddleware(appMiddleware))
+app.use(toRequestHandler(appMiddleware))
 
 // tslint:disable-next-line: no-console
 app.listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))

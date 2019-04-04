@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { Middleware, Status, status, decodeBody, StatusOpen, ResponseEnded } from '../src'
-import { fromMiddleware, toMiddleware } from '../src/express'
+import { toRequestHandler, fromRequestHandler } from '../src/express'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 
@@ -10,7 +10,7 @@ const json = express.json()
 function withJsonBody<A>(
   middleware: Middleware<StatusOpen, ResponseEnded, never, A>
 ): Middleware<StatusOpen, ResponseEnded, never, A> {
-  return toMiddleware<StatusOpen, void>(json, () => undefined).ichain(() => middleware)
+  return fromRequestHandler<StatusOpen, void>(json, () => undefined).ichain(() => middleware)
 }
 
 const Body = t.strict({
@@ -37,7 +37,7 @@ const hello = withJsonBody(
 const app = express()
 
 app
-  .post('/', fromMiddleware(hello))
+  .post('/', toRequestHandler(hello))
   // tslint:disable-next-line: no-console
   .listen(3000, () => console.log('Express listening on port 3000. Use: POST /'))
 

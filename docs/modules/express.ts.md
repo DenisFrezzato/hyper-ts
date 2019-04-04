@@ -24,8 +24,9 @@ parent: Modules
   - [setStatus (method)](#setstatus-method)
   - [setBody (method)](#setbody-method)
   - [endResponse (method)](#endresponse-method)
-- [fromMiddleware (function)](#frommiddleware-function)
-- [toMiddleware (function)](#tomiddleware-function)
+- [fromRequestHandler (function)](#fromrequesthandler-function)
+- [toErrorRequestHandler (function)](#toerrorrequesthandler-function)
+- [toRequestHandler (function)](#torequesthandler-function)
 
 ---
 
@@ -166,18 +167,29 @@ setBody(body: unknown): ExpressConnection<ResponseEnded> { ... }
 endResponse(): ExpressConnection<ResponseEnded> { ... }
 ```
 
-# fromMiddleware (function)
+# fromRequestHandler (function)
 
 **Signature**
 
 ```ts
-export function fromMiddleware<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler { ... }
+export function fromRequestHandler<I, A>(
+  requestHandler: RequestHandler,
+  f: (req: Request) => A
+): Middleware<I, I, never, A> { ... }
 ```
 
-# toMiddleware (function)
+# toErrorRequestHandler (function)
 
 **Signature**
 
 ```ts
-export function toMiddleware<I, A>(requestHandler: RequestHandler, f: (req: Request) => A): Middleware<I, I, never, A> { ... }
+export function toErrorRequestHandler<I, O, L>(f: (err: unknown) => Middleware<I, O, L, void>): ErrorRequestHandler { ... }
+```
+
+# toRequestHandler (function)
+
+**Signature**
+
+```ts
+export function toRequestHandler<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler { ... }
 ```

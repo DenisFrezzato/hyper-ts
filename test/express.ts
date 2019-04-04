@@ -1,6 +1,6 @@
 import * as assert from 'assert'
 import { fromLeft, Status, StatusOpen } from '../src'
-import { fromMiddleware } from '../src/express'
+import { toRequestHandler } from '../src/express'
 
 describe('express', () => {
   it('should call `next` with an error', () => {
@@ -8,7 +8,7 @@ describe('express', () => {
       .status(Status.OK)
       .closeHeaders()
       .end()
-    const rh = fromMiddleware(m)
+    const rh = toRequestHandler(m)
     rh(null as any, null as any, e => {
       assert.strictEqual(e, 'error')
     })

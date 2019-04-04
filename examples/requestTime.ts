@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { toMiddleware, fromMiddleware } from '../src/express'
+import { fromRequestHandler, toRequestHandler } from '../src/express'
 import { StatusOpen, fromEither, Status, status } from '../src'
 import { Either, right, left } from 'fp-ts/lib/Either'
 
@@ -14,7 +14,7 @@ const requestTime: express.RequestHandler = function(req: any, _, next) {
 
 const decodeNumber = (u: unknown): Either<string, number> => (typeof u === 'number' ? right(u) : left('Invalid number'))
 
-const parseRequestTime = toMiddleware<StatusOpen, unknown>(requestTime, (req: any) => req.requestTime).chain(u =>
+const parseRequestTime = fromRequestHandler<StatusOpen, unknown>(requestTime, (req: any) => req.requestTime).chain(u =>
   fromEither(decodeNumber(u))
 )
 
@@ -28,6 +28,6 @@ const badRequest = (message: string) =>
     .closeHeaders()
     .send(message)
 
-app.get('/', fromMiddleware(parseRequestTime.ichain(sendRequestTime).orElse(badRequest)))
+app.get('/', toRequestHandler(parseRequestTime.ichain(sendRequestTime).orElse(badRequest)))
 
 app.listen(3000)
