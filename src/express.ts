@@ -18,9 +18,14 @@ const empty: Array<Action> = []
 
 export class ExpressConnection<S> implements Connection<S> {
   readonly _S!: S
-  constructor(readonly req: Request, readonly res: Response, readonly actions: Array<Action> = empty) {}
-  chain<T>(action: Action): ExpressConnection<T> {
-    return new ExpressConnection<T>(this.req, this.res, [...this.actions, action])
+  constructor(
+    readonly req: Request,
+    readonly res: Response,
+    readonly actions: Array<Action> = empty,
+    readonly ended: boolean = false
+  ) {}
+  chain<T>(action: Action, ended: boolean = false): ExpressConnection<T> {
+    return new ExpressConnection<T>(this.req, this.res, [...this.actions, action], ended)
   }
   getRequest(): IncomingMessage {
     return this.req
@@ -56,10 +61,10 @@ export class ExpressConnection<S> implements Connection<S> {
     return this.chain({ type: 'setStatus', status })
   }
   setBody(body: unknown): ExpressConnection<ResponseEnded> {
-    return this.chain({ type: 'setBody', body })
+    return this.chain({ type: 'setBody', body }, true)
   }
   endResponse(): ExpressConnection<ResponseEnded> {
-    return this.chain(endResponse)
+    return this.chain(endResponse, true)
   }
 }
 
@@ -93,11 +98,13 @@ const exec = <I, O, L>(
     .run()
     .then(e =>
       e.fold(next, c => {
-        const { actions, res } = c as ExpressConnection<O>
+        const { actions, res, ended } = c as ExpressConnection<O>
         for (let i = 0; i < actions.length; i++) {
           run(res, actions[i])
         }
-        next()
+        if (!ended) {
+          next()
+        }
       })
     )
 

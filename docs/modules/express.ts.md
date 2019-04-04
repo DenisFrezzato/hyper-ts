@@ -50,7 +50,12 @@ export type Action =
 
 ```ts
 export class ExpressConnection<S> {
-  constructor(readonly req: Request, readonly res: Response, readonly actions: Array<Action> = empty) { ... }
+  constructor(
+    readonly req: Request,
+    readonly res: Response,
+    readonly actions: Array<Action> = empty,
+    readonly ended: boolean = false
+  ) { ... }
   ...
 }
 ```
@@ -60,7 +65,7 @@ export class ExpressConnection<S> {
 **Signature**
 
 ```ts
-chain<T>(action: Action): ExpressConnection<T> { ... }
+chain<T>(action: Action, ended: boolean = false): ExpressConnection<T> { ... }
 ```
 
 ## getRequest (method)
