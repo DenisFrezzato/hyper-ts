@@ -12,7 +12,8 @@ import {
   left as taskEitherLeft,
   right as taskEitherRight,
   TaskEither,
-  taskEither
+  taskEither,
+  tryCatch as taskEitherTryCatch
 } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
 
@@ -249,6 +250,10 @@ export function iof<I, O, L, A>(a: A): Middleware<I, O, L, A> {
 //
 // lifting helpers
 //
+
+export function tryCatch<I, L, A>(f: () => Promise<A>, onrejected: (reason: unknown) => L): Middleware<I, I, L, A> {
+  return fromTaskEither(taskEitherTryCatch(f, onrejected))
+}
 
 export function fromTaskEither<I, L, A>(fa: TaskEither<L, A>): Middleware<I, I, L, A> {
   return new Middleware(c => fa.map(a => tuple(a, c)))
