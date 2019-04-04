@@ -344,9 +344,8 @@ export const end: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConne
 // derived middlewares
 //
 
-export type JSONObject = { [key: string]: JSON }
 export interface JSONArray extends Array<JSON> {}
-export type JSON = null | string | number | boolean | JSONArray | JSONObject
+export type JSON = null | string | number | boolean | JSONArray | object
 
 /** Return a middleware that sends `body` as JSON */
 export function json(body: JSON): Middleware<HeadersOpen, ResponseEnded, never, void> {
