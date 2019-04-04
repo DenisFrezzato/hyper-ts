@@ -1,7 +1,7 @@
 import * as express from 'express'
 import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
 import { fromLeft, Middleware, of, decodeParam, ResponseEnded, Status, status, StatusOpen } from '../src'
-import { fromMiddleware } from '../src/express'
+import { toRequestHandler } from '../src/express'
 
 //
 // Authentication state
@@ -113,6 +113,6 @@ const sendError = (err: UserError): Middleware<StatusOpen, ResponseEnded, never,
 const user = getUser.orElse(sendError)
 
 express()
-  .get('/:user_id', fromMiddleware(user))
+  .get('/:user_id', toRequestHandler(user))
   // tslint:disable-next-line: no-console
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /:user_id'))

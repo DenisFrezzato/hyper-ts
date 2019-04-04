@@ -1,7 +1,7 @@
 import * as express from 'express'
 import { log } from 'fp-ts/lib/Console'
 import { fromIO, StatusOpen } from '../src'
-import { fromMiddleware } from '../src/express'
+import { toRequestHandler } from '../src/express'
 
 // "Middleware function myLogger" example on http://expressjs.com/en/guide/writing-middleware.html
 
@@ -9,9 +9,9 @@ const app = express()
 
 const myLogger = fromIO<StatusOpen, StatusOpen, void>(log('LOGGED'))
 
-app.use(fromMiddleware(myLogger))
+app.use(toRequestHandler(myLogger))
 
-app.get('/', fromMiddleware(myLogger), (_, res) => {
+app.get('/', toRequestHandler(myLogger), (_, res) => {
   res.send('hello')
 })
 

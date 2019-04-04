@@ -35,14 +35,14 @@ The stable version is tested against TypeScript 3.4.1, but should run with TypeS
 ```ts
 import * as express from 'express'
 import { Status, status } from 'hyper-ts'
-import { fromMiddleware } from 'hyper-ts/lib/express'
+import { toRequestHandler } from 'hyper-ts/lib/express'
 
 const hello = status(Status.OK) // writes the response status
   .closeHeaders() // tells hyper-ts that we're done with the headers
   .send('Hello hyper-ts on express!') // sends the response
 
 express()
-  .get('/', fromMiddleware(hello))
+  .get('/', toRequestHandler(hello))
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))
 ```
 
@@ -119,12 +119,12 @@ Here is a simple example of a middleware called "myLogger". This function just p
 import * as express from 'express'
 import { log } from 'fp-ts/lib/Console'
 import { fromIO, StatusOpen } from 'hyper-ts'
-import { fromMiddleware } from 'hyper-ts/lib/express'
+import { toRequestHandler } from 'hyper-ts/lib/express'
 
 export const myLogger = fromIO<StatusOpen, StatusOpen, void>(log('LOGGED'))
 
 express()
-  .get('/', fromMiddleware(myLogger), (_, res) => {
+  .get('/', toRequestHandler(myLogger), (_, res) => {
     res.send('hello')
   })
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))
@@ -241,7 +241,7 @@ const middleware = decodeBody(t.string.decode)
 import * as express from 'express'
 import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
 import { fromLeft, Middleware, of, decodeParam, Status, status, StatusOpen, ResponseEnded } from 'hyper-ts'
-import { fromMiddleware } from 'hyper-ts/lib/express'
+import { toRequestHandler } from 'hyper-ts/lib/express'
 
 //
 // model
@@ -310,7 +310,7 @@ const sendError = (err: UserError): Middleware<StatusOpen, ResponseEnded, never,
 const user = getUser.orElse(sendError)
 
 express()
-  .get('/:user_id', fromMiddleware(user))
+  .get('/:user_id', toRequestHandler(user))
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /:user_id'))
 ```
 

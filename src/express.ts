@@ -1,4 +1,4 @@
-import { Request, RequestHandler, Response } from 'express'
+import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
 import { Task } from 'fp-ts/lib/Task'
 import { right } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
@@ -82,23 +82,37 @@ const run = (res: Response, action: Action): Response => {
   }
 }
 
-export function fromMiddleware<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler {
-  return (req, res, next) =>
-    middleware
-      .exec(new ExpressConnection<I>(req, res))
-      .run()
-      .then(e =>
-        e.fold(next, c => {
-          const { actions, res } = c as ExpressConnection<O>
-          for (let i = 0; i < actions.length; i++) {
-            run(res, actions[i])
-          }
-          next()
-        })
-      )
+const exec = <I, O, L>(
+  middleware: Middleware<I, O, L, void>,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> =>
+  middleware
+    .exec(new ExpressConnection<I>(req, res))
+    .run()
+    .then(e =>
+      e.fold(next, c => {
+        const { actions, res } = c as ExpressConnection<O>
+        for (let i = 0; i < actions.length; i++) {
+          run(res, actions[i])
+        }
+        next()
+      })
+    )
+
+export function toRequestHandler<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler {
+  return (req, res, next) => exec(middleware, req, res, next)
 }
 
-export function toMiddleware<I, A>(requestHandler: RequestHandler, f: (req: Request) => A): Middleware<I, I, never, A> {
+export function toErrorRequestHandler<I, O, L>(f: (err: unknown) => Middleware<I, O, L, void>): ErrorRequestHandler {
+  return (err, req, res, next) => exec(f(err), req, res, next)
+}
+
+export function fromRequestHandler<I, A>(
+  requestHandler: RequestHandler,
+  f: (req: Request) => A
+): Middleware<I, I, never, A> {
   return new Middleware(c =>
     right(
       new Task(
