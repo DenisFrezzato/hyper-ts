@@ -42,6 +42,7 @@ const Forbidden: 403 = 403
 const NotFound: 404 = 404
 const MethodNotAllowed: 405 = 405
 const NotAcceptable: 406 = 406
+const ServerError: 500 = 500
 
 export const Status = {
   OK,
@@ -52,7 +53,8 @@ export const Status = {
   Forbidden,
   NotFound,
   MethodNotAllowed,
-  NotAcceptable
+  NotAcceptable,
+  ServerError
 }
 
 export type Status = typeof Status[keyof typeof Status]
