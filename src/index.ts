@@ -1,7 +1,7 @@
 import { Either } from 'fp-ts/lib/Either'
 import { Predicate, Refinement, tuple } from 'fp-ts/lib/function'
 import { IO } from 'fp-ts/lib/IO'
-import { IOEither } from 'fp-ts/lib/IOEither'
+import { IOEither, tryCatch2v as ioEitherTryCatch } from 'fp-ts/lib/IOEither'
 import { Task } from 'fp-ts/lib/Task'
 import {
   fromEither as taskEitherFromEither,
@@ -230,8 +230,12 @@ export class Middleware<I, O, L, A> {
     return this.ichain(() => send(body))
   }
   /** Return a middleware that sends `body` as JSON */
-  json<I, L, A>(this: Middleware<I, HeadersOpen, L, A>, body: JSON): Middleware<I, ResponseEnded, L, void> {
-    return this.ichain(() => json(body))
+  json<I, L, A>(
+    this: Middleware<I, HeadersOpen, L, A>,
+    body: unknown,
+    onError: (reason: unknown) => L
+  ): Middleware<I, ResponseEnded, L, void> {
+    return this.ichain(() => json(body, onError))
   }
   /** Return a middleware that ends the response without sending any response body */
   end<I, L, A>(this: Middleware<I, BodyOpen, L, A>): Middleware<I, ResponseEnded, L, void> {
@@ -344,14 +348,19 @@ export const end: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConne
 // derived middlewares
 //
 
-export interface JSONArray extends Array<JSON> {}
-export type JSON = null | string | number | boolean | JSONArray | object
+const stringifyJSON = <L>(u: unknown, onError: (reason: unknown) => L): IOEither<L, string> =>
+  ioEitherTryCatch(() => JSON.stringify(u), onError)
 
 /** Return a middleware that sends `body` as JSON */
-export function json(body: JSON): Middleware<HeadersOpen, ResponseEnded, never, void> {
-  return contentType(MediaType.applicationJSON)
-    .closeHeaders()
-    .send(JSON.stringify(body))
+export function json<L>(
+  body: unknown,
+  onError: (reason: unknown) => L
+): Middleware<HeadersOpen, ResponseEnded, L, void> {
+  return fromIOEither<HeadersOpen, L, string>(stringifyJSON(body, onError)).ichain(json =>
+    contentType(MediaType.applicationJSON)
+      .closeHeaders()
+      .send(json)
+  )
 }
 
 /** Return a middleware that sends a redirect to `uri` */
