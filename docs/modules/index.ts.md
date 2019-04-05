@@ -12,11 +12,8 @@ parent: Modules
 - [Connection (interface)](#connection-interface)
 - [CookieOptions (interface)](#cookieoptions-interface)
 - [HeadersOpen (interface)](#headersopen-interface)
-- [JSONArray (interface)](#jsonarray-interface)
 - [ResponseEnded (interface)](#responseended-interface)
 - [StatusOpen (interface)](#statusopen-interface)
-- [JSON (type alias)](#json-type-alias)
-- [JSONObject (type alias)](#jsonobject-type-alias)
 - [Status (type alias)](#status-type-alias)
 - [Middleware (class)](#middleware-class)
   - [eval (method)](#eval-method)
@@ -71,6 +68,7 @@ parent: Modules
 - [right (function)](#right-function)
 - [send (function)](#send-function)
 - [status (function)](#status-function)
+- [tryCatch (function)](#trycatch-function)
 
 ---
 
@@ -147,14 +145,6 @@ export interface HeadersOpen {
 }
 ```
 
-# JSONArray (interface)
-
-**Signature**
-
-```ts
-export interface JSONArray extends Array<JSON> {}
-```
-
 # ResponseEnded (interface)
 
 Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished
@@ -177,22 +167,6 @@ Type indicating that the status-line is ready to be sent
 export interface StatusOpen {
   readonly StatusOpen: unique symbol
 }
-```
-
-# JSON (type alias)
-
-**Signature**
-
-```ts
-export type JSON = null | string | number | boolean | JSONArray | JSONObject
-```
-
-# JSONObject (type alias)
-
-**Signature**
-
-```ts
-export type JSONObject = { [key: string]: JSON }
 ```
 
 # Status (type alias)
@@ -422,7 +396,11 @@ Return a middleware that sends `body` as JSON
 **Signature**
 
 ```ts
-json<I, L, A>(this: Middleware<I, HeadersOpen, L, A>, body: JSON): Middleware<I, ResponseEnded, L, void> { ... }
+json<I, L, A>(
+    this: Middleware<I, HeadersOpen, L, A>,
+    body: unknown,
+    onError: (reason: unknown) => L
+  ): Middleware<I, ResponseEnded, L, void> { ... }
 ```
 
 ## end (method)
@@ -656,7 +634,10 @@ Return a middleware that sends `body` as JSON
 **Signature**
 
 ```ts
-export function json(body: JSON): Middleware<HeadersOpen, ResponseEnded, never, void> { ... }
+export function json<L>(
+  body: unknown,
+  onError: (reason: unknown) => L
+): Middleware<HeadersOpen, ResponseEnded, L, void> { ... }
 ```
 
 # left (function)
@@ -719,4 +700,12 @@ Returns a middleware that writes the response status
 
 ```ts
 export function status(status: Status): Middleware<StatusOpen, HeadersOpen, never, void> { ... }
+```
+
+# tryCatch (function)
+
+**Signature**
+
+```ts
+export function tryCatch<I, L, A>(f: () => Promise<A>, onrejected: (reason: unknown) => L): Middleware<I, I, L, A> { ... }
 ```
