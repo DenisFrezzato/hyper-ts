@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import { right } from 'fp-ts/lib/Either'
+import { right, toError } from 'fp-ts/lib/Either'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
@@ -103,7 +103,7 @@ describe('Middleware', () => {
 
   describe('json', () => {
     it('should add the proper header and send the content', () => {
-      const m = json({ a: 1 })
+      const m = json({ a: 1 }, toError)
       const c = new MockConnection<HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [
         { type: 'setHeader', name: 'Content-Type', value: 'application/json' },
