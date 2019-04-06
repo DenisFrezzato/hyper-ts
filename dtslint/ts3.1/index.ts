@@ -1,4 +1,4 @@
-import { header, status, Status, json, Middleware, BodyOpen, HeadersOpen } from '../../src'
+import { header, status, Status, json, Middleware, BodyOpen, HeadersOpen } from '../../lib'
 
 // $ExpectError
 const m1 = status(1000)

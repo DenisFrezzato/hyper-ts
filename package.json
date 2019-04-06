@@ -16,7 +16,7 @@
     "test": "npm run lint && npm run prettier && npm run dtslint && npm run jest && npm run docs",
     "clean": "rm -rf lib/*",
     "build": "npm run clean && tsc",
-    "dtslint": "dtslint dtslint",
+    "dtslint": "npm run build && dtslint dtslint",
     "docs": "docs-ts"
   },
   "repository": {

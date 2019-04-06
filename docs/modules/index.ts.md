@@ -14,6 +14,7 @@ parent: Modules
 - [HeadersOpen (interface)](#headersopen-interface)
 - [ResponseEnded (interface)](#responseended-interface)
 - [StatusOpen (interface)](#statusopen-interface)
+- [MediaType (type alias)](#mediatype-type-alias)
 - [Status (type alias)](#status-type-alias)
 - [Middleware (class)](#middleware-class)
   - [eval (method)](#eval-method)
@@ -38,6 +39,7 @@ parent: Modules
   - [send (method)](#send-method)
   - [json (method)](#json-method)
   - [end (method)](#end-method)
+- [MediaType (constant)](#mediatype-constant)
 - [Status (constant)](#status-constant)
 - [closeHeaders (constant)](#closeheaders-constant)
 - [end (constant)](#end-constant)
@@ -95,24 +97,24 @@ State changes are tracked by the phantom type `S`
 ```ts
 export interface Connection<S> {
   readonly _S: S
-  getRequest: () => IncomingMessage
-  getBody: () => unknown
-  getHeader: (name: string) => unknown
-  getParams: () => unknown
-  getQuery: () => unknown
-  getOriginalUrl: () => string
-  getMethod: () => string
-  setCookie: (
+  readonly getRequest: () => IncomingMessage
+  readonly getBody: () => unknown
+  readonly getHeader: (name: string) => unknown
+  readonly getParams: () => unknown
+  readonly getQuery: () => unknown
+  readonly getOriginalUrl: () => string
+  readonly getMethod: () => string
+  readonly setCookie: (
     this: Connection<HeadersOpen>,
     name: string,
     value: string,
     options: CookieOptions
   ) => Connection<HeadersOpen>
-  clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
-  setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
-  setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
-  setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
-  endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
+  readonly clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
+  readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
+  readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
+  readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
+  readonly endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
 }
 ```
 
@@ -122,14 +124,14 @@ export interface Connection<S> {
 
 ```ts
 export interface CookieOptions {
-  expires?: Date
-  domain?: string
-  httpOnly?: boolean
-  maxAge?: number
-  path?: string
-  sameSite?: boolean | 'strict' | 'lax'
-  secure?: boolean
-  signed?: boolean
+  readonly expires?: Date
+  readonly domain?: string
+  readonly httpOnly?: boolean
+  readonly maxAge?: number
+  readonly path?: string
+  readonly sameSite?: boolean | 'strict' | 'lax'
+  readonly secure?: boolean
+  readonly signed?: boolean
 }
 ```
 
@@ -167,6 +169,14 @@ Type indicating that the status-line is ready to be sent
 export interface StatusOpen {
   readonly StatusOpen: unique symbol
 }
+```
+
+# MediaType (type alias)
+
+**Signature**
+
+```ts
+export type MediaType = typeof MediaType[keyof typeof MediaType]
 ```
 
 # Status (type alias)
@@ -411,6 +421,14 @@ Return a middleware that ends the response without sending any response body
 
 ```ts
 end<I, L, A>(this: Middleware<I, BodyOpen, L, A>): Middleware<I, ResponseEnded, L, void> { ... }
+```
+
+# MediaType (constant)
+
+**Signature**
+
+```ts
+export const MediaType = ...
 ```
 
 # Status (constant)

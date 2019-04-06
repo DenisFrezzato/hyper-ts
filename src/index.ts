@@ -18,57 +18,48 @@ import {
 import { IncomingMessage } from 'http'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
-export enum MediaType {
-  applicationFormURLEncoded = 'application/x-www-form-urlencoded',
-  applicationJSON = 'application/json',
-  applicationJavascript = 'application/javascript',
-  applicationOctetStream = 'application/octet-stream',
-  applicationXML = 'application/xml',
-  imageGIF = 'image/gif',
-  imageJPEG = 'image/jpeg',
-  imagePNG = 'image/png',
-  multipartFormData = 'multipart/form-data',
-  textCSV = 'text/csv',
-  textHTML = 'text/html',
-  textPlain = 'text/plain',
-  textXML = 'text/xml'
-}
+export const MediaType = {
+  applicationFormURLEncoded: 'application/x-www-form-urlencoded',
+  applicationJSON: 'application/json',
+  applicationJavascript: 'application/javascript',
+  applicationOctetStream: 'application/octet-stream',
+  applicationXML: 'application/xml',
+  imageGIF: 'image/gif',
+  imageJPEG: 'image/jpeg',
+  imagePNG: 'image/png',
+  multipartFormData: 'multipart/form-data',
+  textCSV: 'text/csv',
+  textHTML: 'text/html',
+  textPlain: 'text/plain',
+  textXML: 'text/xml'
+} as const
 
-const OK: 200 = 200
-const Created: 201 = 201
-const Found: 302 = 302
-const BadRequest: 400 = 400
-const Unauthorized: 401 = 401
-const Forbidden: 403 = 403
-const NotFound: 404 = 404
-const MethodNotAllowed: 405 = 405
-const NotAcceptable: 406 = 406
-const ServerError: 500 = 500
+export type MediaType = typeof MediaType[keyof typeof MediaType]
 
 export const Status = {
-  OK,
-  Created,
-  Found,
-  BadRequest,
-  Unauthorized,
-  Forbidden,
-  NotFound,
-  MethodNotAllowed,
-  NotAcceptable,
-  ServerError
-}
+  OK: 200,
+  Created: 201,
+  Found: 302,
+  BadRequest: 400,
+  Unauthorized: 401,
+  Forbidden: 403,
+  NotFound: 404,
+  MethodNotAllowed: 405,
+  NotAcceptable: 406,
+  ServerError: 500
+} as const
 
 export type Status = typeof Status[keyof typeof Status]
 
 export interface CookieOptions {
-  expires?: Date
-  domain?: string
-  httpOnly?: boolean
-  maxAge?: number
-  path?: string
-  sameSite?: boolean | 'strict' | 'lax'
-  secure?: boolean
-  signed?: boolean
+  readonly expires?: Date
+  readonly domain?: string
+  readonly httpOnly?: boolean
+  readonly maxAge?: number
+  readonly path?: string
+  readonly sameSite?: boolean | 'strict' | 'lax'
+  readonly secure?: boolean
+  readonly signed?: boolean
 }
 
 /** Type indicating that the status-line is ready to be sent */
@@ -98,24 +89,24 @@ export interface ResponseEnded {
  */
 export interface Connection<S> {
   readonly _S: S
-  getRequest: () => IncomingMessage
-  getBody: () => unknown
-  getHeader: (name: string) => unknown
-  getParams: () => unknown
-  getQuery: () => unknown
-  getOriginalUrl: () => string
-  getMethod: () => string
-  setCookie: (
+  readonly getRequest: () => IncomingMessage
+  readonly getBody: () => unknown
+  readonly getHeader: (name: string) => unknown
+  readonly getParams: () => unknown
+  readonly getQuery: () => unknown
+  readonly getOriginalUrl: () => string
+  readonly getMethod: () => string
+  readonly setCookie: (
     this: Connection<HeadersOpen>,
     name: string,
     value: string,
     options: CookieOptions
   ) => Connection<HeadersOpen>
-  clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
-  setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
-  setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
-  setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
-  endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
+  readonly clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
+  readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
+  readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
+  readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
+  readonly endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
 }
 
 export function gets<I, L, A>(f: (c: Connection<I>) => A): Middleware<I, I, L, A> {
