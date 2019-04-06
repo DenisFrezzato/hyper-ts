@@ -58,24 +58,24 @@ State changes are tracked by the phantom type `S`.
 ```ts
 export interface Connection<S> {
   readonly _S: S
-  getRequest: () => IncomingMessage
-  getBody: () => unknown
-  getHeader: (name: string) => unknown
-  getParams: () => unknown
-  getQuery: () => unknown
-  getOriginalUrl: () => string
-  getMethod: () => string
-  setCookie: (
+  readonly getRequest: () => IncomingMessage
+  readonly getBody: () => unknown
+  readonly getHeader: (name: string) => unknown
+  readonly getParams: () => unknown
+  readonly getQuery: () => unknown
+  readonly getOriginalUrl: () => string
+  readonly getMethod: () => string
+  readonly setCookie: (
     this: Connection<HeadersOpen>,
     name: string,
     value: string,
     options: CookieOptions
   ) => Connection<HeadersOpen>
-  clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
-  setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
-  setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
-  setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
-  endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
+  readonly clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
+  readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
+  readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
+  readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
+  readonly endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
 }
 ```
 
