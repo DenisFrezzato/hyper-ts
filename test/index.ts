@@ -23,7 +23,7 @@ import {
   status,
   StatusOpen
 } from '../src'
-import { Action, ExpressConnection } from '../src/express'
+import { Action, ExpressConnection, toArray } from '../src/express'
 
 class MockRequest {
   constructor(
@@ -52,7 +52,10 @@ function assertSuccess<I, O, A>(m: Middleware<I, O, any, A>, cin: MockConnection
     .run(cin)
     .run()
     .then(e => {
-      assert.deepStrictEqual(e.map(([a, cout]) => [a, (cout as MockConnection<O>).actions]), right([a, actions]))
+      assert.deepStrictEqual(
+        e.map(([a, cout]) => [a, toArray((cout as MockConnection<O>).actions)]),
+        right([a, actions])
+      )
     })
 }
 
