@@ -30,10 +30,12 @@
   },
   "homepage": "https://github.com/gcanti/hyper-ts",
   "devDependencies": {
+    "@types/benchmark": "^1.0.31",
     "@types/express": "4.11.0",
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.11.6",
     "@types/qs": "^6.5.2",
+    "benchmark": "^2.1.4",
     "docs-ts": "0.0.1",
     "dtslint": "github:gcanti/dtslint",
     "fp-ts": "^1.15.0",

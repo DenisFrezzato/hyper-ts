@@ -9,6 +9,7 @@ parent: Modules
 <h2 class="text-delta">Table of contents</h2>
 
 - [Action (type alias)](#action-type-alias)
+- [LinkedList (type alias)](#linkedlist-type-alias)
 - [ExpressConnection (class)](#expressconnection-class)
   - [chain (method)](#chain-method)
   - [getRequest (method)](#getrequest-method)
@@ -24,7 +25,10 @@ parent: Modules
   - [setStatus (method)](#setstatus-method)
   - [setBody (method)](#setbody-method)
   - [endResponse (method)](#endresponse-method)
+- [nil (constant)](#nil-constant)
+- [cons (function)](#cons-function)
 - [fromRequestHandler (function)](#fromrequesthandler-function)
+- [toArray (function)](#toarray-function)
 - [toErrorRequestHandler (function)](#toerrorrequesthandler-function)
 - [toRequestHandler (function)](#torequesthandler-function)
 
@@ -44,6 +48,16 @@ export type Action =
   | { type: 'setCookie'; name: string; value: string; options: CookieOptions }
 ```
 
+# LinkedList (type alias)
+
+**Signature**
+
+```ts
+export type LinkedList<A> =
+  | { type: 'Nil'; length: number }
+  | { type: 'Cons'; head: A; tail: LinkedList<A>; length: number }
+```
+
 # ExpressConnection (class)
 
 **Signature**
@@ -53,7 +67,7 @@ export class ExpressConnection<S> {
   constructor(
     readonly req: Request,
     readonly res: Response,
-    readonly actions: Array<Action> = empty,
+    readonly actions: LinkedList<Action> = nil,
     readonly ended: boolean = false
   ) { ... }
   ...
@@ -172,6 +186,22 @@ setBody(body: unknown): ExpressConnection<ResponseEnded> { ... }
 endResponse(): ExpressConnection<ResponseEnded> { ... }
 ```
 
+# nil (constant)
+
+**Signature**
+
+```ts
+export const nil: LinkedList<never> = ...
+```
+
+# cons (function)
+
+**Signature**
+
+```ts
+export const cons = <A>(head: A, tail: LinkedList<A>): LinkedList<A> => ...
+```
+
 # fromRequestHandler (function)
 
 **Signature**
@@ -181,6 +211,14 @@ export function fromRequestHandler<I, A>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
 ): Middleware<I, I, never, A> { ... }
+```
+
+# toArray (function)
+
+**Signature**
+
+```ts
+export const toArray = <A>(list: LinkedList<A>): Array<A> => ...
 ```
 
 # toErrorRequestHandler (function)
