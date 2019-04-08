@@ -11,16 +11,33 @@ const empty: Array<number> = []
 // // tslint:disable-next-line: no-console
 // console.log([...[...[...[...empty, 1], 2], 3], 4])
 
+const one = { value: 1 }
+const two = { value: 2 }
+const three = { value: 3 }
+const four = { value: 4 }
+const five = { value: 5 }
+const six = { value: 6 }
+
 suite
   .add('LinkedList', function() {
-    cons(6, cons(5, cons(4, cons(3, cons(2, cons(1, nil))))))
+    cons(six, cons(five, cons(four, cons(three, cons(two, cons(one, nil))))))
   })
   .add('LinkedList (with toArray)', function() {
-    toArray(cons(6, cons(5, cons(4, cons(3, cons(2, cons(1, nil)))))))
+    toArray(cons(six, cons(five, cons(four, cons(three, cons(two, cons(one, nil)))))))
   })
-  .add('Array', function() {
+  .add('Array (spread)', function() {
     // tslint:disable-next-line: no-unused-expression
-    ;[...[...[...[...[...[...empty, 1], 2], 3], 4], 5], 6]
+    ;[...[...[...[...[...[...empty, one], two], three], four], five], six]
+  })
+  .add('Array (concat)', function() {
+    // tslint:disable-next-line: no-unused-expression
+    ;([] as Array<{ value: number }>)
+      .concat(one)
+      .concat(two)
+      .concat(three)
+      .concat(four)
+      .concat(five)
+      .concat(six)
   })
   .on('cycle', function(event: any) {
     // tslint:disable-next-line: no-console
