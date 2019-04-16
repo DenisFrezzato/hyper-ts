@@ -316,4 +316,4 @@ express()
 
 # Documentation
 
-- [API Reference](https://gcanti.github.io/hyper-ts/modules/)
+- [API Reference](https://gcanti.github.io/hyper-ts/)
