@@ -1,9 +1,3 @@
-**IMPORTANT**. Version 0.4 is under active development.
-
-For a sneak preview: `npm i gcanti/hyper-ts#lib`
-
----
-
 A partial porting of https://github.com/owickstrom/hyper to TypeScript
 
 `hyper-ts` is an experimental middleware architecture for HTTP servers written in TypeScript.
