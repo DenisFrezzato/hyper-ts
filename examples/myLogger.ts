@@ -7,7 +7,7 @@ import { toRequestHandler } from '../src/express'
 
 const app = express()
 
-const myLogger = fromIO<StatusOpen, StatusOpen, void>(log('LOGGED'))
+const myLogger = fromIO<StatusOpen, never, void>(log('LOGGED'))
 
 app.use(toRequestHandler(myLogger))
 

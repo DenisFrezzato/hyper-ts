@@ -115,7 +115,7 @@ import { log } from 'fp-ts/lib/Console'
 import { fromIO, StatusOpen } from 'hyper-ts'
 import { toRequestHandler } from 'hyper-ts/lib/express'
 
-export const myLogger = fromIO<StatusOpen, StatusOpen, void>(log('LOGGED'))
+export const myLogger = fromIO<StatusOpen, never, void>(log('LOGGED'))
 
 express()
   .get('/', toRequestHandler(myLogger), (_, res) => {
