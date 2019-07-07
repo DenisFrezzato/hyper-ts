@@ -96,13 +96,6 @@ export interface Connection<S> {
   readonly getQuery: () => unknown
   readonly getOriginalUrl: () => string
   readonly getMethod: () => string
-  readonly setCookie: (
-    this: Connection<HeadersOpen>,
-    name: string,
-    value: string,
-    options: CookieOptions
-  ) => Connection<HeadersOpen>
-  readonly clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
   readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
   readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
   readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
@@ -194,23 +187,6 @@ export class Middleware<I, O, L, A> {
     mediaType: MediaType
   ): Middleware<I, HeadersOpen, L, void> {
     return this.ichain(() => contentType(mediaType))
-  }
-  /** Return a middleware that sets the cookie `name` to `value`, with the given `options` */
-  cookie<I, L, A>(
-    this: Middleware<I, HeadersOpen, L, A>,
-    name: string,
-    value: string,
-    options: CookieOptions
-  ): Middleware<I, HeadersOpen, L, void> {
-    return this.ichain(() => cookie(name, value, options))
-  }
-  /** Returns a middleware that clears the cookie `name` */
-  clearCookie<I, L, A>(
-    this: Middleware<I, HeadersOpen, L, A>,
-    name: string,
-    options: CookieOptions
-  ): Middleware<I, HeadersOpen, L, void> {
-    return this.ichain(() => clearCookie(name, options))
   }
   /** Return a middleware that changes the connection status to `BodyOpen` */
   closeHeaders<I, L, A>(this: Middleware<I, HeadersOpen, L, A>): Middleware<I, BodyOpen, L, void> {
@@ -308,20 +284,6 @@ export function header(name: string, value: string): Middleware<HeadersOpen, Hea
 /** Returns a middleware that sets the given `mediaType` */
 export function contentType(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, never, void> {
   return header('Content-Type', mediaType)
-}
-
-/** Return a middleware that sets the cookie `name` to `value`, with the given `options` */
-export function cookie(
-  name: string,
-  value: string,
-  options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, never, void> {
-  return modifyConnection(c => c.setCookie(name, value, options))
-}
-
-/** Returns a middleware that clears the cookie `name` */
-export function clearCookie(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, never, void> {
-  return modifyConnection(c => c.clearCookie(name, options))
 }
 
 /** Return a middleware that changes the connection status to `BodyOpen` */

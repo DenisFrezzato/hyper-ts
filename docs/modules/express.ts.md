@@ -9,7 +9,6 @@ parent: Modules
 <h2 class="text-delta">Table of contents</h2>
 
 - [Action (type alias)](#action-type-alias)
-- [LinkedList (type alias)](#linkedlist-type-alias)
 - [ExpressConnection (class)](#expressconnection-class)
   - [chain (method)](#chain-method)
   - [getRequest (method)](#getrequest-method)
@@ -25,10 +24,9 @@ parent: Modules
   - [setStatus (method)](#setstatus-method)
   - [setBody (method)](#setbody-method)
   - [endResponse (method)](#endresponse-method)
-- [nil (constant)](#nil-constant)
-- [cons (function)](#cons-function)
+- [clearCookie (function)](#clearcookie-function)
+- [cookie (function)](#cookie-function)
 - [fromRequestHandler (function)](#fromrequesthandler-function)
-- [toArray (function)](#toarray-function)
 - [toErrorRequestHandler (function)](#toerrorrequesthandler-function)
 - [toRequestHandler (function)](#torequesthandler-function)
 
@@ -46,16 +44,6 @@ export type Action =
   | { type: 'setHeader'; name: string; value: string }
   | { type: 'clearCookie'; name: string; options: CookieOptions }
   | { type: 'setCookie'; name: string; value: string; options: CookieOptions }
-```
-
-# LinkedList (type alias)
-
-**Signature**
-
-```ts
-export type LinkedList<A> =
-  | { type: 'Nil'; length: number }
-  | { type: 'Cons'; head: A; tail: LinkedList<A>; length: number }
 ```
 
 # ExpressConnection (class)
@@ -186,20 +174,28 @@ setBody(body: unknown): ExpressConnection<ResponseEnded> { ... }
 endResponse(): ExpressConnection<ResponseEnded> { ... }
 ```
 
-# nil (constant)
+# clearCookie (function)
+
+Returns a middleware that clears the cookie `name`
 
 **Signature**
 
 ```ts
-export const nil: LinkedList<never> = ...
+export function clearCookie(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
 ```
 
-# cons (function)
+# cookie (function)
+
+Return a middleware that sets the cookie `name` to `value`, with the given `options`
 
 **Signature**
 
 ```ts
-export const cons = <A>(head: A, tail: LinkedList<A>): LinkedList<A> => ...
+export function cookie(
+  name: string,
+  value: string,
+  options: CookieOptions
+): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
 ```
 
 # fromRequestHandler (function)
@@ -211,14 +207,6 @@ export function fromRequestHandler<I, A>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
 ): Middleware<I, I, never, A> { ... }
-```
-
-# toArray (function)
-
-**Signature**
-
-```ts
-export const toArray = <A>(list: LinkedList<A>): Array<A> => ...
 ```
 
 # toErrorRequestHandler (function)

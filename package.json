@@ -73,5 +73,8 @@
     "io-ts",
     "functional-programming",
     "hyper"
-  ]
+  ],
+  "optionalDependencies": {
+    "fastify": "^2.6.0"
+  }
 }

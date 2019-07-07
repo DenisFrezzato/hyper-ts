@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 2
+nav_order: 3
 parent: Modules
 ---
 
@@ -33,8 +33,6 @@ parent: Modules
   - [status (method)](#status-method)
   - [header (method)](#header-method)
   - [contentType (method)](#contenttype-method)
-  - [cookie (method)](#cookie-method)
-  - [clearCookie (method)](#clearcookie-method)
   - [closeHeaders (method)](#closeheaders-method)
   - [send (method)](#send-method)
   - [json (method)](#json-method)
@@ -43,9 +41,7 @@ parent: Modules
 - [Status (constant)](#status-constant)
 - [closeHeaders (constant)](#closeheaders-constant)
 - [end (constant)](#end-constant)
-- [clearCookie (function)](#clearcookie-function)
 - [contentType (function)](#contenttype-function)
-- [cookie (function)](#cookie-function)
 - [decodeBody (function)](#decodebody-function)
 - [decodeHeader (function)](#decodeheader-function)
 - [decodeMethod (function)](#decodemethod-function)
@@ -104,13 +100,6 @@ export interface Connection<S> {
   readonly getQuery: () => unknown
   readonly getOriginalUrl: () => string
   readonly getMethod: () => string
-  readonly setCookie: (
-    this: Connection<HeadersOpen>,
-    name: string,
-    value: string,
-    options: CookieOptions
-  ) => Connection<HeadersOpen>
-  readonly clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
   readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
   readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
   readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
@@ -350,35 +339,6 @@ contentType<I, L, A>(
   ): Middleware<I, HeadersOpen, L, void> { ... }
 ```
 
-## cookie (method)
-
-Return a middleware that sets the cookie `name` to `value`, with the given `options`
-
-**Signature**
-
-```ts
-cookie<I, L, A>(
-    this: Middleware<I, HeadersOpen, L, A>,
-    name: string,
-    value: string,
-    options: CookieOptions
-  ): Middleware<I, HeadersOpen, L, void> { ... }
-```
-
-## clearCookie (method)
-
-Returns a middleware that clears the cookie `name`
-
-**Signature**
-
-```ts
-clearCookie<I, L, A>(
-    this: Middleware<I, HeadersOpen, L, A>,
-    name: string,
-    options: CookieOptions
-  ): Middleware<I, HeadersOpen, L, void> { ... }
-```
-
 ## closeHeaders (method)
 
 Return a middleware that changes the connection status to `BodyOpen`
@@ -459,16 +419,6 @@ Return a middleware that ends the response without sending any response body
 export const end: Middleware<BodyOpen, ResponseEnded, never, void> = ...
 ```
 
-# clearCookie (function)
-
-Returns a middleware that clears the cookie `name`
-
-**Signature**
-
-```ts
-export function clearCookie(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
-```
-
 # contentType (function)
 
 Returns a middleware that sets the given `mediaType`
@@ -477,20 +427,6 @@ Returns a middleware that sets the given `mediaType`
 
 ```ts
 export function contentType(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
-```
-
-# cookie (function)
-
-Return a middleware that sets the cookie `name` to `value`, with the given `options`
-
-**Signature**
-
-```ts
-export function cookie(
-  name: string,
-  value: string,
-  options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, never, void> { ... }
 ```
 
 # decodeBody (function)

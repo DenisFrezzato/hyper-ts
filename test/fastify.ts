@@ -2,12 +2,9 @@ import * as assert from 'assert'
 import { right, toError } from 'fp-ts/lib/Either'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
-import * as querystring from 'qs'
 import {
   BodyOpen,
-  clearCookie,
   contentType,
-  cookie,
   decodeBody,
   decodeHeader,
   decodeParam,
@@ -23,25 +20,11 @@ import {
   status,
   StatusOpen
 } from '../src'
-import { Action, ExpressConnection, toArray } from '../src/express'
+import { toArray } from '../src/linkedList'
+import { FastifyConnection, Action } from '../src/fastify'
+import { MockRequest } from './helpers'
 
-class MockRequest {
-  constructor(
-    readonly params?: unknown,
-    readonly query: string = '',
-    readonly body?: unknown,
-    readonly headers: Record<string, string> = {},
-    readonly originalUrl: string = '',
-    readonly method: string = 'GET'
-  ) {
-    this.query = querystring.parse(query)
-  }
-  header(name: string) {
-    return this.headers[name]
-  }
-}
-
-class MockConnection<S> extends ExpressConnection<S> {
+class MockConnection<S> extends FastifyConnection<S> {
   constructor(req: MockRequest) {
     super(req as any, null as any)
   }
@@ -111,25 +94,6 @@ describe('Middleware', () => {
       return assertSuccess(m, c, undefined, [
         { type: 'setHeader', name: 'Content-Type', value: 'application/json' },
         { type: 'setBody', body: `{"a":1}` }
-      ])
-    })
-  })
-
-  describe('cookie', () => {
-    it('should add the cookie', () => {
-      const m = cookie('name', 'value', {})
-      const c = new MockConnection<HeadersOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, [{ type: 'setCookie', name: 'name', value: 'value', options: {} }])
-    })
-  })
-
-  describe('clearCookie', () => {
-    it('should clear the cookie', () => {
-      const m = cookie('name', 'value', {}).ichain(() => clearCookie('name', {}))
-      const c = new MockConnection<HeadersOpen>(new MockRequest())
-      return assertSuccess(m, c, undefined, [
-        { type: 'setCookie', name: 'name', value: 'value', options: {} },
-        { type: 'clearCookie', name: 'name', options: {} }
       ])
     })
   })

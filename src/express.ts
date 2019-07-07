@@ -2,33 +2,8 @@ import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } 
 import { Task } from 'fp-ts/lib/Task'
 import { right } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
-import { Connection, CookieOptions, HeadersOpen, Middleware, ResponseEnded, Status } from '.'
-
-export type LinkedList<A> =
-  | { type: 'Nil'; length: number }
-  | { type: 'Cons'; head: A; tail: LinkedList<A>; length: number }
-
-export const nil: LinkedList<never> = { type: 'Nil', length: 0 }
-
-export const cons = <A>(head: A, tail: LinkedList<A>): LinkedList<A> => ({
-  type: 'Cons',
-  head,
-  tail,
-  length: tail.length + 1
-})
-
-export const toArray = <A>(list: LinkedList<A>): Array<A> => {
-  const len = list.length
-  const r: Array<A> = new Array(len)
-  let l: LinkedList<A> = list
-  let i = 1
-  while (l.type !== 'Nil') {
-    r[len - i] = l.head
-    i++
-    l = l.tail
-  }
-  return r
-}
+import { Connection, CookieOptions, HeadersOpen, Middleware, ResponseEnded, Status, modifyConnection } from '.'
+import { LinkedList, nil, cons, toArray } from './linkedList'
 
 export type Action =
   | { type: 'setBody'; body: unknown }
@@ -157,4 +132,18 @@ export function fromRequestHandler<I, A>(
       )
     )
   )
+}
+
+/** Return a middleware that sets the cookie `name` to `value`, with the given `options` */
+export function cookie(
+  name: string,
+  value: string,
+  options: CookieOptions
+): Middleware<HeadersOpen, HeadersOpen, never, void> {
+  return modifyConnection(c => (c as ExpressConnection<HeadersOpen>).setCookie(name, value, options))
+}
+
+/** Returns a middleware that clears the cookie `name` */
+export function clearCookie(name: string, options: CookieOptions): Middleware<HeadersOpen, HeadersOpen, never, void> {
+  return modifyConnection(c => (c as ExpressConnection<HeadersOpen>).clearCookie(name, options))
 }
