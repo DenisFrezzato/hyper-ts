@@ -1,8 +1,9 @@
 import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
-import { Task } from 'fp-ts/lib/Task'
-import { right } from 'fp-ts/lib/TaskEither'
+import { rightTask } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
 import { Connection, CookieOptions, HeadersOpen, Middleware, ResponseEnded, Status } from '.'
+import * as E from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 export type LinkedList<A> =
   | { type: 'Nil'; length: number }
@@ -118,20 +119,22 @@ const exec = <I, O, L>(
   next: NextFunction
 ): Promise<void> =>
   middleware
-    .exec(new ExpressConnection<I>(req, res))
-    .run()
+    .exec(new ExpressConnection<I>(req, res))()
     .then(e =>
-      e.fold(next, c => {
-        const { actions: list, res, ended } = c as ExpressConnection<O>
-        const len = list.length
-        const actions = toArray(list)
-        for (let i = 0; i < len; i++) {
-          run(res, actions[i])
-        }
-        if (!ended) {
-          next()
-        }
-      })
+      pipe(
+        e,
+        E.fold(next, c => {
+          const { actions: list, res, ended } = c as ExpressConnection<O>
+          const len = list.length
+          const actions = toArray(list)
+          for (let i = 0; i < len; i++) {
+            run(res, actions[i])
+          }
+          if (!ended) {
+            next()
+          }
+        })
+      )
     )
 
 export function toRequestHandler<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler {
@@ -147,14 +150,12 @@ export function fromRequestHandler<I, A>(
   f: (req: Request) => A
 ): Middleware<I, I, never, A> {
   return new Middleware(c =>
-    right(
-      new Task(
-        () =>
-          new Promise(resolve => {
-            const { req, res } = c as ExpressConnection<I>
-            requestHandler(req, res, () => resolve([f(req), c]))
-          })
-      )
+    rightTask(
+      () =>
+        new Promise(resolve => {
+          const { req, res } = c as ExpressConnection<I>
+          requestHandler(req, res, () => resolve([f(req), c]))
+        })
     )
   )
 }

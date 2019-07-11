@@ -1,8 +1,10 @@
 import * as express from 'express'
-import { Middleware, Status, status, decodeBody, StatusOpen, ResponseEnded } from '../src'
-import { toRequestHandler, fromRequestHandler } from '../src/express'
+import * as E from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
+import { decodeBody, Middleware, ResponseEnded, Status, status, StatusOpen } from '../src'
+import { fromRequestHandler, toRequestHandler } from '../src/express'
 
 // Express middleware
 const json = express.json()
@@ -17,7 +19,12 @@ const Body = t.strict({
   name: t.string
 })
 
-const bodyDecoder = decodeBody(u => Body.decode(u).mapLeft(errors => `invalid body: ${failure(errors).join('\n')}`))
+const bodyDecoder = decodeBody(u =>
+  pipe(
+    Body.decode(u),
+    E.mapLeft(errors => `invalid body: ${failure(errors).join('\n')}`)
+  )
+)
 
 const badRequest = (message: string) =>
   status(Status.BadRequest)
