@@ -197,7 +197,7 @@ middleware action.
 
 ```ts
 export class Middleware<I, O, L, A> {
-  constructor(readonly run: (c: Connection<I>) => TaskEither<L, [A, Connection<O>]>) { ... }
+  constructor(readonly run: (c: Connection<I>) => TE.TaskEither<L, [A, Connection<O>]>) { ... }
   ...
 }
 ```
@@ -207,7 +207,7 @@ export class Middleware<I, O, L, A> {
 **Signature**
 
 ```ts
-eval(c: Connection<I>): TaskEither<L, A> { ... }
+eval(c: Connection<I>): TE.TaskEither<L, A> { ... }
 ```
 
 ## exec (method)
@@ -215,7 +215,7 @@ eval(c: Connection<I>): TaskEither<L, A> { ... }
 **Signature**
 
 ```ts
-exec(c: Connection<I>): TaskEither<L, Connection<O>> { ... }
+exec(c: Connection<I>): TE.TaskEither<L, Connection<O>> { ... }
 ```
 
 ## map (method)
@@ -500,7 +500,7 @@ Returns a middleware that tries to decode `connection.getBody()`
 **Signature**
 
 ```ts
-export function decodeBody<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+export function decodeBody<L, A>(f: (input: unknown) => E.Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # decodeHeader (function)
@@ -512,7 +512,7 @@ Returns a middleware that tries to decode `connection.getHeader(name)`
 ```ts
 export function decodeHeader<L, A>(
   name: string,
-  f: (input: unknown) => Either<L, A>
+  f: (input: unknown) => E.Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
@@ -523,7 +523,7 @@ Returns a middleware that tries to decode `connection.getMethod()`
 **Signature**
 
 ```ts
-export function decodeMethod<L, A>(f: (method: string) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+export function decodeMethod<L, A>(f: (method: string) => E.Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # decodeParam (function)
@@ -535,7 +535,7 @@ Returns a middleware that tries to decode `connection.getParams()[name]`
 ```ts
 export function decodeParam<L, A>(
   name: string,
-  f: (input: unknown) => Either<L, A>
+  f: (input: unknown) => E.Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
@@ -546,7 +546,7 @@ Returns a middleware that tries to decode `connection.getParams()`
 **Signature**
 
 ```ts
-export function decodeParams<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+export function decodeParams<L, A>(f: (input: unknown) => E.Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # decodeQuery (function)
@@ -556,7 +556,7 @@ Returns a middleware that tries to decode `connection.getQuery()`
 **Signature**
 
 ```ts
-export function decodeQuery<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
+export function decodeQuery<L, A>(f: (input: unknown) => E.Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> { ... }
 ```
 
 # fromConnection (function)
@@ -564,7 +564,7 @@ export function decodeQuery<L, A>(f: (input: unknown) => Either<L, A>): Middlewa
 **Signature**
 
 ```ts
-export function fromConnection<I, L, A>(f: (c: Connection<I>) => Either<L, A>): Middleware<I, I, L, A> { ... }
+export function fromConnection<I, L, A>(f: (c: Connection<I>) => E.Either<L, A>): Middleware<I, I, L, A> { ... }
 ```
 
 # fromEither (function)
@@ -572,7 +572,7 @@ export function fromConnection<I, L, A>(f: (c: Connection<I>) => Either<L, A>): 
 **Signature**
 
 ```ts
-export const fromEither = <I, L, A>(fa: Either<L, A>): Middleware<I, I, L, A> => ...
+export const fromEither = <I, L, A>(fa: E.Either<L, A>): Middleware<I, I, L, A> => ...
 ```
 
 # fromIO (function)
@@ -616,7 +616,7 @@ export function fromPredicate<I, L, A>(predicate: Predicate<A>, onFalse: (a: A) 
 **Signature**
 
 ```ts
-export function fromTaskEither<I, L, A>(fa: TaskEither<L, A>): Middleware<I, I, L, A> { ... }
+export function fromTaskEither<I, L, A>(fa: TE.TaskEither<L, A>): Middleware<I, I, L, A> { ... }
 ```
 
 # gets (function)

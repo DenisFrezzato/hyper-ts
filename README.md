@@ -146,7 +146,7 @@ const middleware = decodeParam('user_id', u =>
 )
 ```
 
-You can also use [io-ts](https://github.com/gcanti/io-ts) codecs.
+You can also use [io-ts](https://github.com/gcanti/io-ts) decoders.
 
 **A single param**
 

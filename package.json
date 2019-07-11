@@ -1,6 +1,6 @@
 {
   "name": "hyper-ts",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "hyper-ts description",
   "files": [
     "lib"
@@ -36,21 +36,21 @@
     "@types/node": "^11.11.6",
     "@types/qs": "^6.5.2",
     "benchmark": "^2.1.4",
-    "docs-ts": "0.0.1",
+    "docs-ts": "^0.1.0",
     "dtslint": "github:gcanti/dtslint",
-    "fp-ts": "^1.15.0",
+    "fp-ts": "^2.0.1",
     "fp-ts-routing": "^0.4.1",
-    "io-ts": "^1.8.4",
-    "io-ts-types": "^0.4.5",
-    "jest": "^24.5.0",
+    "io-ts": "^2.0.0",
+    "io-ts-types": "^0.5.0",
+    "jest": "^24.8.0",
     "mocha": "^5.2.0",
-    "prettier": "^1.16.4",
+    "prettier": "^1.18.2",
     "qs": "^6.7.0",
-    "ts-jest": "^23.10.5",
+    "ts-jest": "^24.0.2",
     "ts-node": "3.3.0",
     "tslint": "^5.14.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.4.1"
+    "typescript": "^3.5.3"
   },
   "peerDependencies": {
     "fp-ts": "^1.15.0",
