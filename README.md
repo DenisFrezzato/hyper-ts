@@ -105,25 +105,6 @@ performed, correctly, throughout the middleware chain.
 
 Middlewares are composed using `ichain`, the indexed monadic version of `chain`.
 
-**Example** (myLogger)
-
-Here is a simple example of a middleware called "myLogger". This function just prints `'LOGGED'` when a request to the app passes through it.
-
-```ts
-import * as express from 'express'
-import { log } from 'fp-ts/lib/Console'
-import { fromIO, StatusOpen } from 'hyper-ts'
-import { toRequestHandler } from 'hyper-ts/lib/express'
-
-export const myLogger = fromIO<StatusOpen, never, void>(log('LOGGED'))
-
-express()
-  .get('/', toRequestHandler(myLogger), (_, res) => {
-    res.send('hello')
-  })
-  .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))
-```
-
 # Type safety
 
 Invalid operations are prevented statically
