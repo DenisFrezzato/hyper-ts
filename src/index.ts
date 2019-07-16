@@ -1,21 +1,11 @@
-import { Either } from 'fp-ts/lib/Either'
+import * as E from 'fp-ts/lib/Either'
 import { Predicate, Refinement, tuple } from 'fp-ts/lib/function'
 import { IO } from 'fp-ts/lib/IO'
-import { IOEither, tryCatch2v as ioEitherTryCatch } from 'fp-ts/lib/IOEither'
+import { IOEither, tryCatch as ioEitherTryCatch } from 'fp-ts/lib/IOEither'
 import { Task } from 'fp-ts/lib/Task'
-import {
-  fromEither as taskEitherFromEither,
-  fromIO as taskEitherFromIO,
-  fromIOEither as taskEitherFromIOEither,
-  fromLeft as taskEitherFromLeft,
-  fromPredicate as taskEitherFromPredicate,
-  left as taskEitherLeft,
-  right as taskEitherRight,
-  TaskEither,
-  taskEither,
-  tryCatch as taskEitherTryCatch
-} from 'fp-ts/lib/TaskEither'
+import * as TE from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 // Adapted from https://github.com/purescript-contrib/purescript-media-types
 export const MediaType = {
@@ -110,15 +100,22 @@ export interface Connection<S> {
 }
 
 export function gets<I, L, A>(f: (c: Connection<I>) => A): Middleware<I, I, L, A> {
-  return new Middleware(c => taskEither.of(tuple(f(c), c)))
+  return new Middleware(c => TE.taskEither.of(tuple(f(c), c)))
 }
 
-export function fromConnection<I, L, A>(f: (c: Connection<I>) => Either<L, A>): Middleware<I, I, L, A> {
-  return new Middleware(c => taskEitherFromEither(f(c).map(a => tuple(a, c))))
+export function fromConnection<I, L, A>(f: (c: Connection<I>) => E.Either<L, A>): Middleware<I, I, L, A> {
+  return new Middleware(c =>
+    TE.fromEither(
+      pipe(
+        f(c),
+        E.map(a => tuple(a, c))
+      )
+    )
+  )
 }
 
 export function modifyConnection<I, O, L>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, L, void> {
-  return new Middleware(c => taskEither.of(tuple(undefined, f(c))))
+  return new Middleware(c => TE.taskEither.of(tuple(undefined, f(c))))
 }
 
 /**
@@ -127,18 +124,39 @@ export function modifyConnection<I, O, L>(f: (c: Connection<I>) => Connection<O>
  * middleware action.
  */
 export class Middleware<I, O, L, A> {
-  constructor(readonly run: (c: Connection<I>) => TaskEither<L, [A, Connection<O>]>) {}
-  eval(c: Connection<I>): TaskEither<L, A> {
-    return this.run(c).map(([a]) => a)
+  constructor(readonly run: (c: Connection<I>) => TE.TaskEither<L, [A, Connection<O>]>) {}
+  eval(c: Connection<I>): TE.TaskEither<L, A> {
+    return pipe(
+      this.run(c),
+      TE.map(([a]) => a)
+    )
   }
-  exec(c: Connection<I>): TaskEither<L, Connection<O>> {
-    return this.run(c).map(([, c]) => c)
+  exec(c: Connection<I>): TE.TaskEither<L, Connection<O>> {
+    return pipe(
+      this.run(c),
+      TE.map(([, c]) => c)
+    )
   }
   map<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => B): Middleware<I, I, L, B> {
-    return new Middleware(ci => this.run(ci).map(([a, co]) => tuple(f(a), co)))
+    return new Middleware(ci =>
+      pipe(
+        this.run(ci),
+        TE.map(([a, co]) => tuple(f(a), co))
+      )
+    )
   }
   ap<I, L, A, B>(this: Middleware<I, I, L, A>, fab: Middleware<I, I, L, (a: A) => B>): Middleware<I, I, L, B> {
-    return new Middleware(c => fab.run(c).chain(([f, co1]) => this.run(co1).map(([a, co2]) => tuple(f(a), co2))))
+    return new Middleware(c =>
+      pipe(
+        fab.run(c),
+        TE.chain(([f, co1]) =>
+          pipe(
+            this.run(co1),
+            TE.map(([a, co2]) => tuple(f(a), co2))
+          )
+        )
+      )
+    )
   }
   chain<I, L, A, B>(this: Middleware<I, I, L, A>, f: (a: A) => Middleware<I, I, L, B>): Middleware<I, I, L, B> {
     return this.ichain(f)
@@ -156,25 +174,55 @@ export class Middleware<I, O, L, A> {
     return this.chain(() => fb)
   }
   ichain<Z, B>(f: (a: A) => Middleware<O, Z, L, B>): Middleware<I, Z, L, B> {
-    return new Middleware(ci => this.run(ci).chain(([a, co]) => f(a).run(co)))
+    return new Middleware(ci =>
+      pipe(
+        this.run(ci),
+        TE.chain(([a, co]) => f(a).run(co))
+      )
+    )
   }
   foldMiddleware<Z, M, B>(
     onLeft: (l: L) => Middleware<I, Z, M, B>,
     onRight: (a: A) => Middleware<O, Z, M, B>
   ): Middleware<I, Z, M, B> {
-    return new Middleware(c => this.run(c).foldTaskEither(l => onLeft(l).run(c), ([a, co]) => onRight(a).run(co)))
+    return new Middleware(c =>
+      pipe(
+        this.run(c),
+        TE.fold(l => onLeft(l).run(c), ([a, co]) => onRight(a).run(co))
+      )
+    )
   }
   mapLeft<M>(f: (l: L) => M): Middleware<I, O, M, A> {
-    return new Middleware(c => this.run(c).mapLeft(f))
+    return new Middleware(c =>
+      pipe(
+        this.run(c),
+        TE.mapLeft(f)
+      )
+    )
   }
   bimap<V, B>(f: (l: L) => V, g: (a: A) => B): Middleware<I, O, V, B> {
-    return new Middleware(c => this.run(c).bimap(f, ([a, c]) => tuple(g(a), c)))
+    return new Middleware(c =>
+      pipe(
+        this.run(c),
+        TE.bimap(f, ([a, c]) => tuple(g(a), c))
+      )
+    )
   }
   orElse<M>(f: (l: L) => Middleware<I, O, M, A>): Middleware<I, O, M, A> {
-    return new Middleware(c => this.run(c).orElse(l => f(l).run(c)))
+    return new Middleware(c =>
+      pipe(
+        this.run(c),
+        TE.orElse(l => f(l).run(c))
+      )
+    )
   }
   alt(fy: Middleware<I, O, L, A>): Middleware<I, O, L, A> {
-    return new Middleware(c => this.run(c).alt(fy.run(c)))
+    return new Middleware(c =>
+      pipe(
+        this.run(c),
+        TE.alt(() => fy.run(c))
+      )
+    )
   }
   /** Returns a middleware that writes the response status */
   status<I, L, A>(this: Middleware<I, StatusOpen, L, A>, s: Status): Middleware<I, HeadersOpen, L, void> {
@@ -239,7 +287,7 @@ export function of<I, L, A>(a: A): Middleware<I, I, L, A> {
 }
 
 export function iof<I, O, L, A>(a: A): Middleware<I, O, L, A> {
-  return new Middleware<I, O, L, A>(c => taskEither.of(tuple(a, c as any)))
+  return new Middleware<I, O, L, A>(c => TE.taskEither.of(tuple(a, c as any)))
 }
 
 //
@@ -247,35 +295,40 @@ export function iof<I, O, L, A>(a: A): Middleware<I, O, L, A> {
 //
 
 export function tryCatch<I, L, A>(f: () => Promise<A>, onrejected: (reason: unknown) => L): Middleware<I, I, L, A> {
-  return fromTaskEither(taskEitherTryCatch(f, onrejected))
+  return fromTaskEither(TE.tryCatch(f, onrejected))
 }
 
-export function fromTaskEither<I, L, A>(fa: TaskEither<L, A>): Middleware<I, I, L, A> {
-  return new Middleware(c => fa.map(a => tuple(a, c)))
+export function fromTaskEither<I, L, A>(fa: TE.TaskEither<L, A>): Middleware<I, I, L, A> {
+  return new Middleware(c =>
+    pipe(
+      fa,
+      TE.map(a => tuple(a, c))
+    )
+  )
 }
 
 export function right<I, L, A>(fa: Task<A>): Middleware<I, I, L, A> {
-  return fromTaskEither(taskEitherRight(fa))
+  return fromTaskEither(TE.rightTask(fa))
 }
 
 export function left<I, L, A>(fl: Task<L>): Middleware<I, I, L, A> {
-  return fromTaskEither(taskEitherLeft(fl))
+  return fromTaskEither(TE.leftTask(fl))
 }
 
 export function fromLeft<I, L, A>(l: L): Middleware<I, I, L, A> {
-  return fromTaskEither(taskEitherFromLeft(l))
+  return fromTaskEither(TE.left(l))
 }
 
-export const fromEither = <I, L, A>(fa: Either<L, A>): Middleware<I, I, L, A> => {
-  return fromTaskEither(taskEitherFromEither(fa))
+export const fromEither = <I, L, A>(fa: E.Either<L, A>): Middleware<I, I, L, A> => {
+  return fromTaskEither(TE.fromEither(fa))
 }
 
 export const fromIO = <I, L, A>(fa: IO<A>): Middleware<I, I, L, A> => {
-  return fromTaskEither(taskEitherFromIO(fa))
+  return fromTaskEither(TE.rightIO(fa))
 }
 
 export const fromIOEither = <I, L, A>(fa: IOEither<L, A>): Middleware<I, I, L, A> => {
-  return fromTaskEither(taskEitherFromIOEither(fa))
+  return fromTaskEither(TE.fromIOEither(fa))
 }
 
 export function fromPredicate<I, L, A, B extends A>(
@@ -287,7 +340,7 @@ export function fromPredicate<I, L, A>(
   predicate: Predicate<A>,
   onFalse: (a: A) => L
 ): (a: A) => Middleware<I, I, L, A> {
-  const f = taskEitherFromPredicate(predicate, onFalse)
+  const f = TE.fromPredicate(predicate, onFalse)
   return a => fromTaskEither(f(a))
 }
 
@@ -368,7 +421,7 @@ const isUnknownRecord = (u: unknown): u is { [key: string]: unknown } => u !== n
 /** Returns a middleware that tries to decode `connection.getParams()[name]` */
 export function decodeParam<L, A>(
   name: string,
-  f: (input: unknown) => Either<L, A>
+  f: (input: unknown) => E.Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => {
     const params = c.getParams()
@@ -377,29 +430,29 @@ export function decodeParam<L, A>(
 }
 
 /** Returns a middleware that tries to decode `connection.getParams()` */
-export function decodeParams<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+export function decodeParams<L, A>(f: (input: unknown) => E.Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getParams()))
 }
 
 /** Returns a middleware that tries to decode `connection.getQuery()` */
-export function decodeQuery<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+export function decodeQuery<L, A>(f: (input: unknown) => E.Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getQuery()))
 }
 
 /** Returns a middleware that tries to decode `connection.getBody()` */
-export function decodeBody<L, A>(f: (input: unknown) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+export function decodeBody<L, A>(f: (input: unknown) => E.Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getBody()))
 }
 
 /** Returns a middleware that tries to decode `connection.getMethod()` */
-export function decodeMethod<L, A>(f: (method: string) => Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
+export function decodeMethod<L, A>(f: (method: string) => E.Either<L, A>): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getMethod()))
 }
 
 /** Returns a middleware that tries to decode `connection.getHeader(name)` */
 export function decodeHeader<L, A>(
   name: string,
-  f: (input: unknown) => Either<L, A>
+  f: (input: unknown) => E.Either<L, A>
 ): Middleware<StatusOpen, StatusOpen, L, A> {
   return fromConnection(c => f(c.getHeader(name)))
 }

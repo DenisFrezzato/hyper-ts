@@ -1,6 +1,6 @@
 import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
-import { Task } from 'fp-ts/lib/Task'
-import { right } from 'fp-ts/lib/TaskEither'
+import { fold as eitherFold } from 'fp-ts/lib/Either'
+import { rightTask } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
 import { Connection, CookieOptions, HeadersOpen, Middleware, ResponseEnded, Status } from '.'
 
@@ -118,10 +118,9 @@ const exec = <I, O, L>(
   next: NextFunction
 ): Promise<void> =>
   middleware
-    .exec(new ExpressConnection<I>(req, res))
-    .run()
-    .then(e =>
-      e.fold(next, c => {
+    .exec(new ExpressConnection<I>(req, res))()
+    .then(
+      eitherFold(next, c => {
         const { actions: list, res, ended } = c as ExpressConnection<O>
         const len = list.length
         const actions = toArray(list)
@@ -147,14 +146,12 @@ export function fromRequestHandler<I, A>(
   f: (req: Request) => A
 ): Middleware<I, I, never, A> {
   return new Middleware(c =>
-    right(
-      new Task(
-        () =>
-          new Promise(resolve => {
-            const { req, res } = c as ExpressConnection<I>
-            requestHandler(req, res, () => resolve([f(req), c]))
-          })
-      )
+    rightTask(
+      () =>
+        new Promise(resolve => {
+          const { req, res } = c as ExpressConnection<I>
+          requestHandler(req, res, () => resolve([f(req), c]))
+        })
     )
   )
 }

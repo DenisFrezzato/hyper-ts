@@ -1,5 +1,5 @@
 import * as assert from 'assert'
-import { right, toError } from 'fp-ts/lib/Either'
+import { right, toError, either } from 'fp-ts/lib/Either'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
@@ -49,11 +49,10 @@ class MockConnection<S> extends ExpressConnection<S> {
 
 function assertSuccess<I, O, A>(m: Middleware<I, O, any, A>, cin: MockConnection<I>, a: A, actions: Array<Action>) {
   return m
-    .run(cin)
-    .run()
+    .run(cin)()
     .then(e => {
       assert.deepStrictEqual(
-        e.map(([a, cout]) => [a, toArray((cout as MockConnection<O>).actions)]),
+        either.map(e, ([a, cout]) => [a, toArray((cout as MockConnection<O>).actions)]),
         right([a, actions])
       )
     })
@@ -61,10 +60,9 @@ function assertSuccess<I, O, A>(m: Middleware<I, O, any, A>, cin: MockConnection
 
 function assertFailure<I, L>(m: Middleware<I, any, L, any>, conn: MockConnection<I>, f: (l: L) => void) {
   return m
-    .run(conn)
-    .run()
+    .run(conn)()
     .then(e => {
-      f(e.value as any)
+      either.mapLeft(e, f)
     })
 }
 
