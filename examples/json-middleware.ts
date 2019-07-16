@@ -3,42 +3,48 @@ import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
-import { decodeBody, Middleware, ResponseEnded, Status, status, StatusOpen } from '../src'
+import * as H from '../src'
 import { fromRequestHandler, toRequestHandler } from '../src/express'
 
 // Express middleware
 const json = express.json()
 
-function withJsonBody<A>(
-  middleware: Middleware<StatusOpen, ResponseEnded, never, A>
-): Middleware<StatusOpen, ResponseEnded, never, A> {
-  return fromRequestHandler<StatusOpen, void>(json, () => undefined).ichain(() => middleware)
-}
+const jsonMiddleware = fromRequestHandler(json, () => undefined)
 
 const Body = t.strict({
   name: t.string
 })
 
-const bodyDecoder = decodeBody(u =>
-  pipe(
-    Body.decode(u),
-    E.mapLeft(errors => `invalid body: ${failure(errors).join('\n')}`)
+const bodyDecoder = pipe(
+  jsonMiddleware,
+  H.ichain(() =>
+    H.decodeBody(u =>
+      pipe(
+        Body.decode(u),
+        E.mapLeft(errors => `invalid body: ${failure(errors).join('\n')}`)
+      )
+    )
   )
 )
 
-const badRequest = (message: string) =>
-  status(Status.BadRequest)
-    .closeHeaders()
-    .send(message)
+function badRequest(message: string): H.Middleware<H.StatusOpen, H.ResponseEnded, never, void> {
+  return pipe(
+    H.status(H.Status.BadRequest),
+    H.ichain(() => H.closeHeaders()),
+    H.ichain(() => H.send(message))
+  )
+}
 
-const hello = withJsonBody(
-  bodyDecoder
-    .ichain(({ name }) =>
-      status(Status.OK)
-        .closeHeaders()
-        .send(`Hello ${name}!`)
+const hello = pipe(
+  bodyDecoder,
+  H.ichain(({ name }) =>
+    pipe(
+      H.status<string>(H.Status.OK),
+      H.ichain(() => H.closeHeaders()),
+      H.ichain(() => H.send(`Hello ${name}!`))
     )
-    .orElse(badRequest)
+  ),
+  H.orElse(badRequest)
 )
 
 const app = express()

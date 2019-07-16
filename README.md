@@ -28,16 +28,28 @@ The stable version is tested against TypeScript 3.4.1, but should run with TypeS
 
 ```ts
 import * as express from 'express'
-import { Status, status } from 'hyper-ts'
+import * as H from 'hyper-ts'
 import { toRequestHandler } from 'hyper-ts/lib/express'
+import { pipe } from 'fp-ts/lib/pipeable'
 
-const hello = status(Status.OK) // writes the response status
-  .closeHeaders() // tells hyper-ts that we're done with the headers
-  .send('Hello hyper-ts on express!') // sends the response
+const hello: H.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
+  H.status(H.Status.OK), // writes the response status
+  H.ichain(() => H.closeHeaders()), // tells hyper-ts that we're done with the headers
+  H.ichain(() => H.send('Hello hyper-ts on express!')) // sends the response as text
+)
 
 express()
   .get('/', toRequestHandler(hello))
   .listen(3000, () => console.log('Express listening on port 3000. Use: GET /'))
+```
+
+**Sending a JSON**
+
+```ts
+const hello = pipe(
+  H.status(H.Status.OK),
+  H.ichain(() => H.json({ a: 1 }, () => 'error'))
+)
 ```
 
 # Core API
@@ -112,12 +124,14 @@ Invalid operations are prevented statically
 ```ts
 import { Status, status } from 'hyper-ts'
 
-status(Status.OK)
-  .header('name', 'value') // ok
-  .closeHeaders()
-  .send('Hello hyper-ts!')
+pipe(
+  H.status(H.Status.OK),
+  H.ichain(() => H.header('name', 'value')),
+  H.ichain(() => H.closeHeaders()),
+  H.ichain(() => H.send('Hello hyper-ts on express!')),
   // try to write a header after sending the body
-  .header('name', 'value') // static error
+  H.ichain(() => H.header('name', 'value')) // static error
+)
 ```
 
 No more `"Can't set headers after they are sent."` errors.
@@ -133,161 +147,89 @@ Input validation/decoding is done by defining a decoding function with the follo
 **Example** (decoding a param)
 
 ```ts
-import { decodeParam } from 'hyper-ts'
-import { right, left } from 'fp-ts/lib/Either'
+import * as H from 'hyper-ts'
+import * as E from 'fp-ts/lib/Either'
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => typeof u === 'object' && u !== null
 
 // returns a middleware validating `req.param.user_id`
-const middleware = decodeParam('user_id', u =>
-  isUnknownRecord(u) && typeof u.user_id === 'string'
-    ? right<string, string>(u.user_id)
-    : left<string, string>('cannot read param user_id')
+export const middleware: H.Middleware<H.StatusOpen, H.StatusOpen, string, string> = H.decodeParam('user_id', u =>
+  isUnknownRecord(u) && typeof u.user_id === 'string' ? E.right(u.user_id) : E.left('cannot read param user_id')
 )
 ```
 
 You can also use [io-ts](https://github.com/gcanti/io-ts) decoders.
 
-**A single param**
-
 ```ts
+import * as H from 'hyper-ts'
 import * as t from 'io-ts'
-import { decodeParam } from 'hyper-ts'
 
 // returns a middleware validating `req.param.user_id`
-const middleware = decodeParam('user_id', t.string.decode)
+export const middleware2: H.Middleware<H.StatusOpen, H.StatusOpen, t.Errors, string> = H.decodeParam(
+  'user_id',
+  t.string.decode
+)
 ```
 
 Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
 
 ```ts
+import * as H from 'hyper-ts'
 import { IntFromString } from 'io-ts-types/lib/IntFromString'
 
 // validation succeeds only if `req.param.user_id` can be parsed to an integer
-const middleware = decodeParam('user_id', IntFromString.decode)
+export const middleware3: H.Middleware<
+  H.StatusOpen,
+  H.StatusOpen,
+  t.Errors,
+  t.Branded<number, t.IntBrand>
+> = H.decodeParam('user_id', IntFromString.decode)
 ```
 
 **Multiple params**
 
 ```ts
+import * as H from 'hyper-ts'
 import * as t from 'io-ts'
-import { decodeParams } from 'hyper-ts'
 
 // returns a middleware validating both `req.param.user_id` and `req.param.user_name`
-const middleware = decodeParams(
+export const middleware = H.decodeParams(
   t.strict({
     user_id: t.string,
     user_name: t.string
-  })
-).decode
+  }).decode
+)
 ```
 
 **Query**
 
 ```ts
+import * as H from 'hyper-ts'
 import * as t from 'io-ts'
-import { decodeQuery } from 'hyper-ts'
 
 // return a middleware validating the query "order=desc&shoe[color]=blue&shoe[type]=converse"
-const middleware = decodeQuery(
+export const middleware = H.decodeQuery(
   t.strict({
     order: t.string,
     shoe: t.strict({
       color: t.string,
       type: t.string
     })
-  })
-).decode
+  }).decode
+)
 ```
 
 **Body**
 
 ```ts
+import * as H from 'hyper-ts'
 import * as t from 'io-ts'
-import { decodeBody } from 'hyper-ts'
 
 // return a middleware validating `req.body`
-const middleware = decodeBody(t.string.decode)
+export const middleware = H.decodeBody(t.string.decode)
 ```
 
-# Error handling
-
-```ts
-import * as express from 'express'
-import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
-import { fromLeft, Middleware, of, decodeParam, Status, status, StatusOpen, ResponseEnded } from 'hyper-ts'
-import { toRequestHandler } from 'hyper-ts/lib/express'
-
-//
-// model
-//
-
-const UserId = NonEmptyString
-
-type UserId = NonEmptyString
-
-interface User {
-  name: string
-}
-
-//
-// business logic
-//
-
-const UserNotFound: 'UserNotFound' = 'UserNotFound'
-
-const InvalidArguments: 'InvalidArguments' = 'InvalidArguments'
-
-type UserError = typeof InvalidArguments | typeof UserNotFound
-
-/** Parses the `user_id` param */
-const getUserId = decodeParam('user_id', UserId.decode).mapLeft<UserError>(() => InvalidArguments)
-
-/** Loads a `User` from a database (fake) */
-const loadUser = (userId: UserId): Middleware<StatusOpen, StatusOpen, UserError, User> =>
-  userId === 'ab' ? of({ name: 'User name...' }) : fromLeft(UserNotFound)
-
-/** Sends a `User` to the client */
-const sendUser = (user: User) =>
-  status(Status.OK)
-    .closeHeaders()
-    .send(JSON.stringify(user))
-
-const getUser = getUserId.ichain(loadUser).ichain(sendUser)
-
-//
-// error handling
-//
-
-const badRequest = (message: string) =>
-  status(Status.BadRequest)
-    .closeHeaders()
-    .send(message)
-
-const notFound = (message: string) =>
-  status(Status.NotFound)
-    .closeHeaders()
-    .send(message)
-
-const sendError = (err: UserError): Middleware<StatusOpen, ResponseEnded, never, void> => {
-  switch (err) {
-    case 'UserNotFound':
-      return notFound('user not found')
-    case 'InvalidArguments':
-      return badRequest('invalid arguments')
-  }
-}
-
-//
-// route
-//
-
-const user = getUser.orElse(sendError)
-
-express()
-  .get('/:user_id', toRequestHandler(user))
-  .listen(3000, () => console.log('Express listening on port 3000. Use: GET /:user_id'))
-```
+[Here](examples/json-middleware.ts)'s an example using the standard `express.json` middleware
 
 # Documentation
 

@@ -1,10 +1,13 @@
-import { header, status, Status, json, Middleware, BodyOpen, HeadersOpen } from '../../lib'
+import * as H from '../../src'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 // $ExpectError
-const m1 = status(1000)
+const m1 = H.status(1000)
 
-const m2 = status(Status.OK)
-  .closeHeaders()
-  .send('Hello hyper-ts!')
+const m2 = pipe(
+  H.status(H.Status.OK),
+  H.ichain(() => H.closeHeaders()),
+  H.ichain(() => H.send('Hello hyper-ts!')),
   // $ExpectError
-  .ichain(() => header('field', 'value'))
+  H.ichain(() => () => H.header('field', 'value'))
+)

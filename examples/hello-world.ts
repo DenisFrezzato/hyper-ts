@@ -1,10 +1,13 @@
 import * as express from 'express'
-import { Status, status } from '../src'
+import * as H from '../src'
 import { toRequestHandler } from '../src/express'
+import { pipe } from 'fp-ts/lib/pipeable'
 
-const hello = status(Status.OK) // writes the response status
-  .closeHeaders() // tells hyper-ts that we're done with the headers
-  .send('Hello hyper-ts on express!') // sends the response
+const hello: H.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
+  H.status(H.Status.OK), // writes the response status
+  H.ichain(() => H.closeHeaders()), // tells hyper-ts that we're done with the headers
+  H.ichain(() => H.send('Hello hyper-ts on express!')) // sends the response as text
+)
 
 express()
   .get('/', toRequestHandler(hello))

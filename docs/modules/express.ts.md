@@ -8,8 +8,6 @@ parent: Modules
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Action (type alias)](#action-type-alias)
-- [LinkedList (type alias)](#linkedlist-type-alias)
 - [ExpressConnection (class)](#expressconnection-class)
   - [chain (method)](#chain-method)
   - [getRequest (method)](#getrequest-method)
@@ -25,38 +23,11 @@ parent: Modules
   - [setStatus (method)](#setstatus-method)
   - [setBody (method)](#setbody-method)
   - [endResponse (method)](#endresponse-method)
-- [nil (constant)](#nil-constant)
-- [cons (function)](#cons-function)
 - [fromRequestHandler (function)](#fromrequesthandler-function)
-- [toArray (function)](#toarray-function)
 - [toErrorRequestHandler (function)](#toerrorrequesthandler-function)
 - [toRequestHandler (function)](#torequesthandler-function)
 
 ---
-
-# Action (type alias)
-
-**Signature**
-
-```ts
-export type Action =
-  | { type: 'setBody'; body: unknown }
-  | { type: 'endResponse' }
-  | { type: 'setStatus'; status: Status }
-  | { type: 'setHeader'; name: string; value: string }
-  | { type: 'clearCookie'; name: string; options: CookieOptions }
-  | { type: 'setCookie'; name: string; value: string; options: CookieOptions }
-```
-
-# LinkedList (type alias)
-
-**Signature**
-
-```ts
-export type LinkedList<A> =
-  | { type: 'Nil'; length: number }
-  | { type: 'Cons'; head: A; tail: LinkedList<A>; length: number }
-```
 
 # ExpressConnection (class)
 
@@ -73,6 +44,8 @@ export class ExpressConnection<S> {
   ...
 }
 ```
+
+Added in v0.5.0
 
 ## chain (method)
 
@@ -186,53 +159,35 @@ setBody(body: unknown): ExpressConnection<ResponseEnded> { ... }
 endResponse(): ExpressConnection<ResponseEnded> { ... }
 ```
 
-# nil (constant)
-
-**Signature**
-
-```ts
-export const nil: LinkedList<never> = ...
-```
-
-# cons (function)
-
-**Signature**
-
-```ts
-export const cons = <A>(head: A, tail: LinkedList<A>): LinkedList<A> => ...
-```
-
 # fromRequestHandler (function)
 
 **Signature**
 
 ```ts
-export function fromRequestHandler<I, A>(
+export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
-): Middleware<I, I, never, A> { ... }
+): Middleware<I, I, E, A> { ... }
 ```
 
-# toArray (function)
-
-**Signature**
-
-```ts
-export const toArray = <A>(list: LinkedList<A>): Array<A> => ...
-```
+Added in v0.5.0
 
 # toErrorRequestHandler (function)
 
 **Signature**
 
 ```ts
-export function toErrorRequestHandler<I, O, L>(f: (err: unknown) => Middleware<I, O, L, void>): ErrorRequestHandler { ... }
+export function toErrorRequestHandler<I, O, E>(f: (err: unknown) => Middleware<I, O, E, void>): ErrorRequestHandler { ... }
 ```
+
+Added in v0.5.0
 
 # toRequestHandler (function)
 
 **Signature**
 
 ```ts
-export function toRequestHandler<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler { ... }
+export function toRequestHandler<I, O, E>(middleware: Middleware<I, O, E, void>): RequestHandler { ... }
 ```
+
+Added in v0.5.0
