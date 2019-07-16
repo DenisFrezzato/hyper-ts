@@ -1,8 +1,12 @@
 import * as express from 'express'
-import { Status, status } from '../src'
+import * as H from '../src'
 import { toRequestHandler } from '../src/express'
+import { pipe } from 'fp-ts/lib/pipeable'
 
-const hello = status(Status.OK).json({ a: 1 }, () => 'error')
+const hello = pipe(
+  H.status(H.Status.OK),
+  H.ichain(() => H.json({ a: 1 }, () => 'error'))
+)
 
 express()
   .get('/', toRequestHandler(hello))

@@ -1,24 +1,47 @@
 import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
 import { rightTask } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
-import { Connection, CookieOptions, HeadersOpen, Middleware, ResponseEnded, Status } from '.'
+import {
+  Connection,
+  CookieOptions,
+  HeadersOpen,
+  Middleware,
+  ResponseEnded,
+  Status,
+  execMiddleware,
+  StatusOpen
+} from '.'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 
+/**
+ * @internal
+ */
 export type LinkedList<A> =
   | { type: 'Nil'; length: number }
   | { type: 'Cons'; head: A; tail: LinkedList<A>; length: number }
 
+/**
+ * @internal
+ */
 export const nil: LinkedList<never> = { type: 'Nil', length: 0 }
 
-export const cons = <A>(head: A, tail: LinkedList<A>): LinkedList<A> => ({
-  type: 'Cons',
-  head,
-  tail,
-  length: tail.length + 1
-})
+/**
+ * @internal
+ */
+export function cons<A>(head: A, tail: LinkedList<A>): LinkedList<A> {
+  return {
+    type: 'Cons',
+    head,
+    tail,
+    length: tail.length + 1
+  }
+}
 
-export const toArray = <A>(list: LinkedList<A>): Array<A> => {
+/**
+ * @internal
+ */
+export function toArray<A>(list: LinkedList<A>): Array<A> {
   const len = list.length
   const r: Array<A> = new Array(len)
   let l: LinkedList<A> = list
@@ -31,6 +54,9 @@ export const toArray = <A>(list: LinkedList<A>): Array<A> => {
   return r
 }
 
+/**
+ * @internal
+ */
 export type Action =
   | { type: 'setBody'; body: unknown }
   | { type: 'endResponse' }
@@ -41,6 +67,9 @@ export type Action =
 
 const endResponse: Action = { type: 'endResponse' }
 
+/**
+ * @since 0.5.0
+ */
 export class ExpressConnection<S> implements Connection<S> {
   readonly _S!: S
   constructor(
@@ -93,7 +122,7 @@ export class ExpressConnection<S> implements Connection<S> {
   }
 }
 
-const run = (res: Response, action: Action): Response => {
+function run(res: Response, action: Action): Response {
   switch (action.type) {
     case 'clearCookie':
       return res.clearCookie(action.name, action.options)
@@ -112,44 +141,52 @@ const run = (res: Response, action: Action): Response => {
   }
 }
 
-const exec = <I, O, L>(
-  middleware: Middleware<I, O, L, void>,
+function exec<I, O, E>(
+  middleware: Middleware<I, O, E, void>,
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> =>
-  middleware
-    .exec(new ExpressConnection<I>(req, res))()
-    .then(e =>
-      pipe(
-        e,
-        E.fold(next, c => {
-          const { actions: list, res, ended } = c as ExpressConnection<O>
-          const len = list.length
-          const actions = toArray(list)
-          for (let i = 0; i < len; i++) {
-            run(res, actions[i])
-          }
-          if (!ended) {
-            next()
-          }
-        })
-      )
+): Promise<void> {
+  return execMiddleware(middleware, new ExpressConnection<I>(req, res))().then(e =>
+    pipe(
+      e,
+      E.fold(next, c => {
+        const { actions: list, res, ended } = c as ExpressConnection<O>
+        const len = list.length
+        const actions = toArray(list)
+        for (let i = 0; i < len; i++) {
+          run(res, actions[i])
+        }
+        if (!ended) {
+          next()
+        }
+      })
     )
+  )
+}
 
-export function toRequestHandler<I, O, L>(middleware: Middleware<I, O, L, void>): RequestHandler {
+/**
+ * @since 0.5.0
+ */
+export function toRequestHandler<I, O, E>(middleware: Middleware<I, O, E, void>): RequestHandler {
   return (req, res, next) => exec(middleware, req, res, next)
 }
 
-export function toErrorRequestHandler<I, O, L>(f: (err: unknown) => Middleware<I, O, L, void>): ErrorRequestHandler {
+/**
+ * @since 0.5.0
+ */
+export function toErrorRequestHandler<I, O, E>(f: (err: unknown) => Middleware<I, O, E, void>): ErrorRequestHandler {
   return (err, req, res, next) => exec(f(err), req, res, next)
 }
 
-export function fromRequestHandler<I, A>(
+/**
+ * @since 0.5.0
+ */
+export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
-): Middleware<I, I, never, A> {
-  return new Middleware(c =>
+): Middleware<I, I, E, A> {
+  return c =>
     rightTask(
       () =>
         new Promise(resolve => {
@@ -157,5 +194,4 @@ export function fromRequestHandler<I, A>(
           requestHandler(req, res, () => resolve([f(req), c]))
         })
     )
-  )
 }
