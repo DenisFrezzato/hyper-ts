@@ -53,7 +53,7 @@
     "typescript": "^3.5.3"
   },
   "peerDependencies": {
-    "fp-ts": "^1.15.0",
+    "fp-ts": "^2.0.0",
     "express": "^4.16.2"
   },
   "tags": [
