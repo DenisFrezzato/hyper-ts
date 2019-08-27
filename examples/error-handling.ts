@@ -22,7 +22,7 @@ const InvalidArguments = 'InvalidArguments' as const
 
 const JSONError = 'JSONError' as const
 
-type UserError = 'InvalidArguments' | 'UserNotFound' | 'JSONError'
+type UserError = typeof InvalidArguments | typeof UserNotFound | typeof JSONError
 
 /** Parses the `user_id` param */
 const getUserId: H.Middleware<H.StatusOpen, H.StatusOpen, UserError, NonEmptyString> = pipe(
