@@ -16,7 +16,7 @@ high state of flux, you're at risk of it changing without notice.
 # 0.5.0
 
 - **Breaking Change**
-  - upgrade to `fp-ts@2.x` (@gcanti)
+  - upgrade to `fp-ts@2.x` and drop `class` encoding (@gcanti)
 
 # 0.4.0
 
