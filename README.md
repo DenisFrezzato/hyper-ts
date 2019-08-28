@@ -22,7 +22,10 @@ cannot be made. A few examples of such mistakes could be:
 
 # TypeScript compatibility
 
-The stable version is tested against TypeScript 3.4.1, but should run with TypeScript 3.0.1+ too
+| `hyper-ts` version | `fp-ts` version | `typescript` version |
+| ------------------ | --------------- | -------------------- |
+| 0.5.x+             | 2.0.5+          | 3.5+                 |
+| 0.4.x+             | 1.15.0+         | 3.0.1+               |
 
 # Hello world
 

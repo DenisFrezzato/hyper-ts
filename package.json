@@ -38,9 +38,9 @@
     "benchmark": "^2.1.4",
     "docs-ts": "^0.1.0",
     "dtslint": "github:gcanti/dtslint",
-    "fp-ts": "^2.0.1",
+    "fp-ts": "^2.0.5",
     "fp-ts-routing": "^0.4.1",
-    "io-ts": "^2.0.0",
+    "io-ts": "^2.0.1",
     "io-ts-types": "^0.5.0",
     "jest": "^24.8.0",
     "mocha": "^5.2.0",
@@ -53,7 +53,7 @@
     "typescript": "^3.5.3"
   },
   "peerDependencies": {
-    "fp-ts": "^2.0.0",
+    "fp-ts": "^2.0.5",
     "express": "^4.16.2"
   },
   "tags": [
