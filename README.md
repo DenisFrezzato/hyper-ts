@@ -65,7 +65,7 @@ request and response.
 State changes are tracked by the phantom type `S`.
 
 ```ts
-export interface Connection<S> {
+interface Connection<S> {
   readonly _S: S
   readonly getRequest: () => IncomingMessage
   readonly getBody: () => unknown
@@ -109,16 +109,15 @@ A middleware is an indexed monadic action transforming one `Connection` to anoth
 and is indexed by `I` and `O`, the input and output `Connection` types of the middleware action.
 
 ```ts
-class Middleware<I, O, L, A> {
-  constructor(readonly run: (c: Connection<I>) => TaskEither<L, [A, Connection<O>]>) {}
-  ...
+interface Middleware<I, O, E, A> {
+  (c: Connection<I>): TaskEither<E, [A, Connection<O>]>
 }
 ```
 
 The input and output type parameters are used to ensure that a `Connection` is transformed, and that side-effects are
 performed, correctly, throughout the middleware chain.
 
-Middlewares are composed using `ichain`, the indexed monadic version of `chain`.
+Middlewares are composed using `chain` and `ichain`, the indexed monadic version of `chain`.
 
 # Type safety
 
