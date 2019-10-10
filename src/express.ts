@@ -132,7 +132,7 @@ function run(res: Response, action: Action): Response {
     case 'setBody':
       return res.send(action.body)
     case 'setCookie':
-      return res.clearCookie(action.name, action.options)
+      return res.cookie(action.name, action.value, action.options)
     case 'setHeader':
       res.setHeader(action.name, action.value)
       return res
