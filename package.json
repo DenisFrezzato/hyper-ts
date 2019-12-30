@@ -1,6 +1,6 @@
 {
   "name": "hyper-ts",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "hyper-ts description",
   "files": [
     "lib"
@@ -14,7 +14,7 @@
     "prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --list-different \"{src,test}/**/*.ts\"",
     "fix-prettier": "prettier --no-semi --single-quote --print-width 120 --parser typescript --write \"{src,test}/**/*.ts\"",
     "test": "npm run lint && npm run prettier && npm run dtslint && npm run jest && npm run docs",
-    "clean": "rm -rf lib/*",
+    "clean": "rimraf lib/*",
     "build": "npm run clean && tsc",
     "prepublish": "npm run build",
     "dtslint": "dtslint dtslint",
@@ -51,7 +51,8 @@
     "ts-node": "3.3.0",
     "tslint": "^5.14.0",
     "tslint-config-standard": "^8.0.1",
-    "typescript": "^3.6.2"
+    "typescript": "^3.6.2",
+    "rimraf": "3.0.0"
   },
   "peerDependencies": {
     "fp-ts": "^2.0.5",

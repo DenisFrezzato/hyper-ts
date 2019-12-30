@@ -13,6 +13,13 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.5.2
+
+- **New Feature**
+  - added router implementation (@awerlogus)
+- **Bug Fix**
+  - replaced rm -rf command to rimraf in npm clean script to fix build crashes on Windows (@awerlogus)
+
 # 0.5.1
 
 - **Bug Fix**

@@ -1,4 +1,5 @@
-import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
+import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction, Router, Router as createRouter } from 'express'
+import { PathParams, Express } from 'express-serve-static-core'
 import { rightTask } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
 import {
@@ -13,6 +14,7 @@ import {
 } from '.'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { Endomorphism } from 'fp-ts/lib/function'
 
 /**
  * @internal
@@ -194,4 +196,129 @@ export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
           requestHandler(req, res, () => resolve([f(req), c]))
         })
     )
+}
+
+/**
+ * Http methods available for express router
+ *
+ * @internal
+ *
+ * @since 0.5.2
+ */
+type RouterMethod = 'get' | 'post' | 'put' | 'delete' | 'patch' | 'options' | 'head' & keyof Router
+
+
+/**
+ * Represents function that applies
+ * route to the router passed
+ *
+ * @internal
+ *
+ * @since 0.5.2
+ */
+type RoutingFunction = (path: PathParams, handler: RequestHandler) => Endomorphism<Router>
+
+/**
+ * Returns routing function for RouterMethod passed
+ *
+ * @internal
+ *
+ * @since 0.5.2
+ */
+function getRoutingFunction(method: RouterMethod): RoutingFunction {
+
+  return (path: PathParams, handler: RequestHandler) =>
+
+    (router: Router) => router[method].bind(router)(path, handler)
+}
+
+/**
+ * Dictionary with all routing functions
+ *
+ * @since 0.5.2
+ */
+export const route: Record<RouterMethod, RoutingFunction> = {
+  get: getRoutingFunction('get'),
+  post: getRoutingFunction('post'),
+  put: getRoutingFunction('put'),
+  delete: getRoutingFunction('delete'),
+  patch: getRoutingFunction('patch'),
+  options: getRoutingFunction('options'),
+  head: getRoutingFunction('head')
+}
+
+/**
+ * Adds list of routes to
+ * the Express application passed
+ *
+ * @example
+ * const app = express()
+ *
+ * const returnTextMiddleware = (text: string) => pipe(
+ *   H.status(H.Status.OK),
+ *   H.ichain(() => H.header('content-type', 'text/plain')),
+ *   H.ichain(() => H.closeHeaders()),
+ *   H.ichain(() => H.send(text))
+ * )
+ *
+ * const returnJsonMiddleware = (data: object) => pipe(
+ *   H.status(H.Status.OK),
+ *   H.ichain(() => H.json(data, identity))
+ * )
+ *
+ * const returnText = flow(returnTextMiddleware, toRequestHandler)
+ *
+ * const returnJson = flow(returnJsonMiddleware, toRequestHandler)
+ *
+ * pipe(app, addRoutes('/api', [
+ *  route.get('/', returnText('bes lox')),
+ *  route.post('/foo', returnJson({ foo: 'bar' }))
+ * ]))
+ *
+ * @since 0.5.2
+ */
+export function addRoutes(path: PathParams, routes: Array<Endomorphism<Router>>): Endomorphism<Express> {
+
+  return app => {
+
+    if (routes.length === 0)
+      return app
+
+    return app.use(path, routes.reduce((router, addNext) => addNext(router), createRouter()))
+  }
+}
+
+/**
+ * Adds list of routes to the root
+ * of the Express application passed
+ *
+ * @example
+ * const app = express()
+ *
+ * const returnTextMiddleware = (text: string) => pipe(
+ *   H.status(H.Status.OK),
+ *   H.ichain(() => H.header('content-type', 'text/plain')),
+ *   H.ichain(() => H.closeHeaders()),
+ *   H.ichain(() => H.send(text))
+ * )
+ *
+ * const returnJsonMiddleware = (data: object) => pipe(
+ *   H.status(H.Status.OK),
+ *   H.ichain(() => H.json(data, identity))
+ * )
+ *
+ * const returnText = flow(returnTextMiddleware, toRequestHandler)
+ *
+ * const returnJson = flow(returnJsonMiddleware, toRequestHandler)
+ *
+ * pipe(app, addRootRoutes([
+ *  route.get('/', returnText('bes lox')),
+ *  route.post('/foo', returnJson({ foo: 'bar' }))
+ * ]))
+ *
+ * @since 0.5.2
+ */
+export function addRootRoutes(routes: Array<Endomorphism<Router>>): Endomorphism<Express> {
+
+  return addRoutes('/', routes)
 }
