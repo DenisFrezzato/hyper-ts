@@ -1,3 +1,6 @@
+/**
+ * @since 0.5.0
+ */
 import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
 import { rightTask } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
@@ -78,45 +81,87 @@ export class ExpressConnection<S> implements Connection<S> {
     readonly actions: LinkedList<Action> = nil,
     readonly ended: boolean = false
   ) {}
+  /**
+   * @since 0.5.0
+   */
   chain<T>(action: Action, ended: boolean = false): ExpressConnection<T> {
     return new ExpressConnection<T>(this.req, this.res, cons(action, this.actions), ended)
   }
+  /**
+   * @since 0.5.0
+   */
   getRequest(): IncomingMessage {
     return this.req
   }
+  /**
+   * @since 0.5.0
+   */
   getBody(): unknown {
     return this.req.body
   }
+  /**
+   * @since 0.5.0
+   */
   getHeader(name: string): unknown {
     return this.req.header(name)
   }
+  /**
+   * @since 0.5.0
+   */
   getParams(): unknown {
     return this.req.params
   }
+  /**
+   * @since 0.5.0
+   */
   getQuery(): unknown {
     return this.req.query
   }
+  /**
+   * @since 0.5.0
+   */
   getOriginalUrl(): string {
     return this.req.originalUrl
   }
+  /**
+   * @since 0.5.0
+   */
   getMethod(): string {
     return this.req.method
   }
+  /**
+   * @since 0.5.0
+   */
   setCookie(name: string, value: string, options: CookieOptions): ExpressConnection<HeadersOpen> {
     return this.chain({ type: 'setCookie', name, value, options })
   }
+  /**
+   * @since 0.5.0
+   */
   clearCookie(name: string, options: CookieOptions): ExpressConnection<HeadersOpen> {
     return this.chain({ type: 'clearCookie', name, options })
   }
+  /**
+   * @since 0.5.0
+   */
   setHeader(name: string, value: string): ExpressConnection<HeadersOpen> {
     return this.chain({ type: 'setHeader', name, value })
   }
+  /**
+   * @since 0.5.0
+   */
   setStatus(status: Status): ExpressConnection<HeadersOpen> {
     return this.chain({ type: 'setStatus', status })
   }
+  /**
+   * @since 0.5.0
+   */
   setBody(body: unknown): ExpressConnection<ResponseEnded> {
     return this.chain({ type: 'setBody', body }, true)
   }
+  /**
+   * @since 0.5.0
+   */
   endResponse(): ExpressConnection<ResponseEnded> {
     return this.chain(endResponse, true)
   }

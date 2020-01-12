@@ -1,3 +1,6 @@
+/**
+ * @since 0.5.0
+ */
 import { Alt3 } from 'fp-ts/lib/Alt'
 import { Bifunctor3 } from 'fp-ts/lib/Bifunctor'
 import { Either, map as mapEither, stringifyJSON } from 'fp-ts/lib/Either'
@@ -186,6 +189,8 @@ export type URI = typeof URI
  * A middleware is an indexed monadic action transforming one `Connection` to another `Connection`. It operates
  * in the `TaskEither` monad, and is indexed by `I` and `O`, the input and output `Connection` types of the
  * middleware action.
+ *
+ * @since 0.5.0
  */
 export interface Middleware<I, O, E, A> {
   (c: Connection<I>): TE.TaskEither<E, [A, Connection<O>]>
@@ -510,11 +515,7 @@ export const middleware: Monad3<URI> & Alt3<URI> & Bifunctor3<URI> & MonadThrow3
     ),
   of: right,
   ap: (mab, ma) => middleware.chain(mab, f => middleware.map(ma, a => f(a))),
-  chain: (ma, f) =>
-    pipe(
-      ma,
-      ichain(f)
-    ),
+  chain: (ma, f) => pipe(ma, ichain(f)),
   alt: (fx, f) => c =>
     pipe(
       fx(c),
@@ -525,11 +526,7 @@ export const middleware: Monad3<URI> & Alt3<URI> & Bifunctor3<URI> & MonadThrow3
       fea(c),
       TE.bimap(f, ([a, c]) => [g(a), c])
     ),
-  mapLeft: (fea, f) => c =>
-    pipe(
-      fea(c),
-      TE.mapLeft(f)
-    ),
+  mapLeft: (fea, f) => c => pipe(fea(c), TE.mapLeft(f)),
   throwError: left,
   fromIO: rightIO,
   fromTask: rightTask
@@ -553,18 +550,60 @@ const {
 } = pipeable(middleware)
 
 export {
+  /**
+   * @since 0.5.0
+   */
   alt,
+  /**
+   * @since 0.5.0
+   */
   ap,
+  /**
+   * @since 0.5.0
+   */
   apFirst,
+  /**
+   * @since 0.5.0
+   */
   apSecond,
+  /**
+   * @since 0.5.0
+   */
   bimap,
+  /**
+   * @since 0.5.0
+   */
   chain,
+  /**
+   * @since 0.5.0
+   */
   chainFirst,
+  /**
+   * @since 0.5.0
+   */
   flatten,
+  /**
+   * @since 0.5.0
+   */
   map,
+  /**
+   * @since 0.5.0
+   */
   mapLeft,
+  /**
+   * @since 0.5.0
+   */
   filterOrElse,
+  /**
+   * @since 0.5.0
+   */
   fromEither,
+  /**
+   * @since 0.5.0
+   */
   fromOption,
+  /**
+   * @since 0.5.0
+   */
   fromPredicate
 }

@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.5.2
+
+- **New Feature**
+  - add build in ES6 format (@gcanti)
+
 # 0.5.1
 
 - **Bug Fix**

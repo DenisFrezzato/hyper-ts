@@ -61,10 +61,7 @@ describe('Middleware', () => {
       H.header('b', 'b'),
       H.map(() => 'foo')
     )
-    const m = pipe(
-      fab,
-      H.ap(fa)
-    )
+    const m = pipe(fab, H.ap(fa))
     const c = new MockConnection<H.HeadersOpen>(new MockRequest())
     return assertSuccess(m, c, 3, [
       { type: 'setHeader', name: 'a', value: 'a' },

@@ -5,5 +5,6 @@ module.exports = {
   },
   testRegex: 'test',
   moduleFileExtensions: ['ts', 'js'],
-  testPathIgnorePatterns: []
+  testPathIgnorePatterns: [],
+  coverageReporters: ['lcovonly', 'text']
 }

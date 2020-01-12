@@ -4,6 +4,10 @@ nav_order: 2
 parent: Modules
 ---
 
+# index overview
+
+Added in v0.5.0
+
 ---
 
 <h2 class="text-delta">Table of contents</h2>
@@ -55,6 +59,20 @@ parent: Modules
 - [send (function)](#send-function)
 - [status (function)](#status-function)
 - [tryCatch (function)](#trycatch-function)
+- [alt (export)](#alt-export)
+- [ap (export)](#ap-export)
+- [apFirst (export)](#apfirst-export)
+- [apSecond (export)](#apsecond-export)
+- [bimap (export)](#bimap-export)
+- [chain (export)](#chain-export)
+- [chainFirst (export)](#chainfirst-export)
+- [filterOrElse (export)](#filterorelse-export)
+- [flatten (export)](#flatten-export)
+- [fromEither (export)](#fromeither-export)
+- [fromOption (export)](#fromoption-export)
+- [fromPredicate (export)](#frompredicate-export)
+- [map (export)](#map-export)
+- [mapLeft (export)](#mapleft-export)
 
 ---
 
@@ -153,6 +171,8 @@ export interface Middleware<I, O, E, A> {
 }
 ```
 
+Added in v0.5.0
+
 # ResponseEnded (interface)
 
 Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished
@@ -218,7 +238,7 @@ Adapted from https://github.com/purescript-contrib/purescript-media-types
 **Signature**
 
 ```ts
-export const MediaType = ...
+export const MediaType: { readonly applicationFormURLEncoded: "application/x-www-form-urlencoded"; readonly applicationJSON: "application/json"; readonly applicationJavascript: "application/javascript"; readonly applicationOctetStream: "application/octet-stream"; readonly applicationXML: "application/xml"; readonly imageGIF: "image/gif"; readonly imageJPEG: "image/jpeg"; readonly imagePNG: "image/png"; readonly multipartFormData: "multipart/form-data"; readonly textCSV: "text/csv"; readonly textHTML: "text/html"; readonly textPlain: "text/plain"; readonly textXML: "text/xml"; } = ...
 ```
 
 Added in v0.5.0
@@ -228,7 +248,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export const Status = ...
+export const Status: { readonly OK: 200; readonly Created: 201; readonly Found: 302; readonly BadRequest: 400; readonly Unauthorized: 401; readonly Forbidden: 403; readonly NotFound: 404; readonly MethodNotAllowed: 405; readonly NotAcceptable: 406; readonly ServerError: 500; } = ...
 ```
 
 Added in v0.5.0
@@ -238,7 +258,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export const URI = ...
+export const URI: "Middleware" = ...
 ```
 
 Added in v0.5.0
@@ -639,6 +659,146 @@ export function tryCatch<I = StatusOpen, E = never, A = never>(
   f: () => Promise<A>,
   onRejected: (reason: unknown) => E
 ): Middleware<I, I, E, A> { ... }
+```
+
+Added in v0.5.0
+
+# alt (export)
+
+**Signature**
+
+```ts
+<R, E, A>(that: () => Middleware<R, R, E, A>) => (fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# ap (export)
+
+**Signature**
+
+```ts
+<R, E, A>(fa: Middleware<R, R, E, A>) => <B>(fab: Middleware<R, R, E, (a: A) => B>) => Middleware<R, R, E, B>
+```
+
+Added in v0.5.0
+
+# apFirst (export)
+
+**Signature**
+
+```ts
+<R, E, B>(fb: Middleware<R, R, E, B>) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# apSecond (export)
+
+**Signature**
+
+```ts
+<R, E, B>(fb: Middleware<R, R, E, B>) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+```
+
+Added in v0.5.0
+
+# bimap (export)
+
+**Signature**
+
+```ts
+<E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => <R>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, B>
+```
+
+Added in v0.5.0
+
+# chain (export)
+
+**Signature**
+
+```ts
+<R, E, A, B>(f: (a: A) => Middleware<R, R, E, B>) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+```
+
+Added in v0.5.0
+
+# chainFirst (export)
+
+**Signature**
+
+```ts
+<R, E, A, B>(f: (a: A) => Middleware<R, R, E, B>) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# filterOrElse (export)
+
+**Signature**
+
+```ts
+{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>; }
+```
+
+Added in v0.5.0
+
+# flatten (export)
+
+**Signature**
+
+```ts
+<R, E, A>(mma: Middleware<R, R, E, Middleware<R, R, E, A>>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# fromEither (export)
+
+**Signature**
+
+```ts
+<R, E, A>(ma: Either<E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# fromOption (export)
+
+**Signature**
+
+```ts
+<E>(onNone: () => E) => <R, A>(ma: Option<A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# fromPredicate (export)
+
+**Signature**
+
+```ts
+{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <U>(a: A) => Middleware<U, U, E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(a: A) => Middleware<R, R, E, A>; }
+```
+
+Added in v0.5.0
+
+# map (export)
+
+**Signature**
+
+```ts
+<A, B>(f: (a: A) => B) => <R, E>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+```
+
+Added in v0.5.0
+
+# mapLeft (export)
+
+**Signature**
+
+```ts
+<E, G>(f: (e: E) => G) => <R, A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, A>
 ```
 
 Added in v0.5.0
