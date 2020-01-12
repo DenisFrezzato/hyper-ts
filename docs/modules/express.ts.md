@@ -4,6 +4,10 @@ nav_order: 1
 parent: Modules
 ---
 
+# express overview
+
+Added in v0.5.0
+
 ---
 
 <h2 class="text-delta">Table of contents</h2>
@@ -55,6 +59,8 @@ Added in v0.5.0
 chain<T>(action: Action, ended: boolean = false): ExpressConnection<T> { ... }
 ```
 
+Added in v0.5.0
+
 ## getRequest (method)
 
 **Signature**
@@ -62,6 +68,8 @@ chain<T>(action: Action, ended: boolean = false): ExpressConnection<T> { ... }
 ```ts
 getRequest(): IncomingMessage { ... }
 ```
+
+Added in v0.5.0
 
 ## getBody (method)
 
@@ -71,6 +79,8 @@ getRequest(): IncomingMessage { ... }
 getBody(): unknown { ... }
 ```
 
+Added in v0.5.0
+
 ## getHeader (method)
 
 **Signature**
@@ -78,6 +88,8 @@ getBody(): unknown { ... }
 ```ts
 getHeader(name: string): unknown { ... }
 ```
+
+Added in v0.5.0
 
 ## getParams (method)
 
@@ -87,6 +99,8 @@ getHeader(name: string): unknown { ... }
 getParams(): unknown { ... }
 ```
 
+Added in v0.5.0
+
 ## getQuery (method)
 
 **Signature**
@@ -94,6 +108,8 @@ getParams(): unknown { ... }
 ```ts
 getQuery(): unknown { ... }
 ```
+
+Added in v0.5.0
 
 ## getOriginalUrl (method)
 
@@ -103,6 +119,8 @@ getQuery(): unknown { ... }
 getOriginalUrl(): string { ... }
 ```
 
+Added in v0.5.0
+
 ## getMethod (method)
 
 **Signature**
@@ -110,6 +128,8 @@ getOriginalUrl(): string { ... }
 ```ts
 getMethod(): string { ... }
 ```
+
+Added in v0.5.0
 
 ## setCookie (method)
 
@@ -119,6 +139,8 @@ getMethod(): string { ... }
 setCookie(name: string, value: string, options: CookieOptions): ExpressConnection<HeadersOpen> { ... }
 ```
 
+Added in v0.5.0
+
 ## clearCookie (method)
 
 **Signature**
@@ -126,6 +148,8 @@ setCookie(name: string, value: string, options: CookieOptions): ExpressConnectio
 ```ts
 clearCookie(name: string, options: CookieOptions): ExpressConnection<HeadersOpen> { ... }
 ```
+
+Added in v0.5.0
 
 ## setHeader (method)
 
@@ -135,6 +159,8 @@ clearCookie(name: string, options: CookieOptions): ExpressConnection<HeadersOpen
 setHeader(name: string, value: string): ExpressConnection<HeadersOpen> { ... }
 ```
 
+Added in v0.5.0
+
 ## setStatus (method)
 
 **Signature**
@@ -142,6 +168,8 @@ setHeader(name: string, value: string): ExpressConnection<HeadersOpen> { ... }
 ```ts
 setStatus(status: Status): ExpressConnection<HeadersOpen> { ... }
 ```
+
+Added in v0.5.0
 
 ## setBody (method)
 
@@ -151,6 +179,8 @@ setStatus(status: Status): ExpressConnection<HeadersOpen> { ... }
 setBody(body: unknown): ExpressConnection<ResponseEnded> { ... }
 ```
 
+Added in v0.5.0
+
 ## endResponse (method)
 
 **Signature**
@@ -158,6 +188,8 @@ setBody(body: unknown): ExpressConnection<ResponseEnded> { ... }
 ```ts
 endResponse(): ExpressConnection<ResponseEnded> { ... }
 ```
+
+Added in v0.5.0
 
 # fromRequestHandler (function)
 
