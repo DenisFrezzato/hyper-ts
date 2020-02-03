@@ -3,7 +3,7 @@ import * as E from 'fp-ts/lib/Either'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as querystring from 'qs'
-import * as H from '../src'
+import { connection as H, middleware as HM } from '../src'
 import { Action, ExpressConnection, toArray } from '../src/express'
 import { pipe } from 'fp-ts/lib/pipeable'
 
@@ -29,7 +29,7 @@ class MockConnection<S> extends ExpressConnection<S> {
   }
 }
 
-function assertSuccess<I, O, A>(m: H.Middleware<I, O, any, A>, cin: MockConnection<I>, a: A, actions: Array<Action>) {
+function assertSuccess<I, O, A>(m: HM.Middleware<I, O, any, A>, cin: MockConnection<I>, a: A, actions: Array<Action>) {
   return m(cin)().then(e => {
     assert.deepStrictEqual(
       pipe(
@@ -41,7 +41,7 @@ function assertSuccess<I, O, A>(m: H.Middleware<I, O, any, A>, cin: MockConnecti
   })
 }
 
-function assertFailure<I, L>(m: H.Middleware<I, any, L, any>, conn: MockConnection<I>, f: (l: L) => void) {
+function assertFailure<I, L>(m: HM.Middleware<I, any, L, any>, conn: MockConnection<I>, f: (l: L) => void) {
   return m(conn)().then(e => {
     if (E.isLeft(e)) {
       f(e.left)
@@ -54,14 +54,14 @@ function assertFailure<I, L>(m: H.Middleware<I, any, L, any>, conn: MockConnecti
 describe('Middleware', () => {
   it('ap', () => {
     const fab = pipe(
-      H.header('a', 'a'),
-      H.map(() => (s: string): number => s.length)
+      HM.header('a', 'a'),
+      HM.map(() => (s: string): number => s.length)
     )
     const fa = pipe(
-      H.header('b', 'b'),
-      H.map(() => 'foo')
+      HM.header('b', 'b'),
+      HM.map(() => 'foo')
     )
-    const m = pipe(fab, H.ap(fa))
+    const m = pipe(fab, HM.ap(fa))
     const c = new MockConnection<H.HeadersOpen>(new MockRequest())
     return assertSuccess(m, c, 3, [
       { type: 'setHeader', name: 'a', value: 'a' },
@@ -71,7 +71,7 @@ describe('Middleware', () => {
 
   describe('status', () => {
     it('should write the status code', () => {
-      const m = H.status(200)
+      const m = HM.status(200)
       const c = new MockConnection<H.StatusOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [{ type: 'setStatus', status: 200 }])
     })
@@ -79,7 +79,7 @@ describe('Middleware', () => {
 
   describe('header', () => {
     it('should write the headers', () => {
-      const m = H.header('name', 'value')
+      const m = HM.header('name', 'value')
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [{ type: 'setHeader', name: 'name', value: 'value' }])
     })
@@ -87,7 +87,7 @@ describe('Middleware', () => {
 
   describe('send', () => {
     it('should send the content', () => {
-      const m = H.send('<h1>Hello world!</h1>')
+      const m = HM.send('<h1>Hello world!</h1>')
       const c = new MockConnection<H.BodyOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [{ type: 'setBody', body: '<h1>Hello world!</h1>' }])
     })
@@ -95,7 +95,7 @@ describe('Middleware', () => {
 
   describe('json', () => {
     it('should add the proper header and send the content', () => {
-      const m = H.json({ a: 1 }, E.toError)
+      const m = HM.json({ a: 1 }, E.toError)
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [
         { type: 'setHeader', name: 'Content-Type', value: 'application/json' },
@@ -106,7 +106,7 @@ describe('Middleware', () => {
 
   describe('cookie', () => {
     it('should add the cookie', () => {
-      const m = H.cookie('name', 'value', {})
+      const m = HM.cookie('name', 'value', {})
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [{ type: 'setCookie', name: 'name', value: 'value', options: {} }])
     })
@@ -115,8 +115,8 @@ describe('Middleware', () => {
   describe('clearCookie', () => {
     it('should clear the cookie', () => {
       const m = pipe(
-        H.cookie('name', 'value', {}),
-        H.ichain(() => H.clearCookie('name', {}))
+        HM.cookie('name', 'value', {}),
+        HM.ichain(() => HM.clearCookie('name', {}))
       )
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [
@@ -128,7 +128,7 @@ describe('Middleware', () => {
 
   describe('contentType', () => {
     it('should add the `Content-Type` header', () => {
-      const m = H.contentType(H.MediaType.applicationXML)
+      const m = HM.contentType(H.MediaType.applicationXML)
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [{ type: 'setHeader', name: 'Content-Type', value: 'application/xml' }])
     })
@@ -136,7 +136,7 @@ describe('Middleware', () => {
 
   describe('redirect', () => {
     it('should add the correct status / header', () => {
-      const m = H.redirect('/users')
+      const m = HM.redirect('/users')
       const c = new MockConnection<H.StatusOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [
         { type: 'setStatus', status: 302 },
@@ -147,13 +147,13 @@ describe('Middleware', () => {
 
   describe('decodeParam', () => {
     it('should validate a param (success case)', () => {
-      const m = H.decodeParam('foo', t.number.decode)
+      const m = HM.decodeParam('foo', t.number.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({ foo: 1 }))
       return assertSuccess(m, c, 1, [])
     })
 
     it('should validate a param (failure case)', () => {
-      const m = H.decodeParam('foo', t.number.decode)
+      const m = HM.decodeParam('foo', t.number.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({ foo: 'a' }))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : number'])
@@ -162,13 +162,13 @@ describe('Middleware', () => {
 
     describe('decodeParams', () => {
       it('should validate all params (success case)', () => {
-        const m = H.decodeParams(t.interface({ foo: t.number }).decode)
+        const m = HM.decodeParams(t.interface({ foo: t.number }).decode)
         const c = new MockConnection<H.StatusOpen>(new MockRequest({ foo: 1 }))
         return assertSuccess(m, c, { foo: 1 }, [])
       })
 
       it('should validate all params (failure case)', () => {
-        const m = H.decodeParams(t.interface({ foo: t.number }).decode)
+        const m = HM.decodeParams(t.interface({ foo: t.number }).decode)
         const c = new MockConnection<H.StatusOpen>(new MockRequest({ foo: 'a' }))
         return assertFailure(m, c, errors => {
           assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : { foo: number }/foo: number'])
@@ -182,7 +182,7 @@ describe('Middleware', () => {
       const Query = t.interface({
         q: t.string
       })
-      const m = H.decodeQuery(Query.decode)
+      const m = HM.decodeQuery(Query.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
       return assertSuccess(m, c, { q: 'tobi ferret' }, [])
     })
@@ -195,7 +195,7 @@ describe('Middleware', () => {
           type: t.string
         })
       })
-      const m = H.decodeQuery(Query.decode)
+      const m = HM.decodeQuery(Query.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, 'order=desc&shoe[color]=blue&shoe[type]=converse'))
       return assertSuccess(m, c, { order: 'desc', shoe: { color: 'blue', type: 'converse' } }, [])
     })
@@ -204,7 +204,7 @@ describe('Middleware', () => {
       const Query = t.interface({
         q: t.number
       })
-      const m = H.decodeQuery(Query.decode)
+      const m = HM.decodeQuery(Query.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "tobi ferret" supplied to : { q: number }/q: number'])
@@ -214,13 +214,13 @@ describe('Middleware', () => {
 
   describe('decodeBody', () => {
     it('should validate the body (success case)', () => {
-      const m = H.decodeBody(t.number.decode)
+      const m = HM.decodeBody(t.number.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, 1))
       return assertSuccess(m, c, 1, [])
     })
 
     it('should validate the body (failure case)', () => {
-      const m = H.decodeBody(t.number.decode)
+      const m = HM.decodeBody(t.number.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, 'a'))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value "a" supplied to : number'])
@@ -230,13 +230,13 @@ describe('Middleware', () => {
 
   describe('decodeHeader', () => {
     it('should validate a header (success case)', () => {
-      const m = H.decodeHeader('token', t.string.decode)
+      const m = HM.decodeHeader('token', t.string.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, { token: 'mytoken' }))
       return assertSuccess(m, c, 'mytoken', [])
     })
 
     it('should validate a header (failure case)', () => {
-      const m = H.decodeHeader('token', t.string.decode)
+      const m = HM.decodeHeader('token', t.string.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
       return assertFailure(m, c, errors => {
         assert.deepStrictEqual(failure(errors), ['Invalid value undefined supplied to : string'])

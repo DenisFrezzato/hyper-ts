@@ -1,6 +1,6 @@
 import * as express from 'express'
 import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
-import * as H from '../src'
+import { connection as H, middleware as HM } from '../src'
 import { toRequestHandler } from '../src/express'
 import { pipe } from 'fp-ts/lib/pipeable'
 
@@ -25,28 +25,28 @@ const JSONError = 'JSONError' as const
 type UserError = typeof InvalidArguments | typeof UserNotFound | typeof JSONError
 
 /** Parses the `user_id` param */
-const getUserId: H.Middleware<H.StatusOpen, H.StatusOpen, UserError, NonEmptyString> = pipe(
-  H.decodeParam('user_id', NonEmptyString.decode),
-  H.mapLeft(() => InvalidArguments)
+const getUserId: HM.Middleware<H.StatusOpen, H.StatusOpen, UserError, NonEmptyString> = pipe(
+  HM.decodeParam('user_id', NonEmptyString.decode),
+  HM.mapLeft(() => InvalidArguments)
 )
 
 /** Loads a `User` from a database (fake) */
-function loadUser(userId: NonEmptyString): H.Middleware<H.StatusOpen, H.StatusOpen, UserError, User> {
-  return userId === 'ab' ? H.right({ name: 'User name...' }) : H.left(UserNotFound)
+function loadUser(userId: NonEmptyString): HM.Middleware<H.StatusOpen, H.StatusOpen, UserError, User> {
+  return userId === 'ab' ? HM.right({ name: 'User name...' }) : HM.left(UserNotFound)
 }
 
 /** Sends a `User` to the client */
 function sendUser(user: User): H.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> {
   return pipe(
-    H.status(H.Status.OK),
-    H.ichain(() => H.json(user, () => JSONError))
+    HM.status(H.Status.OK),
+    HM.ichain(() => HM.json(user, () => JSONError))
   )
 }
 
-const getUser: H.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> = pipe(
+const getUser: HM.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> = pipe(
   getUserId,
-  H.ichain(loadUser),
-  H.ichain(sendUser)
+  HM.ichain(loadUser),
+  HM.ichain(sendUser)
 )
 
 //

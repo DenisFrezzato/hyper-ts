@@ -31,14 +31,14 @@ cannot be made. A few examples of such mistakes could be:
 
 ```ts
 import * as express from 'express'
-import * as H from 'hyper-ts'
+import { connection as H, middleware as HM } from 'hyper-ts'
 import { toRequestHandler } from 'hyper-ts/lib/express'
 import { pipe } from 'fp-ts/lib/pipeable'
 
-const hello: H.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
-  H.status(H.Status.OK), // writes the response status
-  H.ichain(() => H.closeHeaders()), // tells hyper-ts that we're done with the headers
-  H.ichain(() => H.send('Hello hyper-ts on express!')) // sends the response as text
+const hello: HM.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
+  HM.status(H.Status.OK), // writes the response status
+  HM.ichain(() => HM.closeHeaders()), // tells hyper-ts that we're done with the headers
+  HM.ichain(() => HM.send('Hello hyper-ts on express!')) // sends the response as text
 )
 
 express()
@@ -50,8 +50,8 @@ express()
 
 ```ts
 const hello = pipe(
-  H.status(H.Status.OK),
-  H.ichain(() => H.json({ a: 1 }, () => 'error'))
+  HM.status(H.Status.OK),
+  HM.ichain(() => HM.json({ a: 1 }, () => 'error'))
 )
 ```
 
@@ -124,15 +124,15 @@ Middlewares are composed using `chain` and `ichain`, the indexed monadic version
 Invalid operations are prevented statically
 
 ```ts
-import { Status, status } from 'hyper-ts'
+import { connection as H, middleware HM } from 'hyper-ts'
 
 pipe(
-  H.status(H.Status.OK),
-  H.ichain(() => H.header('name', 'value')),
-  H.ichain(() => H.closeHeaders()),
-  H.ichain(() => H.send('Hello hyper-ts on express!')),
+  HM.status(H.Status.OK),
+  HM.ichain(() => HM.header('name', 'value')),
+  HM.ichain(() => HM.closeHeaders()),
+  HM.ichain(() => HM.send('Hello hyper-ts on express!')),
   // try to write a header after sending the body
-  H.ichain(() => H.header('name', 'value')) // static error
+  HM.ichain(() => HM.header('name', 'value')) // static error
 )
 ```
 
@@ -149,13 +149,13 @@ Input validation/decoding is done by defining a decoding function with the follo
 **Example** (decoding a param)
 
 ```ts
-import * as H from 'hyper-ts'
+import { connection as H, middleware as HM } from 'hyper-ts'
 import * as E from 'fp-ts/lib/Either'
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => typeof u === 'object' && u !== null
 
 // returns a middleware validating `req.param.user_id`
-export const middleware: H.Middleware<H.StatusOpen, H.StatusOpen, string, string> = H.decodeParam('user_id', u =>
+export const middleware: HM.Middleware<H.StatusOpen, H.StatusOpen, string, string> = HM.decodeParam('user_id', u =>
   isUnknownRecord(u) && typeof u.user_id === 'string' ? E.right(u.user_id) : E.left('cannot read param user_id')
 )
 ```
@@ -163,11 +163,11 @@ export const middleware: H.Middleware<H.StatusOpen, H.StatusOpen, string, string
 You can also use [io-ts](https://github.com/gcanti/io-ts) decoders.
 
 ```ts
-import * as H from 'hyper-ts'
+import { connection as H, middleware as HM } from 'hyper-ts'
 import * as t from 'io-ts'
 
 // returns a middleware validating `req.param.user_id`
-export const middleware2: H.Middleware<H.StatusOpen, H.StatusOpen, t.Errors, string> = H.decodeParam(
+export const middleware2: HM.Middleware<H.StatusOpen, H.StatusOpen, t.Errors, string> = HM.decodeParam(
   'user_id',
   t.string.decode
 )
@@ -176,26 +176,26 @@ export const middleware2: H.Middleware<H.StatusOpen, H.StatusOpen, t.Errors, str
 Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
 
 ```ts
-import * as H from 'hyper-ts'
+import { connection as H, middleware as HM } from 'hyper-ts'
 import { IntFromString } from 'io-ts-types/lib/IntFromString'
 
 // validation succeeds only if `req.param.user_id` can be parsed to an integer
-export const middleware3: H.Middleware<
+export const middleware3: HM.Middleware<
   H.StatusOpen,
   H.StatusOpen,
   t.Errors,
   t.Branded<number, t.IntBrand>
-> = H.decodeParam('user_id', IntFromString.decode)
+> = HM.decodeParam('user_id', IntFromString.decode)
 ```
 
 **Multiple params**
 
 ```ts
-import * as H from 'hyper-ts'
+import { middleware as HM } from 'hyper-ts'
 import * as t from 'io-ts'
 
 // returns a middleware validating both `req.param.user_id` and `req.param.user_name`
-export const middleware = H.decodeParams(
+export const middleware = HM.decodeParams(
   t.strict({
     user_id: t.string,
     user_name: t.string
@@ -206,11 +206,11 @@ export const middleware = H.decodeParams(
 **Query**
 
 ```ts
-import * as H from 'hyper-ts'
+import { middleware as HM } from 'hyper-ts'
 import * as t from 'io-ts'
 
 // return a middleware validating the query "order=desc&shoe[color]=blue&shoe[type]=converse"
-export const middleware = H.decodeQuery(
+export const middleware = HM.decodeQuery(
   t.strict({
     order: t.string,
     shoe: t.strict({
@@ -224,11 +224,11 @@ export const middleware = H.decodeQuery(
 **Body**
 
 ```ts
-import * as H from 'hyper-ts'
+import { middleware as HM } from 'hyper-ts'
 import * as t from 'io-ts'
 
 // return a middleware validating `req.body`
-export const middleware = H.decodeBody(t.string.decode)
+export const middleware = HM.decodeBody(t.string.decode)
 ```
 
 [Here](examples/json-middleware.ts)'s an example using the standard `express.json` middleware

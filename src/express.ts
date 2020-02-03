@@ -4,16 +4,8 @@
 import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
 import { rightTask } from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
-import {
-  Connection,
-  CookieOptions,
-  HeadersOpen,
-  Middleware,
-  ResponseEnded,
-  Status,
-  execMiddleware,
-  StatusOpen
-} from '.'
+import { Connection, CookieOptions, HeadersOpen, ResponseEnded, Status, StatusOpen } from './Connection'
+import { Middleware, execMiddleware } from './Middleware'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
 
