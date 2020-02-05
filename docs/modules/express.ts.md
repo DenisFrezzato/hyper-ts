@@ -27,9 +27,9 @@ Added in v0.5.0
   - [setStatus (method)](#setstatus-method)
   - [setBody (method)](#setbody-method)
   - [endResponse (method)](#endresponse-method)
-- [fromRequestHandler (function)](#fromrequesthandler-function)
-- [toErrorRequestHandler (function)](#toerrorrequesthandler-function)
-- [toRequestHandler (function)](#torequesthandler-function)
+- [fromRequestHandler](#fromrequesthandler)
+- [toErrorRequestHandler](#toerrorrequesthandler)
+- [toRequestHandler](#torequesthandler)
 
 ---
 
@@ -191,7 +191,7 @@ endResponse(): ExpressConnection<ResponseEnded> { ... }
 
 Added in v0.5.0
 
-# fromRequestHandler (function)
+# fromRequestHandler
 
 **Signature**
 
@@ -204,7 +204,7 @@ export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
 
 Added in v0.5.0
 
-# toErrorRequestHandler (function)
+# toErrorRequestHandler
 
 **Signature**
 
@@ -214,7 +214,7 @@ export function toErrorRequestHandler<I, O, E>(f: (err: unknown) => Middleware<I
 
 Added in v0.5.0
 
-# toRequestHandler (function)
+# toRequestHandler
 
 **Signature**
 
