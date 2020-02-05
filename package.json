@@ -1,6 +1,6 @@
 {
   "name": "hyper-ts",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "hyper-ts description",
   "files": [
     "lib",
@@ -42,7 +42,7 @@
     "@types/node": "^11.11.6",
     "@types/qs": "^6.5.2",
     "benchmark": "^2.1.4",
-    "docs-ts": "^0.3.0",
+    "docs-ts": "^0.3.4",
     "dtslint": "github:gcanti/dtslint",
     "fp-ts": "^2.0.5",
     "fp-ts-routing": "^0.4.1",

@@ -22,57 +22,57 @@ Added in v0.5.0
 - [MediaType (type alias)](#mediatype-type-alias)
 - [Status (type alias)](#status-type-alias)
 - [URI (type alias)](#uri-type-alias)
-- [MediaType (constant)](#mediatype-constant)
-- [Status (constant)](#status-constant)
-- [URI (constant)](#uri-constant)
-- [middleware (constant)](#middleware-constant)
-- [clearCookie (function)](#clearcookie-function)
-- [closeHeaders (function)](#closeheaders-function)
-- [contentType (function)](#contenttype-function)
-- [cookie (function)](#cookie-function)
-- [decodeBody (function)](#decodebody-function)
-- [decodeHeader (function)](#decodeheader-function)
-- [decodeMethod (function)](#decodemethod-function)
-- [decodeParam (function)](#decodeparam-function)
-- [decodeParams (function)](#decodeparams-function)
-- [decodeQuery (function)](#decodequery-function)
-- [end (function)](#end-function)
-- [evalMiddleware (function)](#evalmiddleware-function)
-- [execMiddleware (function)](#execmiddleware-function)
-- [fromConnection (function)](#fromconnection-function)
-- [fromIOEither (function)](#fromioeither-function)
-- [fromTaskEither (function)](#fromtaskeither-function)
-- [gets (function)](#gets-function)
-- [header (function)](#header-function)
-- [ichain (function)](#ichain-function)
-- [iof (function)](#iof-function)
-- [json (function)](#json-function)
-- [left (function)](#left-function)
-- [leftIO (function)](#leftio-function)
-- [leftTask (function)](#lefttask-function)
-- [modifyConnection (function)](#modifyconnection-function)
-- [orElse (function)](#orelse-function)
-- [redirect (function)](#redirect-function)
-- [right (function)](#right-function)
-- [rightIO (function)](#rightio-function)
-- [rightTask (function)](#righttask-function)
-- [send (function)](#send-function)
-- [status (function)](#status-function)
-- [tryCatch (function)](#trycatch-function)
-- [alt (export)](#alt-export)
-- [ap (export)](#ap-export)
-- [apFirst (export)](#apfirst-export)
-- [apSecond (export)](#apsecond-export)
-- [bimap (export)](#bimap-export)
-- [chain (export)](#chain-export)
-- [chainFirst (export)](#chainfirst-export)
-- [filterOrElse (export)](#filterorelse-export)
-- [flatten (export)](#flatten-export)
-- [fromEither (export)](#fromeither-export)
-- [fromOption (export)](#fromoption-export)
-- [fromPredicate (export)](#frompredicate-export)
-- [map (export)](#map-export)
-- [mapLeft (export)](#mapleft-export)
+- [MediaType](#mediatype)
+- [Status](#status)
+- [URI](#uri)
+- [alt](#alt)
+- [ap](#ap)
+- [apFirst](#apfirst)
+- [apSecond](#apsecond)
+- [bimap](#bimap)
+- [chain](#chain)
+- [chainFirst](#chainfirst)
+- [clearCookie](#clearcookie)
+- [closeHeaders](#closeheaders)
+- [contentType](#contenttype)
+- [cookie](#cookie)
+- [decodeBody](#decodebody)
+- [decodeHeader](#decodeheader)
+- [decodeMethod](#decodemethod)
+- [decodeParam](#decodeparam)
+- [decodeParams](#decodeparams)
+- [decodeQuery](#decodequery)
+- [end](#end)
+- [evalMiddleware](#evalmiddleware)
+- [execMiddleware](#execmiddleware)
+- [filterOrElse](#filterorelse)
+- [flatten](#flatten)
+- [fromConnection](#fromconnection)
+- [fromEither](#fromeither)
+- [fromIOEither](#fromioeither)
+- [fromOption](#fromoption)
+- [fromPredicate](#frompredicate)
+- [fromTaskEither](#fromtaskeither)
+- [gets](#gets)
+- [header](#header)
+- [ichain](#ichain)
+- [iof](#iof)
+- [json](#json)
+- [left](#left)
+- [leftIO](#leftio)
+- [leftTask](#lefttask)
+- [map](#map)
+- [mapLeft](#mapleft)
+- [middleware](#middleware)
+- [modifyConnection](#modifyconnection)
+- [orElse](#orelse)
+- [redirect](#redirect)
+- [right](#right)
+- [rightIO](#rightio)
+- [rightTask](#righttask)
+- [send](#send)
+- [status](#status)
+- [tryCatch](#trycatch)
 
 ---
 
@@ -231,7 +231,7 @@ export type URI = typeof URI
 
 Added in v0.5.0
 
-# MediaType (constant)
+# MediaType
 
 Adapted from https://github.com/purescript-contrib/purescript-media-types
 
@@ -243,7 +243,7 @@ export const MediaType: { readonly applicationFormURLEncoded: "application/x-www
 
 Added in v0.5.0
 
-# Status (constant)
+# Status
 
 **Signature**
 
@@ -253,7 +253,7 @@ export const Status: { readonly OK: 200; readonly Created: 201; readonly Found: 
 
 Added in v0.5.0
 
-# URI (constant)
+# URI
 
 **Signature**
 
@@ -263,17 +263,77 @@ export const URI: "Middleware" = ...
 
 Added in v0.5.0
 
-# middleware (constant)
+# alt
 
 **Signature**
 
 ```ts
-export const middleware: Monad3<URI> & Alt3<URI> & Bifunctor3<URI> & MonadThrow3<URI> & MonadTask3<URI> = ...
+<R, E, A>(that: () => Middleware<R, R, E, A>) => (fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
 
-# clearCookie (function)
+# ap
+
+**Signature**
+
+```ts
+<R, E, A>(fa: Middleware<R, R, E, A>) => <B>(fab: Middleware<R, R, E, (a: A) => B>) => Middleware<R, R, E, B>
+```
+
+Added in v0.5.0
+
+# apFirst
+
+**Signature**
+
+```ts
+<R, E, B>(fb: Middleware<R, R, E, B>) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# apSecond
+
+**Signature**
+
+```ts
+<R, E, B>(fb: Middleware<R, R, E, B>) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+```
+
+Added in v0.5.0
+
+# bimap
+
+**Signature**
+
+```ts
+<E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => <R>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, B>
+```
+
+Added in v0.5.0
+
+# chain
+
+**Signature**
+
+```ts
+<R, E, A, B>(f: (a: A) => Middleware<R, R, E, B>) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+```
+
+Added in v0.5.0
+
+# chainFirst
+
+**Signature**
+
+```ts
+<R, E, A, B>(f: (a: A) => Middleware<R, R, E, B>) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# clearCookie
 
 Returns a middleware that clears the cookie `name`
 
@@ -288,7 +348,7 @@ export function clearCookie<E = never>(
 
 Added in v0.5.0
 
-# closeHeaders (function)
+# closeHeaders
 
 Returns a middleware that changes the connection status to `BodyOpen`
 
@@ -300,7 +360,7 @@ export function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyOpen, E, 
 
 Added in v0.5.0
 
-# contentType (function)
+# contentType
 
 Returns a middleware that sets the given `mediaType`
 
@@ -312,7 +372,7 @@ export function contentType<E = never>(mediaType: MediaType): Middleware<Headers
 
 Added in v0.5.0
 
-# cookie (function)
+# cookie
 
 Returns a middleware that sets the cookie `name` to `value`, with the given `options`
 
@@ -328,7 +388,7 @@ export function cookie<E = never>(
 
 Added in v0.5.0
 
-# decodeBody (function)
+# decodeBody
 
 Returns a middleware that tries to decode `connection.getBody()`
 
@@ -340,7 +400,7 @@ export function decodeBody<E, A>(f: (input: unknown) => Either<E, A>): Middlewar
 
 Added in v0.5.0
 
-# decodeHeader (function)
+# decodeHeader
 
 Returns a middleware that tries to decode `connection.getHeader(name)`
 
@@ -355,7 +415,7 @@ export function decodeHeader<E, A>(
 
 Added in v0.5.0
 
-# decodeMethod (function)
+# decodeMethod
 
 Returns a middleware that tries to decode `connection.getMethod()`
 
@@ -367,7 +427,7 @@ export function decodeMethod<E, A>(f: (method: string) => Either<E, A>): Middlew
 
 Added in v0.5.0
 
-# decodeParam (function)
+# decodeParam
 
 Returns a middleware that tries to decode `connection.getParams()[name]`
 
@@ -382,7 +442,7 @@ export function decodeParam<E, A>(
 
 Added in v0.5.0
 
-# decodeParams (function)
+# decodeParams
 
 Returns a middleware that tries to decode `connection.getParams()`
 
@@ -394,7 +454,7 @@ export function decodeParams<E, A>(f: (input: unknown) => Either<E, A>): Middlew
 
 Added in v0.5.0
 
-# decodeQuery (function)
+# decodeQuery
 
 Returns a middleware that tries to decode `connection.getQuery()`
 
@@ -406,7 +466,7 @@ export function decodeQuery<E, A>(f: (input: unknown) => Either<E, A>): Middlewa
 
 Added in v0.5.0
 
-# end (function)
+# end
 
 Returns a middleware that ends the response without sending any response body
 
@@ -418,7 +478,7 @@ export function end<E = never>(): Middleware<BodyOpen, ResponseEnded, E, void> {
 
 Added in v0.5.0
 
-# evalMiddleware (function)
+# evalMiddleware
 
 **Signature**
 
@@ -428,7 +488,7 @@ export function evalMiddleware<I, O, E, A>(ma: Middleware<I, O, E, A>, c: Connec
 
 Added in v0.5.0
 
-# execMiddleware (function)
+# execMiddleware
 
 **Signature**
 
@@ -441,7 +501,27 @@ export function execMiddleware<I, O, E, A>(
 
 Added in v0.5.0
 
-# fromConnection (function)
+# filterOrElse
+
+**Signature**
+
+```ts
+{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>; }
+```
+
+Added in v0.5.0
+
+# flatten
+
+**Signature**
+
+```ts
+<R, E, A>(mma: Middleware<R, R, E, Middleware<R, R, E, A>>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# fromConnection
 
 **Signature**
 
@@ -453,7 +533,17 @@ export function fromConnection<I = StatusOpen, E = never, A = never>(
 
 Added in v0.5.0
 
-# fromIOEither (function)
+# fromEither
+
+**Signature**
+
+```ts
+<R, E, A>(ma: Either<E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# fromIOEither
 
 **Signature**
 
@@ -463,7 +553,27 @@ export function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<
 
 Added in v0.5.0
 
-# fromTaskEither (function)
+# fromOption
+
+**Signature**
+
+```ts
+<E>(onNone: () => E) => <R, A>(ma: Option<A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.5.0
+
+# fromPredicate
+
+**Signature**
+
+```ts
+{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <U>(a: A) => Middleware<U, U, E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(a: A) => Middleware<R, R, E, A>; }
+```
+
+Added in v0.5.0
+
+# fromTaskEither
 
 **Signature**
 
@@ -473,7 +583,7 @@ export function fromTaskEither<I = StatusOpen, E = never, A = never>(fa: TE.Task
 
 Added in v0.5.0
 
-# gets (function)
+# gets
 
 **Signature**
 
@@ -483,7 +593,7 @@ export function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>)
 
 Added in v0.5.0
 
-# header (function)
+# header
 
 Returns a middleware that writes the given header
 
@@ -495,7 +605,7 @@ export function header<E = never>(name: string, value: string): Middleware<Heade
 
 Added in v0.5.0
 
-# ichain (function)
+# ichain
 
 **Signature**
 
@@ -507,7 +617,7 @@ export function ichain<A, O, Z, E, B>(
 
 Added in v0.5.0
 
-# iof (function)
+# iof
 
 **Signature**
 
@@ -517,7 +627,7 @@ export function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A):
 
 Added in v0.5.0
 
-# json (function)
+# json
 
 Returns a middleware that sends `body` as JSON
 
@@ -532,7 +642,7 @@ export function json<E>(
 
 Added in v0.5.0
 
-# left (function)
+# left
 
 **Signature**
 
@@ -542,7 +652,7 @@ export function left<I = StatusOpen, E = never, A = never>(e: E): Middleware<I, 
 
 Added in v0.5.0
 
-# leftIO (function)
+# leftIO
 
 **Signature**
 
@@ -552,7 +662,7 @@ export function leftIO<I = StatusOpen, E = never, A = never>(fe: IO<E>): Middlew
 
 Added in v0.5.0
 
-# leftTask (function)
+# leftTask
 
 **Signature**
 
@@ -562,7 +672,37 @@ export function leftTask<I = StatusOpen, E = never, A = never>(te: Task<E>): Mid
 
 Added in v0.5.0
 
-# modifyConnection (function)
+# map
+
+**Signature**
+
+```ts
+<A, B>(f: (a: A) => B) => <R, E>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+```
+
+Added in v0.5.0
+
+# mapLeft
+
+**Signature**
+
+```ts
+<E, G>(f: (e: E) => G) => <R, A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, A>
+```
+
+Added in v0.5.0
+
+# middleware
+
+**Signature**
+
+```ts
+export const middleware: Monad3<URI> & Alt3<URI> & Bifunctor3<URI> & MonadThrow3<URI> & MonadTask3<URI> = ...
+```
+
+Added in v0.5.0
+
+# modifyConnection
 
 **Signature**
 
@@ -572,7 +712,7 @@ export function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>
 
 Added in v0.5.0
 
-# orElse (function)
+# orElse
 
 **Signature**
 
@@ -584,7 +724,7 @@ export function orElse<E, I, O, M, A>(
 
 Added in v0.5.0
 
-# redirect (function)
+# redirect
 
 Returns a middleware that sends a redirect to `uri`
 
@@ -596,7 +736,7 @@ export function redirect<E = never>(uri: string): Middleware<StatusOpen, Headers
 
 Added in v0.5.0
 
-# right (function)
+# right
 
 **Signature**
 
@@ -606,7 +746,7 @@ export function right<I = StatusOpen, E = never, A = never>(a: A): Middleware<I,
 
 Added in v0.5.0
 
-# rightIO (function)
+# rightIO
 
 **Signature**
 
@@ -616,7 +756,7 @@ export function rightIO<I = StatusOpen, E = never, A = never>(fa: IO<A>): Middle
 
 Added in v0.5.0
 
-# rightTask (function)
+# rightTask
 
 **Signature**
 
@@ -626,7 +766,7 @@ export function rightTask<I = StatusOpen, E = never, A = never>(fa: Task<A>): Mi
 
 Added in v0.5.0
 
-# send (function)
+# send
 
 Returns a middleware that sends `body` as response body
 
@@ -638,7 +778,7 @@ export function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnde
 
 Added in v0.5.0
 
-# status (function)
+# status
 
 Returns a middleware that writes the response status
 
@@ -650,7 +790,7 @@ export function status<E = never>(status: Status): Middleware<StatusOpen, Header
 
 Added in v0.5.0
 
-# tryCatch (function)
+# tryCatch
 
 **Signature**
 
@@ -659,146 +799,6 @@ export function tryCatch<I = StatusOpen, E = never, A = never>(
   f: () => Promise<A>,
   onRejected: (reason: unknown) => E
 ): Middleware<I, I, E, A> { ... }
-```
-
-Added in v0.5.0
-
-# alt (export)
-
-**Signature**
-
-```ts
-<R, E, A>(that: () => Middleware<R, R, E, A>) => (fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-# ap (export)
-
-**Signature**
-
-```ts
-<R, E, A>(fa: Middleware<R, R, E, A>) => <B>(fab: Middleware<R, R, E, (a: A) => B>) => Middleware<R, R, E, B>
-```
-
-Added in v0.5.0
-
-# apFirst (export)
-
-**Signature**
-
-```ts
-<R, E, B>(fb: Middleware<R, R, E, B>) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-# apSecond (export)
-
-**Signature**
-
-```ts
-<R, E, B>(fb: Middleware<R, R, E, B>) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
-```
-
-Added in v0.5.0
-
-# bimap (export)
-
-**Signature**
-
-```ts
-<E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => <R>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, B>
-```
-
-Added in v0.5.0
-
-# chain (export)
-
-**Signature**
-
-```ts
-<R, E, A, B>(f: (a: A) => Middleware<R, R, E, B>) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
-```
-
-Added in v0.5.0
-
-# chainFirst (export)
-
-**Signature**
-
-```ts
-<R, E, A, B>(f: (a: A) => Middleware<R, R, E, B>) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-# filterOrElse (export)
-
-**Signature**
-
-```ts
-{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>; }
-```
-
-Added in v0.5.0
-
-# flatten (export)
-
-**Signature**
-
-```ts
-<R, E, A>(mma: Middleware<R, R, E, Middleware<R, R, E, A>>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-# fromEither (export)
-
-**Signature**
-
-```ts
-<R, E, A>(ma: Either<E, A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-# fromOption (export)
-
-**Signature**
-
-```ts
-<E>(onNone: () => E) => <R, A>(ma: Option<A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-# fromPredicate (export)
-
-**Signature**
-
-```ts
-{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <U>(a: A) => Middleware<U, U, E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(a: A) => Middleware<R, R, E, A>; }
-```
-
-Added in v0.5.0
-
-# map (export)
-
-**Signature**
-
-```ts
-<A, B>(f: (a: A) => B) => <R, E>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
-```
-
-Added in v0.5.0
-
-# mapLeft (export)
-
-**Signature**
-
-```ts
-<E, G>(f: (e: E) => G) => <R, A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, A>
 ```
 
 Added in v0.5.0
