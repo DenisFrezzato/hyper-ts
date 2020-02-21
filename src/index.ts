@@ -12,7 +12,6 @@ import { MonadThrow3 } from 'fp-ts/lib/MonadThrow'
 import { pipe, pipeable } from 'fp-ts/lib/pipeable'
 import { Task } from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
-import { IncomingMessage } from 'http'
 
 /**
  * Adapted from https://github.com/purescript-contrib/purescript-media-types
@@ -120,7 +119,7 @@ export interface ResponseEnded {
  */
 export interface Connection<S> {
   readonly _S: S
-  readonly getRequest: () => IncomingMessage
+  readonly getRequest: () => unknown
   readonly getBody: () => unknown
   readonly getHeader: (name: string) => unknown
   readonly getParams: () => unknown
