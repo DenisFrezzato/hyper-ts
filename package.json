@@ -21,7 +21,7 @@
     "prebuild": "npm run clean",
     "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json",
     "postbuild": "import-path-rewrite && prettier --write \"./{lib,es6}/**/*.ts\"",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "dtslint": "dtslint dtslint",
     "docs": "docs-ts"
   },
@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/gcanti/hyper-ts",
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.42",
+    "@types/aws-lambda": "^8.10.43",
     "@types/benchmark": "^1.0.31",
     "@types/express": "^4.17.2",
     "@types/mocha": "^7.0.1",
