@@ -61,9 +61,11 @@
     "typescript": "^3.8.2"
   },
   "peerDependencies": {
-    "fp-ts": "^2.5.1",
     "express": "^4.17.1",
     "aws-lambda": "^1.0.5"
+  },
+  "dependencies": {
+    "fp-ts": "^2.5.1"
   },
   "tags": [
     "typescript",
