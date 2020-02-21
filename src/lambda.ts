@@ -161,7 +161,7 @@ export function toRequestHandler<I, O, E>(middleware: Middleware<I, O, E, void>)
         // create default response here
         exec(middleware, event, context, callback, {
             statusCode: 200,
-            body: ""
-        })
+            body: ''
+        }).catch((err: Error) => callback(err))
     }
 }
