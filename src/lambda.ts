@@ -69,9 +69,11 @@ export class ServerlessConnection<S> implements Connection<S> {
         return Object.assign({}, this.event.queryStringParameters, this.event.multiValueQueryStringParameters)
     }
 
+    /**
+     * https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html
+     */
     getOriginalUrl(): string {
-        // TODO: How to get orignal Url?
-        return this.event.path
+        return `https://${this.event.headers['Host']}${this.event.requestContext.path}`
     }
 
     getMethod(): string {
