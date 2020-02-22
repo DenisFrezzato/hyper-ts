@@ -12,8 +12,7 @@ import {
     HeadersOpen,
     ResponseEnded,
     Status,
-    execMiddleware,
-    StatusOpen
+    execMiddleware
 } from '.'
 import {
     Action,
@@ -24,7 +23,6 @@ import {
 } from './express'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as E from 'fp-ts/lib/Either'
-import { rightTask } from 'fp-ts/lib/TaskEither'
 
 /**
  * @internal
