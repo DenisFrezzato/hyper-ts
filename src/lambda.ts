@@ -23,6 +23,7 @@ import {
 } from './express'
 import { pipe } from 'fp-ts/lib/pipeable'
 import * as E from 'fp-ts/lib/Either'
+import * as cookie from 'cookie'
 
 /**
  * @internal
@@ -102,10 +103,37 @@ export class ServerlessConnection<S> implements Connection<S> {
     }
 }
 
+function parseCookie(res: APIGatewayProxyResult): {[key: string]: string} {
+    if (res.headers === undefined) {
+        res.headers = {}
+    }
+    return cookie.parse(res.headers['Set-Cookie'] as string ?? '')
+}
+
+function setCookie(res: APIGatewayProxyResult, newCookie: string): void {
+    if (res.headers === undefined) {
+        res.headers = {}
+    }
+    if (res.headers.hasOwnProperty('Set-Cookie')) {
+        res.headers['Set-Cookie'] += `; ${newCookie}`
+    } else {
+        res.headers['Set-Cookie'] = newCookie
+    }
+}
+
+function setCookies(res: APIGatewayProxyResult, cookies: {[key: string]: string}): void {
+    if (res.headers === undefined) {
+        res.headers = {}
+    }
+    res.headers['Set-Cookie'] = Object.keys(cookies).map((key) => `${key} = ${cookies[key]}`).join('; ')
+}
+
 function run(res: APIGatewayProxyResult, action: Action): APIGatewayProxyResult {
     switch (action.type) {
         case 'clearCookie':
-            // TODO: support cookie clear
+            let cookieInHeader = parseCookie(res)
+            delete cookieInHeader[action.name]
+            setCookies(res, cookieInHeader)
             return res
         case 'endResponse':
             return res
@@ -113,7 +141,7 @@ function run(res: APIGatewayProxyResult, action: Action): APIGatewayProxyResult 
             res.body = action.body as string
             return res
         case 'setCookie':
-            // TODO: support cookie set
+            setCookie(res, cookie.serialize(action.name, action.value, action.options))
             return res
         case 'setHeader':
             if (res.headers === undefined) res.headers = {}
