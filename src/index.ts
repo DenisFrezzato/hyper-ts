@@ -13,6 +13,7 @@ import { pipe, pipeable } from 'fp-ts/lib/pipeable'
 import { Task } from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
+import { Success, Redirection, ClientError, ServerError, Informational } from 'hyper-ts/lib/Status'
 
 /**
  * Adapted from https://github.com/purescript-contrib/purescript-media-types
@@ -44,22 +45,22 @@ export type MediaType = typeof MediaType[keyof typeof MediaType]
  * @since 0.5.0
  */
 export const Status = {
-  OK: 200,
-  Created: 201,
-  Found: 302,
-  BadRequest: 400,
-  Unauthorized: 401,
-  Forbidden: 403,
-  NotFound: 404,
-  MethodNotAllowed: 405,
-  NotAcceptable: 406,
-  ServerError: 500
+  ...Informational,
+  ...Success,
+  ...Redirection,
+  ...ClientError,
+  ...ServerError
 } as const
 
 /**
  * @since 0.5.0
  */
-export type Status = typeof Status[keyof typeof Status]
+export type Status =
+  | typeof Informational[keyof typeof Informational]
+  | typeof Success[keyof typeof Success]
+  | typeof Redirection[keyof typeof Redirection]
+  | typeof ClientError[keyof typeof ClientError]
+  | typeof ServerError[keyof typeof ServerError]
 
 /**
  * @since 0.5.0
