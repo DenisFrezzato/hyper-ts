@@ -1,8 +1,9 @@
 import * as express from 'express'
-import { Status, status, Middleware, StatusOpen, fromConnection, decodeMethod } from '../src'
+import * as H from '../src'
 import { toRequestHandler } from '../src/express'
 import { str, lit, end, Parser, Route } from 'fp-ts-routing'
 import { right, left } from 'fp-ts/lib/Either'
+import { pipe } from 'fp-ts/lib/pipeable'
 
 const home = lit('home').then(end)
 
@@ -20,41 +21,50 @@ const router: Parser<Location> = home.parser
   .map<Location>(() => homeLocation)
   .alt(user.parser.map(({ user_id }) => userLocation(user_id)))
 
-function fromParser<L, A extends object>(parser: Parser<A>, error: L): Middleware<StatusOpen, StatusOpen, L, A> {
-  const e = left<L, A>(error)
-  return fromConnection(c =>
+function fromParser<E, A extends object>(parser: Parser<A>, error: E): H.Middleware<H.StatusOpen, H.StatusOpen, E, A> {
+  return H.fromConnection(c =>
     parser
       .run(Route.parse(c.getOriginalUrl()))
-      .map(([a]) => right<L, A>(a))
-      .getOrElse(e)
+      .map(([a]) => right<E, A>(a))
+      .getOrElse(left(error))
   )
 }
 
 const routingMiddleware = fromParser(router, 'not found')
 
 const notFound = (message: string) =>
-  status(Status.NotFound)
-    .closeHeaders()
-    .send(message)
+  pipe(
+    H.status(H.Status.NotFound),
+    H.ichain(() => H.closeHeaders()),
+    H.ichain(() => H.send(message))
+  )
 
-export const GET: Middleware<StatusOpen, StatusOpen, string, 'GET'> = decodeMethod(s =>
-  s.toLowerCase() === 'get' ? right<string, 'GET'>('GET') : left('Unknown verb')
+export const GET: H.Middleware<H.StatusOpen, H.StatusOpen, string, 'GET'> = H.decodeMethod(s =>
+  s.toLowerCase() === 'get' ? right('GET') : left('Unknown verb')
 )
 
-const appMiddleware = routingMiddleware
-  .ichain(route => {
+const appMiddleware = pipe(
+  routingMiddleware,
+  H.ichain(route => {
     switch (route.type) {
       case 'Home':
-        return GET.ichain(() => status(Status.OK))
-          .closeHeaders()
-          .send('Welcome!')
+        return pipe(
+          GET,
+          H.ichain(() => H.status(H.Status.OK)),
+          H.ichain(() => H.closeHeaders()),
+          H.ichain(() => H.send('Welcome!'))
+        )
       case 'User':
-        return GET.ichain(() => status(Status.OK))
-          .closeHeaders()
-          .send(`Welcome ${route.id} user!`)
+        return pipe(
+          GET,
+          H.ichain(() => H.status(H.Status.OK)),
+          H.ichain(() => H.closeHeaders()),
+          H.ichain(() => H.send(`Welcome ${route.id} user!`))
+        )
     }
-  })
-  .orElse(notFound)
+  }),
+  H.orElse(notFound)
+)
 
 const app = express()
 
