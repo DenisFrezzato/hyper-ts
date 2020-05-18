@@ -13,7 +13,6 @@ import { pipe, pipeable } from 'fp-ts/lib/pipeable'
 import { Task } from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
-import { Success, Redirection, ClientError, ServerError, Informational } from 'hyper-ts/lib/Status'
 
 /**
  * Adapted from https://github.com/purescript-contrib/purescript-media-types
@@ -45,22 +44,77 @@ export type MediaType = typeof MediaType[keyof typeof MediaType]
  * @since 0.5.0
  */
 export const Status = {
-  ...Informational,
-  ...Success,
-  ...Redirection,
-  ...ClientError,
-  ...ServerError
+  Continue: 100,
+  SwitchingProtocols: 101,
+  Processing: 102,
+  EarlyHints: 103,
+  OK: 200,
+  Created: 201,
+  Accepted: 202,
+  NonAuthoritativeInformation: 203,
+  NoContent: 204,
+  ResetContent: 205,
+  PartialContent: 206,
+  MultiStatus: 207,
+  AlreadyReported: 208,
+  IMUsed: 226,
+  MultipleChoices: 300,
+  MovedPermanently: 301,
+  Found: 302,
+  SeeOther: 303,
+  NotModified: 304,
+  UseProxy: 305,
+  SwitchProxy: 306,
+  TemporaryRedirect: 307,
+  PermanentRedirect: 308,
+  BadRequest: 400,
+  Unauthorized: 401,
+  PaymentRequired: 402,
+  Forbidden: 403,
+  NotFound: 404,
+  MethodNotAllowed: 405,
+  NotAcceptable: 406,
+  ProxyAuthenticationRequired: 407,
+  RequestTimeout: 408,
+  Conflict: 409,
+  Gone: 410,
+  LengthRequired: 411,
+  PreconditionFailed: 412,
+  PayloadTooLarge: 413,
+  URITooLong: 414,
+  UnsupportedMediaType: 415,
+  RangeNotSatisfiable: 416,
+  ExpectationFailed: 417,
+  Teapot: 418,
+  MisdirectedRequest: 421,
+  UnprocessableEntity: 422,
+  Locked: 423,
+  FailedDependency: 424,
+  TooEarly: 425,
+  UpgradeRequired: 426,
+  PreconditionRequired: 428,
+  TooManyRequests: 429,
+  RequestHeaderFieldsTooLarge: 431,
+  UnavailableForLegalReasons: 451,
+  InternalServerError: 500,
+  /** @deprecated Use InternalServerError */
+  ServerError: 500,
+  NotImplemented: 501,
+  BadGateway: 502,
+  ServiceUnavailable: 503,
+  GatewayTimeout: 504,
+  HTTPVersionNotSupported: 505,
+  VariantAlsoNegotiates: 506,
+  InsufficientStorage: 507,
+  LoopDetected: 508,
+  NotExtended: 510,
+  NetworkAuthenticationRequired: 511
 } as const
 
 /**
  * @since 0.5.0
  */
-export type Status =
-  | typeof Informational[keyof typeof Informational]
-  | typeof Success[keyof typeof Success]
-  | typeof Redirection[keyof typeof Redirection]
-  | typeof ClientError[keyof typeof ClientError]
-  | typeof ServerError[keyof typeof ServerError]
+export type Status = typeof Status[keyof typeof Status]
 
 /**
  * @since 0.5.0
