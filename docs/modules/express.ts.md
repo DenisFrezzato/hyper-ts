@@ -27,6 +27,7 @@ Added in v0.5.0
   - [setStatus (method)](#setstatus-method)
   - [setBody (method)](#setbody-method)
   - [endResponse (method)](#endresponse-method)
+  - [\_S (property)](#_s-property)
 - [fromRequestHandler](#fromrequesthandler)
 - [toErrorRequestHandler](#toerrorrequesthandler)
 - [toRequestHandler](#torequesthandler)
@@ -38,14 +39,13 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export class ExpressConnection<S> {
+export declare class ExpressConnection<S> {
   constructor(
     readonly req: Request,
     readonly res: Response,
     readonly actions: LinkedList<Action> = nil,
     readonly ended: boolean = false
-  ) { ... }
-  ...
+  )
 }
 ```
 
@@ -56,7 +56,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-chain<T>(action: Action, ended: boolean = false): ExpressConnection<T> { ... }
+chain<T>(action: Action, ended: boolean = false): ExpressConnection<T>
 ```
 
 Added in v0.5.0
@@ -66,7 +66,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-getRequest(): IncomingMessage { ... }
+getRequest(): IncomingMessage
 ```
 
 Added in v0.5.0
@@ -76,7 +76,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-getBody(): unknown { ... }
+getBody(): unknown
 ```
 
 Added in v0.5.0
@@ -86,7 +86,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-getHeader(name: string): unknown { ... }
+getHeader(name: string): unknown
 ```
 
 Added in v0.5.0
@@ -96,7 +96,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-getParams(): unknown { ... }
+getParams(): unknown
 ```
 
 Added in v0.5.0
@@ -106,7 +106,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-getQuery(): unknown { ... }
+getQuery(): unknown
 ```
 
 Added in v0.5.0
@@ -116,7 +116,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-getOriginalUrl(): string { ... }
+getOriginalUrl(): string
 ```
 
 Added in v0.5.0
@@ -126,7 +126,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-getMethod(): string { ... }
+getMethod(): string
 ```
 
 Added in v0.5.0
@@ -136,7 +136,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-setCookie(name: string, value: string, options: CookieOptions): ExpressConnection<HeadersOpen> { ... }
+setCookie(name: string, value: string, options: CookieOptions): ExpressConnection<HeadersOpen>
 ```
 
 Added in v0.5.0
@@ -146,7 +146,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-clearCookie(name: string, options: CookieOptions): ExpressConnection<HeadersOpen> { ... }
+clearCookie(name: string, options: CookieOptions): ExpressConnection<HeadersOpen>
 ```
 
 Added in v0.5.0
@@ -156,7 +156,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-setHeader(name: string, value: string): ExpressConnection<HeadersOpen> { ... }
+setHeader(name: string, value: string): ExpressConnection<HeadersOpen>
 ```
 
 Added in v0.5.0
@@ -166,7 +166,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-setStatus(status: Status): ExpressConnection<HeadersOpen> { ... }
+setStatus(status: Status): ExpressConnection<HeadersOpen>
 ```
 
 Added in v0.5.0
@@ -176,7 +176,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-setBody(body: unknown): ExpressConnection<ResponseEnded> { ... }
+setBody(body: unknown): ExpressConnection<ResponseEnded>
 ```
 
 Added in v0.5.0
@@ -186,7 +186,17 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-endResponse(): ExpressConnection<ResponseEnded> { ... }
+endResponse(): ExpressConnection<ResponseEnded>
+```
+
+Added in v0.5.0
+
+## \_S (property)
+
+**Signature**
+
+```ts
+readonly _S: S
 ```
 
 Added in v0.5.0
@@ -196,10 +206,10 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
+export declare function fromRequestHandler<I = StatusOpen, E = never, A = never>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
-): Middleware<I, I, E, A> { ... }
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -209,7 +219,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function toErrorRequestHandler<I, O, E>(f: (err: unknown) => Middleware<I, O, E, void>): ErrorRequestHandler { ... }
+export declare function toErrorRequestHandler<I, O, E>(
+  f: (err: unknown) => Middleware<I, O, E, void>
+): ErrorRequestHandler
 ```
 
 Added in v0.5.0
@@ -219,7 +231,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function toRequestHandler<I, O, E>(middleware: Middleware<I, O, E, void>): RequestHandler { ... }
+export declare function toRequestHandler<I, O, E>(middleware: Middleware<I, O, E, void>): RequestHandler
 ```
 
 Added in v0.5.0

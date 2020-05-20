@@ -74,6 +74,9 @@ const endResponse: Action = { type: 'endResponse' }
  * @since 0.5.0
  */
 export class ExpressConnection<S> implements Connection<S> {
+  /**
+   * @since 0.5.0
+   */
   readonly _S!: S
   constructor(
     readonly req: Request,

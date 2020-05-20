@@ -100,6 +100,9 @@ State changes are tracked by the phantom type `S`
 
 ```ts
 export interface Connection<S> {
+  /**
+   * @since 0.5.0
+   */
   readonly _S: S
   readonly getRequest: () => IncomingMessage
   readonly getBody: () => unknown
@@ -238,7 +241,21 @@ Adapted from https://github.com/purescript-contrib/purescript-media-types
 **Signature**
 
 ```ts
-export const MediaType: { readonly applicationFormURLEncoded: "application/x-www-form-urlencoded"; readonly applicationJSON: "application/json"; readonly applicationJavascript: "application/javascript"; readonly applicationOctetStream: "application/octet-stream"; readonly applicationXML: "application/xml"; readonly imageGIF: "image/gif"; readonly imageJPEG: "image/jpeg"; readonly imagePNG: "image/png"; readonly multipartFormData: "multipart/form-data"; readonly textCSV: "text/csv"; readonly textHTML: "text/html"; readonly textPlain: "text/plain"; readonly textXML: "text/xml"; } = ...
+export declare const MediaType: {
+  readonly applicationFormURLEncoded: 'application/x-www-form-urlencoded'
+  readonly applicationJSON: 'application/json'
+  readonly applicationJavascript: 'application/javascript'
+  readonly applicationOctetStream: 'application/octet-stream'
+  readonly applicationXML: 'application/xml'
+  readonly imageGIF: 'image/gif'
+  readonly imageJPEG: 'image/jpeg'
+  readonly imagePNG: 'image/png'
+  readonly multipartFormData: 'multipart/form-data'
+  readonly textCSV: 'text/csv'
+  readonly textHTML: 'text/html'
+  readonly textPlain: 'text/plain'
+  readonly textXML: 'text/xml'
+}
 ```
 
 Added in v0.5.0
@@ -248,7 +265,71 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export const Status: { readonly OK: 200; readonly Created: 201; readonly Found: 302; readonly BadRequest: 400; readonly Unauthorized: 401; readonly Forbidden: 403; readonly NotFound: 404; readonly MethodNotAllowed: 405; readonly NotAcceptable: 406; readonly ServerError: 500; } = ...
+export declare const Status: {
+  readonly Continue: 100
+  readonly SwitchingProtocols: 101
+  readonly Processing: 102
+  readonly EarlyHints: 103
+  readonly OK: 200
+  readonly Created: 201
+  readonly Accepted: 202
+  readonly NonAuthoritativeInformation: 203
+  readonly NoContent: 204
+  readonly ResetContent: 205
+  readonly PartialContent: 206
+  readonly MultiStatus: 207
+  readonly AlreadyReported: 208
+  readonly IMUsed: 226
+  readonly MultipleChoices: 300
+  readonly MovedPermanently: 301
+  readonly Found: 302
+  readonly SeeOther: 303
+  readonly NotModified: 304
+  readonly UseProxy: 305
+  readonly SwitchProxy: 306
+  readonly TemporaryRedirect: 307
+  readonly PermanentRedirect: 308
+  readonly BadRequest: 400
+  readonly Unauthorized: 401
+  readonly PaymentRequired: 402
+  readonly Forbidden: 403
+  readonly NotFound: 404
+  readonly MethodNotAllowed: 405
+  readonly NotAcceptable: 406
+  readonly ProxyAuthenticationRequired: 407
+  readonly RequestTimeout: 408
+  readonly Conflict: 409
+  readonly Gone: 410
+  readonly LengthRequired: 411
+  readonly PreconditionFailed: 412
+  readonly PayloadTooLarge: 413
+  readonly URITooLong: 414
+  readonly UnsupportedMediaType: 415
+  readonly RangeNotSatisfiable: 416
+  readonly ExpectationFailed: 417
+  readonly Teapot: 418
+  readonly MisdirectedRequest: 421
+  readonly UnprocessableEntity: 422
+  readonly Locked: 423
+  readonly FailedDependency: 424
+  readonly TooEarly: 425
+  readonly UpgradeRequired: 426
+  readonly PreconditionRequired: 428
+  readonly TooManyRequests: 429
+  readonly RequestHeaderFieldsTooLarge: 431
+  readonly UnavailableForLegalReasons: 451
+  readonly InternalServerError: 500
+  readonly NotImplemented: 501
+  readonly BadGateway: 502
+  readonly ServiceUnavailable: 503
+  readonly GatewayTimeout: 504
+  readonly HTTPVersionNotSupported: 505
+  readonly VariantAlsoNegotiates: 506
+  readonly InsufficientStorage: 507
+  readonly LoopDetected: 508
+  readonly NotExtended: 510
+  readonly NetworkAuthenticationRequired: 511
+}
 ```
 
 Added in v0.5.0
@@ -258,7 +339,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export const URI: "Middleware" = ...
+export declare const URI: 'Middleware'
 ```
 
 Added in v0.5.0
@@ -268,7 +349,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<R, E, A>(that: () => Middleware<R, R, E, A>) => (fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+export declare const alt: <R, E, A>(
+  that: () => Middleware<R, R, E, A>
+) => (fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
@@ -278,7 +361,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<R, E, A>(fa: Middleware<R, R, E, A>) => <B>(fab: Middleware<R, R, E, (a: A) => B>) => Middleware<R, R, E, B>
+export declare const ap: <R, E, A>(
+  fa: Middleware<R, R, E, A>
+) => <B>(fab: Middleware<R, R, E, (a: A) => B>) => Middleware<R, R, E, B>
 ```
 
 Added in v0.5.0
@@ -288,7 +373,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<R, E, B>(fb: Middleware<R, R, E, B>) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+export declare const apFirst: <R, E, B>(
+  fb: Middleware<R, R, E, B>
+) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
@@ -298,7 +385,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<R, E, B>(fb: Middleware<R, R, E, B>) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+export declare const apSecond: <R, E, B>(
+  fb: Middleware<R, R, E, B>
+) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
 ```
 
 Added in v0.5.0
@@ -308,7 +397,10 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => <R>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, B>
+export declare const bimap: <E, G, A, B>(
+  f: (e: E) => G,
+  g: (a: A) => B
+) => <R>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, B>
 ```
 
 Added in v0.5.0
@@ -318,7 +410,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<R, E, A, B>(f: (a: A) => Middleware<R, R, E, B>) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+export declare const chain: <R, E, A, B>(
+  f: (a: A) => Middleware<R, R, E, B>
+) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
 ```
 
 Added in v0.5.0
@@ -328,7 +422,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<R, E, A, B>(f: (a: A) => Middleware<R, R, E, B>) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+export declare const chainFirst: <R, E, A, B>(
+  f: (a: A) => Middleware<R, R, E, B>
+) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
@@ -340,10 +436,10 @@ Returns a middleware that clears the cookie `name`
 **Signature**
 
 ```ts
-export function clearCookie<E = never>(
+export declare function clearCookie<E = never>(
   name: string,
   options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, E, void> { ... }
+): Middleware<HeadersOpen, HeadersOpen, E, void>
 ```
 
 Added in v0.5.0
@@ -355,7 +451,7 @@ Returns a middleware that changes the connection status to `BodyOpen`
 **Signature**
 
 ```ts
-export function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyOpen, E, void> { ... }
+export declare function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyOpen, E, void>
 ```
 
 Added in v0.5.0
@@ -367,7 +463,7 @@ Returns a middleware that sets the given `mediaType`
 **Signature**
 
 ```ts
-export function contentType<E = never>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, E, void> { ... }
+export declare function contentType<E = never>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, E, void>
 ```
 
 Added in v0.5.0
@@ -379,11 +475,11 @@ Returns a middleware that sets the cookie `name` to `value`, with the given `opt
 **Signature**
 
 ```ts
-export function cookie<E = never>(
+export declare function cookie<E = never>(
   name: string,
   value: string,
   options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, E, void> { ... }
+): Middleware<HeadersOpen, HeadersOpen, E, void>
 ```
 
 Added in v0.5.0
@@ -395,7 +491,7 @@ Returns a middleware that tries to decode `connection.getBody()`
 **Signature**
 
 ```ts
-export function decodeBody<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> { ... }
+export declare function decodeBody<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A>
 ```
 
 Added in v0.5.0
@@ -407,10 +503,10 @@ Returns a middleware that tries to decode `connection.getHeader(name)`
 **Signature**
 
 ```ts
-export function decodeHeader<E, A>(
+export declare function decodeHeader<E, A>(
   name: string,
   f: (input: unknown) => Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A> { ... }
+): Middleware<StatusOpen, StatusOpen, E, A>
 ```
 
 Added in v0.5.0
@@ -422,7 +518,9 @@ Returns a middleware that tries to decode `connection.getMethod()`
 **Signature**
 
 ```ts
-export function decodeMethod<E, A>(f: (method: string) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> { ... }
+export declare function decodeMethod<E, A>(
+  f: (method: string) => Either<E, A>
+): Middleware<StatusOpen, StatusOpen, E, A>
 ```
 
 Added in v0.5.0
@@ -434,10 +532,10 @@ Returns a middleware that tries to decode `connection.getParams()[name]`
 **Signature**
 
 ```ts
-export function decodeParam<E, A>(
+export declare function decodeParam<E, A>(
   name: string,
   f: (input: unknown) => Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A> { ... }
+): Middleware<StatusOpen, StatusOpen, E, A>
 ```
 
 Added in v0.5.0
@@ -449,7 +547,9 @@ Returns a middleware that tries to decode `connection.getParams()`
 **Signature**
 
 ```ts
-export function decodeParams<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> { ... }
+export declare function decodeParams<E, A>(
+  f: (input: unknown) => Either<E, A>
+): Middleware<StatusOpen, StatusOpen, E, A>
 ```
 
 Added in v0.5.0
@@ -461,7 +561,7 @@ Returns a middleware that tries to decode `connection.getQuery()`
 **Signature**
 
 ```ts
-export function decodeQuery<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> { ... }
+export declare function decodeQuery<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A>
 ```
 
 Added in v0.5.0
@@ -473,7 +573,7 @@ Returns a middleware that ends the response without sending any response body
 **Signature**
 
 ```ts
-export function end<E = never>(): Middleware<BodyOpen, ResponseEnded, E, void> { ... }
+export declare function end<E = never>(): Middleware<BodyOpen, ResponseEnded, E, void>
 ```
 
 Added in v0.5.0
@@ -483,7 +583,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function evalMiddleware<I, O, E, A>(ma: Middleware<I, O, E, A>, c: Connection<I>): TE.TaskEither<E, A> { ... }
+export declare function evalMiddleware<I, O, E, A>(ma: Middleware<I, O, E, A>, c: Connection<I>): TE.TaskEither<E, A>
 ```
 
 Added in v0.5.0
@@ -493,10 +593,10 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function execMiddleware<I, O, E, A>(
+export declare function execMiddleware<I, O, E, A>(
   ma: Middleware<I, O, E, A>,
   c: Connection<I>
-): TE.TaskEither<E, Connection<O>> { ... }
+): TE.TaskEither<E, Connection<O>>
 ```
 
 Added in v0.5.0
@@ -506,7 +606,12 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>; }
+export declare const filterOrElse: {
+  <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(
+    ma: Middleware<R, R, E, A>
+  ) => Middleware<R, R, E, B>
+  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+}
 ```
 
 Added in v0.5.0
@@ -516,7 +621,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<R, E, A>(mma: Middleware<R, R, E, Middleware<R, R, E, A>>) => Middleware<R, R, E, A>
+export declare const flatten: <R, E, A>(mma: Middleware<R, R, E, Middleware<R, R, E, A>>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
@@ -526,9 +631,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function fromConnection<I = StatusOpen, E = never, A = never>(
+export declare function fromConnection<I = StatusOpen, E = never, A = never>(
   f: (c: Connection<I>) => Either<E, A>
-): Middleware<I, I, E, A> { ... }
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -538,7 +643,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<R, E, A>(ma: Either<E, A>) => Middleware<R, R, E, A>
+export declare const fromEither: <R, E, A>(ma: Either<E, A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
@@ -548,7 +653,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<E, A>): Middleware<I, I, E, A> { ... }
+export declare function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<E, A>): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -558,7 +663,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<E>(onNone: () => E) => <R, A>(ma: Option<A>) => Middleware<R, R, E, A>
+export declare const fromOption: <E>(onNone: () => E) => <R, A>(ma: Option<A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
@@ -568,7 +673,10 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-{ <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <U>(a: A) => Middleware<U, U, E, B>; <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(a: A) => Middleware<R, R, E, A>; }
+export declare const fromPredicate: {
+  <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <U>(a: A) => Middleware<U, U, E, B>
+  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(a: A) => Middleware<R, R, E, A>
+}
 ```
 
 Added in v0.5.0
@@ -578,7 +686,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function fromTaskEither<I = StatusOpen, E = never, A = never>(fa: TE.TaskEither<E, A>): Middleware<I, I, E, A> { ... }
+export declare function fromTaskEither<I = StatusOpen, E = never, A = never>(
+  fa: TE.TaskEither<E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -588,7 +698,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>) => A): Middleware<I, I, E, A> { ... }
+export declare function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>) => A): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -600,7 +710,7 @@ Returns a middleware that writes the given header
 **Signature**
 
 ```ts
-export function header<E = never>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, E, void> { ... }
+export declare function header<E = never>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, E, void>
 ```
 
 Added in v0.5.0
@@ -610,9 +720,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function ichain<A, O, Z, E, B>(
+export declare function ichain<A, O, Z, E, B>(
   f: (a: A) => Middleware<O, Z, E, B>
-): <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> { ... }
+): <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B>
 ```
 
 Added in v0.5.0
@@ -622,7 +732,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A): Middleware<I, O, E, A> { ... }
+export declare function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A): Middleware<I, O, E, A>
 ```
 
 Added in v0.5.0
@@ -634,10 +744,10 @@ Returns a middleware that sends `body` as JSON
 **Signature**
 
 ```ts
-export function json<E>(
+export declare function json<E>(
   body: unknown,
   onError: (reason: unknown) => E
-): Middleware<HeadersOpen, ResponseEnded, E, void> { ... }
+): Middleware<HeadersOpen, ResponseEnded, E, void>
 ```
 
 Added in v0.5.0
@@ -647,7 +757,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function left<I = StatusOpen, E = never, A = never>(e: E): Middleware<I, I, E, A> { ... }
+export declare function left<I = StatusOpen, E = never, A = never>(e: E): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -657,7 +767,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function leftIO<I = StatusOpen, E = never, A = never>(fe: IO<E>): Middleware<I, I, E, A> { ... }
+export declare function leftIO<I = StatusOpen, E = never, A = never>(fe: IO<E>): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -667,7 +777,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function leftTask<I = StatusOpen, E = never, A = never>(te: Task<E>): Middleware<I, I, E, A> { ... }
+export declare function leftTask<I = StatusOpen, E = never, A = never>(te: Task<E>): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -677,7 +787,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<A, B>(f: (a: A) => B) => <R, E>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
+export declare const map: <A, B>(f: (a: A) => B) => <R, E>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
 ```
 
 Added in v0.5.0
@@ -687,7 +797,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-<E, G>(f: (e: E) => G) => <R, A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, A>
+export declare const mapLeft: <E, G>(f: (e: E) => G) => <R, A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, A>
 ```
 
 Added in v0.5.0
@@ -697,7 +807,11 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export const middleware: Monad3<URI> & Alt3<URI> & Bifunctor3<URI> & MonadThrow3<URI> & MonadTask3<URI> = ...
+export declare const middleware: Monad3<'Middleware'> &
+  Alt3<'Middleware'> &
+  Bifunctor3<'Middleware'> &
+  MonadThrow3<'Middleware'> &
+  MonadTask3<'Middleware'>
 ```
 
 Added in v0.5.0
@@ -707,7 +821,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, E, void> { ... }
+export declare function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, E, void>
 ```
 
 Added in v0.5.0
@@ -717,9 +831,9 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function orElse<E, I, O, M, A>(
+export declare function orElse<E, I, O, M, A>(
   f: (e: E) => Middleware<I, O, M, A>
-): (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A> { ... }
+): (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A>
 ```
 
 Added in v0.5.0
@@ -731,7 +845,7 @@ Returns a middleware that sends a redirect to `uri`
 **Signature**
 
 ```ts
-export function redirect<E = never>(uri: string): Middleware<StatusOpen, HeadersOpen, E, void> { ... }
+export declare function redirect<E = never>(uri: string): Middleware<StatusOpen, HeadersOpen, E, void>
 ```
 
 Added in v0.5.0
@@ -741,7 +855,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function right<I = StatusOpen, E = never, A = never>(a: A): Middleware<I, I, E, A> { ... }
+export declare function right<I = StatusOpen, E = never, A = never>(a: A): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -751,7 +865,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function rightIO<I = StatusOpen, E = never, A = never>(fa: IO<A>): Middleware<I, I, E, A> { ... }
+export declare function rightIO<I = StatusOpen, E = never, A = never>(fa: IO<A>): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -761,7 +875,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function rightTask<I = StatusOpen, E = never, A = never>(fa: Task<A>): Middleware<I, I, E, A> { ... }
+export declare function rightTask<I = StatusOpen, E = never, A = never>(fa: Task<A>): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0
@@ -773,7 +887,7 @@ Returns a middleware that sends `body` as response body
 **Signature**
 
 ```ts
-export function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnded, E, void> { ... }
+export declare function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnded, E, void>
 ```
 
 Added in v0.5.0
@@ -785,7 +899,7 @@ Returns a middleware that writes the response status
 **Signature**
 
 ```ts
-export function status<E = never>(status: Status): Middleware<StatusOpen, HeadersOpen, E, void> { ... }
+export declare function status<E = never>(status: Status): Middleware<StatusOpen, HeadersOpen, E, void>
 ```
 
 Added in v0.5.0
@@ -795,10 +909,10 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export function tryCatch<I = StatusOpen, E = never, A = never>(
+export declare function tryCatch<I = StatusOpen, E = never, A = never>(
   f: () => Promise<A>,
   onRejected: (reason: unknown) => E
-): Middleware<I, I, E, A> { ... }
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.5.0

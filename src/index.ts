@@ -97,8 +97,6 @@ export const Status = {
   RequestHeaderFieldsTooLarge: 431,
   UnavailableForLegalReasons: 451,
   InternalServerError: 500,
-  /** @deprecated Use InternalServerError */
-  ServerError: 500,
   NotImplemented: 501,
   BadGateway: 502,
   ServiceUnavailable: 503,
@@ -174,6 +172,9 @@ export interface ResponseEnded {
  * @since 0.5.0
  */
 export interface Connection<S> {
+  /**
+   * @since 0.5.0
+   */
   readonly _S: S
   readonly getRequest: () => IncomingMessage
   readonly getBody: () => unknown
