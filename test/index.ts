@@ -16,7 +16,7 @@ class MockRequest {
     readonly originalUrl: string = '',
     readonly method: string = 'GET'
   ) {
-    this.query = querystring.parse(query)
+    this.query = querystring.parse(query) as any
   }
   header(name: string) {
     return this.headers[name]
