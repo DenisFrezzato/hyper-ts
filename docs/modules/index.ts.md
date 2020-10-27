@@ -350,7 +350,7 @@ Added in v0.5.0
 
 ```ts
 export declare const alt: <R, E, A>(
-  that: () => Middleware<R, R, E, A>
+  that: Lazy<Middleware<R, R, E, A>>
 ) => (fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
 ```
 
@@ -663,7 +663,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-export declare const fromOption: <E>(onNone: () => E) => <R, A>(ma: Option<A>) => Middleware<R, R, E, A>
+export declare const fromOption: <E>(onNone: Lazy<E>) => <R, A>(ma: Option<A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
