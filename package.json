@@ -44,7 +44,7 @@
     "benchmark": "^2.1.4",
     "docs-ts": "^0.4.0",
     "dtslint": "github:gcanti/dtslint",
-    "fp-ts": "^2.0.5",
+    "fp-ts": "^2.8.4",
     "fp-ts-routing": "^0.4.1",
     "import-path-rewrite": "github:gcanti/import-path-rewrite",
     "io-ts": "^2.0.1",
@@ -60,7 +60,7 @@
     "typescript": "^3.6.2"
   },
   "peerDependencies": {
-    "fp-ts": "^2.0.5",
+    "fp-ts": "^2.8.4",
     "express": "^4.16.2"
   },
   "tags": [
