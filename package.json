@@ -48,7 +48,7 @@
     "fp-ts-routing": "^0.4.1",
     "import-path-rewrite": "github:gcanti/import-path-rewrite",
     "io-ts": "^2.2.11",
-    "io-ts-types": "^0.5.0",
+    "io-ts-types": "^0.5.11",
     "jest": "^24.8.0",
     "mocha": "^5.2.0",
     "prettier": "^1.19.1",
