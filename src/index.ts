@@ -13,6 +13,8 @@ import { pipe, pipeable } from 'fp-ts/lib/pipeable'
 import { Task } from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
+import { promises } from 'fs'
+import { isAbsolute } from 'path'
 
 /**
  * Adapted from https://github.com/purescript-contrib/purescript-media-types
@@ -193,6 +195,7 @@ export interface Connection<S> {
   readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
   readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
   readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
+  readonly setFile: (this: Connection<BodyOpen>, absolutePath: string) => Connection<ResponseEnded>
   readonly endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
 }
 
@@ -448,6 +451,23 @@ export function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyOpen, E, 
  */
 export function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnded, E, void> {
   return modifyConnection(c => c.setBody(body))
+}
+
+/**
+ * Returns a middleware that sends the contents of `absolutePath` as a response
+ *
+ * @since 0.7.0
+ */
+export function sendFile<E = never>(
+  absolutePath: string,
+  onError: (reason: unknown) => E): Middleware<BodyOpen, ResponseEnded, E, void> {
+  return pipe(
+    fromPredicate(isAbsolute, onError)<BodyOpen>(absolutePath),
+    ichain(() => tryCatch(() => promises.lstat(absolutePath), onError)), // test file existence
+    ichain(lstats => fromPredicate(() => lstats.isFile(), onError)(lstats)),
+    ichain(() => tryCatch<BodyOpen, E, unknown>(() => promises.stat(absolutePath), onError)),
+    ichain(() => modifyConnection(c => c.setFile(absolutePath)))
+  )
 }
 
 const ended: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConnection(c => c.endResponse())
