@@ -243,4 +243,14 @@ describe('Middleware', () => {
       })
     })
   })
+
+  it('do notation', () => {
+    const m = pipe(
+      H.right(1),
+      H.bindTo('a'),
+      H.bind('b', () => H.right('b'))
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, { a: 1, b: 'b' }, [])
+  })
 })
