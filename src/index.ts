@@ -265,6 +265,16 @@ export function ichain<A, O, Z, E, B>(
     )
 }
 
+export function ichainW<A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B> {
+  return ma => ci =>
+    pipe(
+      ma(ci),
+      TE.chainW(([a, co]) => f(a)(co))
+    )
+}
+
 /**
  * @since 0.5.0
  */
@@ -558,6 +568,43 @@ export function decodeHeader<E, A>(
 ): Middleware<StatusOpen, StatusOpen, E, A> {
   return fromConnection(c => f(c.getHeader(name)))
 }
+
+export const Do =
+  /*#__PURE__*/
+  iof<unknown,unknown,never,{}>({})
+
+/**
+ * @internal
+ */
+const bind_ = <A, N extends string, B>(
+  a: A,
+  name: Exclude<N, keyof A>,
+  b: B
+): { [K in keyof A | N]: K extends keyof A ? A[K] : B } => Object.assign({}, a, { [name]: b }) as any
+
+/**
+ * @internal
+ */
+const bindTo_ = <N extends string>(name: N) => <B>(b: B): {[K in N]: B} => ({ [name]: b } as any)
+
+export const bindTo = <N extends string>(name: N): (<I,E,A>(fa: Middleware<I,I,E,A>) => Middleware<I, I, E, { [K in N]: A}>) =>
+  map(bindTo_(name))
+
+export const bindW = <N extends string, I, A, D, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<I, I, D, B>
+): (<E>(fa: Middleware<I, I, E, A>) => Middleware<I, I, D | E, { [K in keyof A | N]: K extends keyof A ? A[K] : B }>) =>
+  ichainW((a) =>
+    pipe(
+      f(a),
+      map((b) => bind_(a, name, b))
+    )
+  )
+
+export const bind: <N extends string, I, E, A, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<I, I, E, B>
+) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in keyof A | N]: K extends keyof A ? A[K] : B}> = bindW
 
 /**
  * @since 0.5.0
