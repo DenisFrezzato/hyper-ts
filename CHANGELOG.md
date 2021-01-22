@@ -13,6 +13,11 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.6.1
+
+- **New Feature**
+  - add do notation, #37 (@kylegoetz)
+
 # 0.6.0
 
 - **Breaking Change**

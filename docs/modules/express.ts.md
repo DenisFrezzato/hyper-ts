@@ -4,7 +4,7 @@ nav_order: 1
 parent: Modules
 ---
 
-# express overview
+## express overview
 
 Added in v0.5.0
 
@@ -12,29 +12,32 @@ Added in v0.5.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [ExpressConnection (class)](#expressconnection-class)
-  - [chain (method)](#chain-method)
-  - [getRequest (method)](#getrequest-method)
-  - [getBody (method)](#getbody-method)
-  - [getHeader (method)](#getheader-method)
-  - [getParams (method)](#getparams-method)
-  - [getQuery (method)](#getquery-method)
-  - [getOriginalUrl (method)](#getoriginalurl-method)
-  - [getMethod (method)](#getmethod-method)
-  - [setCookie (method)](#setcookie-method)
-  - [clearCookie (method)](#clearcookie-method)
-  - [setHeader (method)](#setheader-method)
-  - [setStatus (method)](#setstatus-method)
-  - [setBody (method)](#setbody-method)
-  - [endResponse (method)](#endresponse-method)
-  - [\_S (property)](#_s-property)
-- [fromRequestHandler](#fromrequesthandler)
-- [toErrorRequestHandler](#toerrorrequesthandler)
-- [toRequestHandler](#torequesthandler)
+- [utils](#utils)
+  - [ExpressConnection (class)](#expressconnection-class)
+    - [chain (method)](#chain-method)
+    - [getRequest (method)](#getrequest-method)
+    - [getBody (method)](#getbody-method)
+    - [getHeader (method)](#getheader-method)
+    - [getParams (method)](#getparams-method)
+    - [getQuery (method)](#getquery-method)
+    - [getOriginalUrl (method)](#getoriginalurl-method)
+    - [getMethod (method)](#getmethod-method)
+    - [setCookie (method)](#setcookie-method)
+    - [clearCookie (method)](#clearcookie-method)
+    - [setHeader (method)](#setheader-method)
+    - [setStatus (method)](#setstatus-method)
+    - [setBody (method)](#setbody-method)
+    - [endResponse (method)](#endresponse-method)
+    - [\_S (property)](#_s-property)
+  - [fromRequestHandler](#fromrequesthandler)
+  - [toErrorRequestHandler](#toerrorrequesthandler)
+  - [toRequestHandler](#torequesthandler)
 
 ---
 
-# ExpressConnection (class)
+# utils
+
+## ExpressConnection (class)
 
 **Signature**
 
@@ -51,7 +54,7 @@ export declare class ExpressConnection<S> {
 
 Added in v0.5.0
 
-## chain (method)
+### chain (method)
 
 **Signature**
 
@@ -61,7 +64,7 @@ chain<T>(action: Action, ended: boolean = false): ExpressConnection<T>
 
 Added in v0.5.0
 
-## getRequest (method)
+### getRequest (method)
 
 **Signature**
 
@@ -71,7 +74,7 @@ getRequest(): IncomingMessage
 
 Added in v0.5.0
 
-## getBody (method)
+### getBody (method)
 
 **Signature**
 
@@ -81,7 +84,7 @@ getBody(): unknown
 
 Added in v0.5.0
 
-## getHeader (method)
+### getHeader (method)
 
 **Signature**
 
@@ -91,7 +94,7 @@ getHeader(name: string): unknown
 
 Added in v0.5.0
 
-## getParams (method)
+### getParams (method)
 
 **Signature**
 
@@ -101,7 +104,7 @@ getParams(): unknown
 
 Added in v0.5.0
 
-## getQuery (method)
+### getQuery (method)
 
 **Signature**
 
@@ -111,7 +114,7 @@ getQuery(): unknown
 
 Added in v0.5.0
 
-## getOriginalUrl (method)
+### getOriginalUrl (method)
 
 **Signature**
 
@@ -121,7 +124,7 @@ getOriginalUrl(): string
 
 Added in v0.5.0
 
-## getMethod (method)
+### getMethod (method)
 
 **Signature**
 
@@ -131,7 +134,7 @@ getMethod(): string
 
 Added in v0.5.0
 
-## setCookie (method)
+### setCookie (method)
 
 **Signature**
 
@@ -141,7 +144,7 @@ setCookie(name: string, value: string, options: CookieOptions): ExpressConnectio
 
 Added in v0.5.0
 
-## clearCookie (method)
+### clearCookie (method)
 
 **Signature**
 
@@ -151,7 +154,7 @@ clearCookie(name: string, options: CookieOptions): ExpressConnection<HeadersOpen
 
 Added in v0.5.0
 
-## setHeader (method)
+### setHeader (method)
 
 **Signature**
 
@@ -161,7 +164,7 @@ setHeader(name: string, value: string): ExpressConnection<HeadersOpen>
 
 Added in v0.5.0
 
-## setStatus (method)
+### setStatus (method)
 
 **Signature**
 
@@ -171,7 +174,7 @@ setStatus(status: Status): ExpressConnection<HeadersOpen>
 
 Added in v0.5.0
 
-## setBody (method)
+### setBody (method)
 
 **Signature**
 
@@ -181,7 +184,7 @@ setBody(body: unknown): ExpressConnection<ResponseEnded>
 
 Added in v0.5.0
 
-## endResponse (method)
+### endResponse (method)
 
 **Signature**
 
@@ -191,7 +194,7 @@ endResponse(): ExpressConnection<ResponseEnded>
 
 Added in v0.5.0
 
-## \_S (property)
+### \_S (property)
 
 **Signature**
 
@@ -201,7 +204,7 @@ readonly _S: S
 
 Added in v0.5.0
 
-# fromRequestHandler
+## fromRequestHandler
 
 **Signature**
 
@@ -214,7 +217,7 @@ export declare function fromRequestHandler<I = StatusOpen, E = never, A = never>
 
 Added in v0.5.0
 
-# toErrorRequestHandler
+## toErrorRequestHandler
 
 **Signature**
 
@@ -226,7 +229,7 @@ export declare function toErrorRequestHandler<I, O, E>(
 
 Added in v0.5.0
 
-# toRequestHandler
+## toRequestHandler
 
 **Signature**
 

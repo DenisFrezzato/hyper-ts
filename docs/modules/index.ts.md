@@ -4,7 +4,7 @@ nav_order: 2
 parent: Modules
 ---
 
-# index overview
+## index overview
 
 Added in v0.5.0
 
@@ -12,71 +12,79 @@ Added in v0.5.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [BodyOpen (interface)](#bodyopen-interface)
-- [Connection (interface)](#connection-interface)
-- [CookieOptions (interface)](#cookieoptions-interface)
-- [HeadersOpen (interface)](#headersopen-interface)
-- [Middleware (interface)](#middleware-interface)
-- [ResponseEnded (interface)](#responseended-interface)
-- [StatusOpen (interface)](#statusopen-interface)
-- [MediaType (type alias)](#mediatype-type-alias)
-- [Status (type alias)](#status-type-alias)
-- [URI (type alias)](#uri-type-alias)
-- [MediaType](#mediatype)
-- [Status](#status)
-- [URI](#uri)
-- [alt](#alt)
-- [ap](#ap)
-- [apFirst](#apfirst)
-- [apSecond](#apsecond)
-- [bimap](#bimap)
-- [chain](#chain)
-- [chainFirst](#chainfirst)
-- [clearCookie](#clearcookie)
-- [closeHeaders](#closeheaders)
-- [contentType](#contenttype)
-- [cookie](#cookie)
-- [decodeBody](#decodebody)
-- [decodeHeader](#decodeheader)
-- [decodeMethod](#decodemethod)
-- [decodeParam](#decodeparam)
-- [decodeParams](#decodeparams)
-- [decodeQuery](#decodequery)
-- [end](#end)
-- [evalMiddleware](#evalmiddleware)
-- [execMiddleware](#execmiddleware)
-- [filterOrElse](#filterorelse)
-- [flatten](#flatten)
-- [fromConnection](#fromconnection)
-- [fromEither](#fromeither)
-- [fromIOEither](#fromioeither)
-- [fromOption](#fromoption)
-- [fromPredicate](#frompredicate)
-- [fromTaskEither](#fromtaskeither)
-- [gets](#gets)
-- [header](#header)
-- [ichain](#ichain)
-- [iof](#iof)
-- [json](#json)
-- [left](#left)
-- [leftIO](#leftio)
-- [leftTask](#lefttask)
-- [map](#map)
-- [mapLeft](#mapleft)
-- [middleware](#middleware)
-- [modifyConnection](#modifyconnection)
-- [orElse](#orelse)
-- [redirect](#redirect)
-- [right](#right)
-- [rightIO](#rightio)
-- [rightTask](#righttask)
-- [send](#send)
-- [status](#status)
-- [tryCatch](#trycatch)
+- [utils](#utils)
+  - [BodyOpen (interface)](#bodyopen-interface)
+  - [Connection (interface)](#connection-interface)
+  - [CookieOptions (interface)](#cookieoptions-interface)
+  - [Do](#do)
+  - [HeadersOpen (interface)](#headersopen-interface)
+  - [MediaType](#mediatype)
+  - [MediaType (type alias)](#mediatype-type-alias)
+  - [Middleware (interface)](#middleware-interface)
+  - [ResponseEnded (interface)](#responseended-interface)
+  - [Status](#status)
+  - [Status (type alias)](#status-type-alias)
+  - [StatusOpen (interface)](#statusopen-interface)
+  - [URI](#uri)
+  - [URI (type alias)](#uri-type-alias)
+  - [alt](#alt)
+  - [ap](#ap)
+  - [apFirst](#apfirst)
+  - [apSecond](#apsecond)
+  - [bimap](#bimap)
+  - [bind](#bind)
+  - [bindTo](#bindto)
+  - [bindW](#bindw)
+  - [chain](#chain)
+  - [chainFirst](#chainfirst)
+  - [clearCookie](#clearcookie)
+  - [closeHeaders](#closeheaders)
+  - [contentType](#contenttype)
+  - [cookie](#cookie)
+  - [decodeBody](#decodebody)
+  - [decodeHeader](#decodeheader)
+  - [decodeMethod](#decodemethod)
+  - [decodeParam](#decodeparam)
+  - [decodeParams](#decodeparams)
+  - [decodeQuery](#decodequery)
+  - [end](#end)
+  - [evalMiddleware](#evalmiddleware)
+  - [execMiddleware](#execmiddleware)
+  - [filterOrElse](#filterorelse)
+  - [flatten](#flatten)
+  - [fromConnection](#fromconnection)
+  - [fromEither](#fromeither)
+  - [fromIOEither](#fromioeither)
+  - [fromOption](#fromoption)
+  - [fromPredicate](#frompredicate)
+  - [fromTaskEither](#fromtaskeither)
+  - [gets](#gets)
+  - [header](#header)
+  - [ichain](#ichain)
+  - [ichainW](#ichainw)
+  - [iof](#iof)
+  - [json](#json)
+  - [left](#left)
+  - [leftIO](#leftio)
+  - [leftTask](#lefttask)
+  - [map](#map)
+  - [mapLeft](#mapleft)
+  - [middleware](#middleware)
+  - [modifyConnection](#modifyconnection)
+  - [orElse](#orelse)
+  - [redirect](#redirect)
+  - [right](#right)
+  - [rightIO](#rightio)
+  - [rightTask](#righttask)
+  - [send](#send)
+  - [status](#status)
+  - [tryCatch](#trycatch)
 
 ---
 
-# BodyOpen (interface)
+# utils
+
+## BodyOpen (interface)
 
 Type indicating that headers have already been sent, and that the body is currently streaming
 
@@ -90,7 +98,7 @@ export interface BodyOpen {
 
 Added in v0.5.0
 
-# Connection (interface)
+## Connection (interface)
 
 A `Connection`, models the entirety of a connection between the HTTP server and the user agent,
 both request and response.
@@ -127,7 +135,7 @@ export interface Connection<S> {
 
 Added in v0.5.0
 
-# CookieOptions (interface)
+## CookieOptions (interface)
 
 **Signature**
 
@@ -146,7 +154,17 @@ export interface CookieOptions {
 
 Added in v0.5.0
 
-# HeadersOpen (interface)
+## Do
+
+**Signature**
+
+```ts
+export declare const Do: Middleware<unknown, unknown, never, {}>
+```
+
+Added in v0.6.1
+
+## HeadersOpen (interface)
 
 Type indicating that headers are ready to be sent, i.e. the body streaming has not been started
 
@@ -160,81 +178,7 @@ export interface HeadersOpen {
 
 Added in v0.5.0
 
-# Middleware (interface)
-
-A middleware is an indexed monadic action transforming one `Connection` to another `Connection`. It operates
-in the `TaskEither` monad, and is indexed by `I` and `O`, the input and output `Connection` types of the
-middleware action.
-
-**Signature**
-
-```ts
-export interface Middleware<I, O, E, A> {
-  (c: Connection<I>): TE.TaskEither<E, [A, Connection<O>]>
-}
-```
-
-Added in v0.5.0
-
-# ResponseEnded (interface)
-
-Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished
-
-**Signature**
-
-```ts
-export interface ResponseEnded {
-  readonly ResponseEnded: unique symbol
-}
-```
-
-Added in v0.5.0
-
-# StatusOpen (interface)
-
-Type indicating that the status-line is ready to be sent
-
-**Signature**
-
-```ts
-export interface StatusOpen {
-  readonly StatusOpen: unique symbol
-}
-```
-
-Added in v0.5.0
-
-# MediaType (type alias)
-
-**Signature**
-
-```ts
-export type MediaType = typeof MediaType[keyof typeof MediaType]
-```
-
-Added in v0.5.0
-
-# Status (type alias)
-
-**Signature**
-
-```ts
-export type Status = typeof Status[keyof typeof Status]
-```
-
-Added in v0.5.0
-
-# URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = typeof URI
-```
-
-Added in v0.5.0
-
-# MediaType
+## MediaType
 
 Adapted from https://github.com/purescript-contrib/purescript-media-types
 
@@ -260,7 +204,47 @@ export declare const MediaType: {
 
 Added in v0.5.0
 
-# Status
+## MediaType (type alias)
+
+**Signature**
+
+```ts
+export type MediaType = typeof MediaType[keyof typeof MediaType]
+```
+
+Added in v0.5.0
+
+## Middleware (interface)
+
+A middleware is an indexed monadic action transforming one `Connection` to another `Connection`. It operates
+in the `TaskEither` monad, and is indexed by `I` and `O`, the input and output `Connection` types of the
+middleware action.
+
+**Signature**
+
+```ts
+export interface Middleware<I, O, E, A> {
+  (c: Connection<I>): TE.TaskEither<E, [A, Connection<O>]>
+}
+```
+
+Added in v0.5.0
+
+## ResponseEnded (interface)
+
+Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished
+
+**Signature**
+
+```ts
+export interface ResponseEnded {
+  readonly ResponseEnded: unique symbol
+}
+```
+
+Added in v0.5.0
+
+## Status
 
 **Signature**
 
@@ -334,7 +318,31 @@ export declare const Status: {
 
 Added in v0.5.0
 
-# URI
+## Status (type alias)
+
+**Signature**
+
+```ts
+export type Status = typeof Status[keyof typeof Status]
+```
+
+Added in v0.5.0
+
+## StatusOpen (interface)
+
+Type indicating that the status-line is ready to be sent
+
+**Signature**
+
+```ts
+export interface StatusOpen {
+  readonly StatusOpen: unique symbol
+}
+```
+
+Added in v0.5.0
+
+## URI
 
 **Signature**
 
@@ -344,7 +352,17 @@ export declare const URI: 'Middleware'
 
 Added in v0.5.0
 
-# alt
+## URI (type alias)
+
+**Signature**
+
+```ts
+export type URI = typeof URI
+```
+
+Added in v0.5.0
+
+## alt
 
 **Signature**
 
@@ -356,7 +374,7 @@ export declare const alt: <R, E, A>(
 
 Added in v0.5.0
 
-# ap
+## ap
 
 **Signature**
 
@@ -368,7 +386,7 @@ export declare const ap: <R, E, A>(
 
 Added in v0.5.0
 
-# apFirst
+## apFirst
 
 **Signature**
 
@@ -380,7 +398,7 @@ export declare const apFirst: <R, E, B>(
 
 Added in v0.5.0
 
-# apSecond
+## apSecond
 
 **Signature**
 
@@ -392,7 +410,7 @@ export declare const apSecond: <R, E, B>(
 
 Added in v0.5.0
 
-# bimap
+## bimap
 
 **Signature**
 
@@ -405,7 +423,47 @@ export declare const bimap: <E, G, A, B>(
 
 Added in v0.5.0
 
-# chain
+## bind
+
+**Signature**
+
+```ts
+export declare const bind: <N extends string, I, E, A, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<I, I, E, B>
+) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.6.1
+
+## bindTo
+
+**Signature**
+
+```ts
+export declare const bindTo: <N extends string>(
+  name: N
+) => <I, E, A>(fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N]: A }>
+```
+
+Added in v0.6.1
+
+## bindW
+
+**Signature**
+
+```ts
+export declare const bindW: <N extends string, I, A, E2, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<I, I, E2, B>
+) => <E1>(
+  fa: Middleware<I, I, E1, A>
+) => Middleware<I, I, E2 | E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.6.1
+
+## chain
 
 **Signature**
 
@@ -417,7 +475,7 @@ export declare const chain: <R, E, A, B>(
 
 Added in v0.5.0
 
-# chainFirst
+## chainFirst
 
 **Signature**
 
@@ -429,7 +487,7 @@ export declare const chainFirst: <R, E, A, B>(
 
 Added in v0.5.0
 
-# clearCookie
+## clearCookie
 
 Returns a middleware that clears the cookie `name`
 
@@ -444,7 +502,7 @@ export declare function clearCookie<E = never>(
 
 Added in v0.5.0
 
-# closeHeaders
+## closeHeaders
 
 Returns a middleware that changes the connection status to `BodyOpen`
 
@@ -456,7 +514,7 @@ export declare function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyO
 
 Added in v0.5.0
 
-# contentType
+## contentType
 
 Returns a middleware that sets the given `mediaType`
 
@@ -468,7 +526,7 @@ export declare function contentType<E = never>(mediaType: MediaType): Middleware
 
 Added in v0.5.0
 
-# cookie
+## cookie
 
 Returns a middleware that sets the cookie `name` to `value`, with the given `options`
 
@@ -484,7 +542,7 @@ export declare function cookie<E = never>(
 
 Added in v0.5.0
 
-# decodeBody
+## decodeBody
 
 Returns a middleware that tries to decode `connection.getBody()`
 
@@ -496,7 +554,7 @@ export declare function decodeBody<E, A>(f: (input: unknown) => Either<E, A>): M
 
 Added in v0.5.0
 
-# decodeHeader
+## decodeHeader
 
 Returns a middleware that tries to decode `connection.getHeader(name)`
 
@@ -511,7 +569,7 @@ export declare function decodeHeader<E, A>(
 
 Added in v0.5.0
 
-# decodeMethod
+## decodeMethod
 
 Returns a middleware that tries to decode `connection.getMethod()`
 
@@ -525,7 +583,7 @@ export declare function decodeMethod<E, A>(
 
 Added in v0.5.0
 
-# decodeParam
+## decodeParam
 
 Returns a middleware that tries to decode `connection.getParams()[name]`
 
@@ -540,7 +598,7 @@ export declare function decodeParam<E, A>(
 
 Added in v0.5.0
 
-# decodeParams
+## decodeParams
 
 Returns a middleware that tries to decode `connection.getParams()`
 
@@ -554,7 +612,7 @@ export declare function decodeParams<E, A>(
 
 Added in v0.5.0
 
-# decodeQuery
+## decodeQuery
 
 Returns a middleware that tries to decode `connection.getQuery()`
 
@@ -566,7 +624,7 @@ export declare function decodeQuery<E, A>(f: (input: unknown) => Either<E, A>): 
 
 Added in v0.5.0
 
-# end
+## end
 
 Returns a middleware that ends the response without sending any response body
 
@@ -578,7 +636,7 @@ export declare function end<E = never>(): Middleware<BodyOpen, ResponseEnded, E,
 
 Added in v0.5.0
 
-# evalMiddleware
+## evalMiddleware
 
 **Signature**
 
@@ -588,7 +646,7 @@ export declare function evalMiddleware<I, O, E, A>(ma: Middleware<I, O, E, A>, c
 
 Added in v0.5.0
 
-# execMiddleware
+## execMiddleware
 
 **Signature**
 
@@ -601,7 +659,7 @@ export declare function execMiddleware<I, O, E, A>(
 
 Added in v0.5.0
 
-# filterOrElse
+## filterOrElse
 
 **Signature**
 
@@ -616,7 +674,7 @@ export declare const filterOrElse: {
 
 Added in v0.5.0
 
-# flatten
+## flatten
 
 **Signature**
 
@@ -626,7 +684,7 @@ export declare const flatten: <R, E, A>(mma: Middleware<R, R, E, Middleware<R, R
 
 Added in v0.5.0
 
-# fromConnection
+## fromConnection
 
 **Signature**
 
@@ -638,17 +696,17 @@ export declare function fromConnection<I = StatusOpen, E = never, A = never>(
 
 Added in v0.5.0
 
-# fromEither
+## fromEither
 
 **Signature**
 
 ```ts
-export declare const fromEither: <R, E, A>(ma: Either<E, A>) => Middleware<R, R, E, A>
+export declare const fromEither: <R, E, A>(ma: E.Either<E, A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.5.0
 
-# fromIOEither
+## fromIOEither
 
 **Signature**
 
@@ -658,7 +716,7 @@ export declare function fromIOEither<I = StatusOpen, E = never, A = never>(fa: I
 
 Added in v0.5.0
 
-# fromOption
+## fromOption
 
 **Signature**
 
@@ -668,7 +726,7 @@ export declare const fromOption: <E>(onNone: () => E) => <R, A>(ma: Option<A>) =
 
 Added in v0.5.0
 
-# fromPredicate
+## fromPredicate
 
 **Signature**
 
@@ -681,7 +739,7 @@ export declare const fromPredicate: {
 
 Added in v0.5.0
 
-# fromTaskEither
+## fromTaskEither
 
 **Signature**
 
@@ -693,7 +751,7 @@ export declare function fromTaskEither<I = StatusOpen, E = never, A = never>(
 
 Added in v0.5.0
 
-# gets
+## gets
 
 **Signature**
 
@@ -703,7 +761,7 @@ export declare function gets<I = StatusOpen, E = never, A = never>(f: (c: Connec
 
 Added in v0.5.0
 
-# header
+## header
 
 Returns a middleware that writes the given header
 
@@ -715,19 +773,31 @@ export declare function header<E = never>(name: string, value: string): Middlewa
 
 Added in v0.5.0
 
-# ichain
+## ichain
 
 **Signature**
 
 ```ts
-export declare function ichain<A, O, Z, E, B>(
+export declare const ichain: <A, O, Z, E, B>(
   f: (a: A) => Middleware<O, Z, E, B>
-): <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B>
+) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B>
 ```
 
 Added in v0.5.0
 
-# iof
+## ichainW
+
+**Signature**
+
+```ts
+export declare function ichainW<A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B>
+```
+
+Added in v0.6.1
+
+## iof
 
 **Signature**
 
@@ -737,7 +807,7 @@ export declare function iof<I = StatusOpen, O = StatusOpen, E = never, A = never
 
 Added in v0.5.0
 
-# json
+## json
 
 Returns a middleware that sends `body` as JSON
 
@@ -752,7 +822,7 @@ export declare function json<E>(
 
 Added in v0.5.0
 
-# left
+## left
 
 **Signature**
 
@@ -762,7 +832,7 @@ export declare function left<I = StatusOpen, E = never, A = never>(e: E): Middle
 
 Added in v0.5.0
 
-# leftIO
+## leftIO
 
 **Signature**
 
@@ -772,7 +842,7 @@ export declare function leftIO<I = StatusOpen, E = never, A = never>(fe: IO<E>):
 
 Added in v0.5.0
 
-# leftTask
+## leftTask
 
 **Signature**
 
@@ -782,7 +852,7 @@ export declare function leftTask<I = StatusOpen, E = never, A = never>(te: Task<
 
 Added in v0.5.0
 
-# map
+## map
 
 **Signature**
 
@@ -792,7 +862,7 @@ export declare const map: <A, B>(f: (a: A) => B) => <R, E>(fa: Middleware<R, R, 
 
 Added in v0.5.0
 
-# mapLeft
+## mapLeft
 
 **Signature**
 
@@ -802,7 +872,7 @@ export declare const mapLeft: <E, G>(f: (e: E) => G) => <R, A>(fa: Middleware<R,
 
 Added in v0.5.0
 
-# middleware
+## middleware
 
 **Signature**
 
@@ -816,7 +886,7 @@ export declare const middleware: Monad3<'Middleware'> &
 
 Added in v0.5.0
 
-# modifyConnection
+## modifyConnection
 
 **Signature**
 
@@ -826,7 +896,7 @@ export declare function modifyConnection<I, O, E>(f: (c: Connection<I>) => Conne
 
 Added in v0.5.0
 
-# orElse
+## orElse
 
 **Signature**
 
@@ -838,7 +908,7 @@ export declare function orElse<E, I, O, M, A>(
 
 Added in v0.5.0
 
-# redirect
+## redirect
 
 Returns a middleware that sends a redirect to `uri`
 
@@ -850,7 +920,7 @@ export declare function redirect<E = never>(uri: string): Middleware<StatusOpen,
 
 Added in v0.5.0
 
-# right
+## right
 
 **Signature**
 
@@ -860,7 +930,7 @@ export declare function right<I = StatusOpen, E = never, A = never>(a: A): Middl
 
 Added in v0.5.0
 
-# rightIO
+## rightIO
 
 **Signature**
 
@@ -870,7 +940,7 @@ export declare function rightIO<I = StatusOpen, E = never, A = never>(fa: IO<A>)
 
 Added in v0.5.0
 
-# rightTask
+## rightTask
 
 **Signature**
 
@@ -880,7 +950,7 @@ export declare function rightTask<I = StatusOpen, E = never, A = never>(fa: Task
 
 Added in v0.5.0
 
-# send
+## send
 
 Returns a middleware that sends `body` as response body
 
@@ -892,7 +962,7 @@ export declare function send<E = never>(body: string): Middleware<BodyOpen, Resp
 
 Added in v0.5.0
 
-# status
+## status
 
 Returns a middleware that writes the response status
 
@@ -904,7 +974,7 @@ export declare function status<E = never>(status: Status): Middleware<StatusOpen
 
 Added in v0.5.0
 
-# tryCatch
+## tryCatch
 
 **Signature**
 

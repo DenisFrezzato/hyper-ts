@@ -3,16 +3,19 @@
  */
 import { Alt3 } from 'fp-ts/lib/Alt'
 import { Bifunctor3 } from 'fp-ts/lib/Bifunctor'
-import { Either, map as mapEither, stringifyJSON } from 'fp-ts/lib/Either'
+import * as E from 'fp-ts/lib/Either'
 import { IO } from 'fp-ts/lib/IO'
 import { IOEither } from 'fp-ts/lib/IOEither'
 import { Monad3 } from 'fp-ts/lib/Monad'
 import { MonadTask3 } from 'fp-ts/lib/MonadTask'
 import { MonadThrow3 } from 'fp-ts/lib/MonadThrow'
 import { pipe, pipeable } from 'fp-ts/lib/pipeable'
-import { Task } from 'fp-ts/lib/Task'
+import * as T from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
+
+import Either = E.Either
+import Task = T.Task
 
 /**
  * Adapted from https://github.com/purescript-contrib/purescript-media-types
@@ -213,7 +216,7 @@ export function fromConnection<I = StatusOpen, E = never, A = never>(
     TE.fromEither(
       pipe(
         f(c),
-        mapEither(a => [a, c])
+        E.map(a => [a, c])
       )
     )
 }
@@ -252,28 +255,34 @@ export interface Middleware<I, O, E, A> {
   (c: Connection<I>): TE.TaskEither<E, [A, Connection<O>]>
 }
 
-/**
- * @since 0.5.0
- */
-export function ichain<A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-): <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> {
-  return ma => ci =>
-    pipe(
-      ma(ci),
-      TE.chain(([a, co]) => f(a)(co))
-    )
-}
+// TODO: replace with TE.chainW after upgrading to more recent versions of fp-ts
+const TEchainW = <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>) => <E1>(
+  ma: TE.TaskEither<E1, A>
+): TE.TaskEither<E1 | E2, B> =>
+  pipe(
+    ma,
+    T.chain(e => (E.isLeft(e) ? TE.left<E1 | E2, B>(e.left) : f(e.right)))
+  )
 
+/**
+ * @since 0.6.1
+ */
 export function ichainW<A, O, Z, E, B>(
   f: (a: A) => Middleware<O, Z, E, B>
 ): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B> {
   return ma => ci =>
     pipe(
       ma(ci),
-      TE.chainW(([a, co]) => f(a)(co))
+      TEchainW(([a, co]) => f(a)(co))
     )
 }
+
+/**
+ * @since 0.5.0
+ */
+export const ichain: <A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> = ichainW
 
 /**
  * @since 0.5.0
@@ -481,7 +490,7 @@ export function json<E>(
   onError: (reason: unknown) => E
 ): Middleware<HeadersOpen, ResponseEnded, E, void> {
   return pipe(
-    fromEither<HeadersOpen, E, string>(stringifyJSON(body, onError)),
+    fromEither<HeadersOpen, E, string>(E.stringifyJSON(body, onError)),
     ichain(json =>
       pipe(
         contentType<E>(MediaType.applicationJSON),
@@ -569,9 +578,12 @@ export function decodeHeader<E, A>(
   return fromConnection(c => f(c.getHeader(name)))
 }
 
+/**
+ * @since 0.6.1
+ */
 export const Do =
   /*#__PURE__*/
-  iof<unknown,unknown,never,{}>({})
+  iof<unknown, unknown, never, {}>({})
 
 /**
  * @internal
@@ -585,26 +597,38 @@ const bind_ = <A, N extends string, B>(
 /**
  * @internal
  */
-const bindTo_ = <N extends string>(name: N) => <B>(b: B): {[K in N]: B} => ({ [name]: b } as any)
+const bindTo_ = <N extends string>(name: N) => <B>(b: B): { [K in N]: B } => ({ [name]: b } as any)
 
-export const bindTo = <N extends string>(name: N): (<I,E,A>(fa: Middleware<I,I,E,A>) => Middleware<I, I, E, { [K in N]: A}>) =>
-  map(bindTo_(name))
+/**
+ * @since 0.6.1
+ */
+export const bindTo = <N extends string>(
+  name: N
+): (<I, E, A>(fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N]: A }>) => map(bindTo_(name))
 
-export const bindW = <N extends string, I, A, D, B>(
+/**
+ * @since 0.6.1
+ */
+export const bindW = <N extends string, I, A, E2, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Middleware<I, I, D, B>
-): (<E>(fa: Middleware<I, I, E, A>) => Middleware<I, I, D | E, { [K in keyof A | N]: K extends keyof A ? A[K] : B }>) =>
-  ichainW((a) =>
+  f: (a: A) => Middleware<I, I, E2, B>
+): (<E1>(
+  fa: Middleware<I, I, E1, A>
+) => Middleware<I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }>) =>
+  ichainW(a =>
     pipe(
       f(a),
-      map((b) => bind_(a, name, b))
+      map(b => bind_(a, name, b))
     )
   )
 
+/**
+ * @since 0.6.1
+ */
 export const bind: <N extends string, I, E, A, B>(
   name: Exclude<N, keyof A>,
   f: (a: A) => Middleware<I, I, E, B>
-) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in keyof A | N]: K extends keyof A ? A[K] : B}> = bindW
+) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bindW
 
 /**
  * @since 0.5.0
