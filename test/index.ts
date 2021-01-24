@@ -93,6 +93,42 @@ describe('Middleware', () => {
     })
   })
 
+  describe('sendFile', () => {
+    it('should send the file', () => {
+      const filename = __filename
+      const m = H.sendFile(filename, () => 'will not happen')
+      const c = new MockConnection<H.BodyOpen>(new MockRequest())
+      return assertSuccess(m, c, undefined, [{ type: 'setFile', path: filename }])
+    })
+    it('should return result of error handler if filename is a directory', () => {
+      const product = 'error-handler'
+      const filename = __dirname
+      const c = new MockConnection<H.BodyOpen>(new MockRequest())
+      const m = H.sendFile(filename, () => product)
+      return assertFailure(m, c, err => {
+        assert.strictEqual(product, err)
+      })
+    })
+    it('should return result of error handler if file does not exist', () => {
+      const product = 'error-handler'
+      const filename = 'no-exist-file.xyz'
+      const c = new MockConnection<H.BodyOpen>(new MockRequest())
+      const m = H.sendFile(filename, () => product)
+      return assertFailure(m, c, err => {
+        assert.strictEqual(product, err)
+      })
+    })
+    it('should return result of error handler if filename is a relative path', () => {
+      const product = 'error-handler'
+      const filename = './relative/path'
+      const c = new MockConnection<H.BodyOpen>(new MockRequest())
+      const m = H.sendFile(filename, () => product)
+      return assertFailure(m, c, err => {
+        assert.strictEqual(product, err)
+      })
+    })
+  })
+
   describe('json', () => {
     it('should add the proper header and send the content', () => {
       const m = H.json({ a: 1 }, E.toError)

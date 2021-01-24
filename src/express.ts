@@ -67,6 +67,7 @@ export type Action =
   | { type: 'setHeader'; name: string; value: string }
   | { type: 'clearCookie'; name: string; options: CookieOptions }
   | { type: 'setCookie'; name: string; value: string; options: CookieOptions }
+  | { type: 'setFile'; path: string }
 
 const endResponse: Action = { type: 'endResponse' }
 
@@ -168,6 +169,13 @@ export class ExpressConnection<S> implements Connection<S> {
   endResponse(): ExpressConnection<ResponseEnded> {
     return this.chain(endResponse, true)
   }
+
+  /**
+   * @since 0.7.0
+   */
+  setFile(path: string): ExpressConnection<ResponseEnded> {
+    return this.chain({ type: 'setFile', path })
+  }
 }
 
 function run(res: Response, action: Action): Response {
@@ -186,6 +194,9 @@ function run(res: Response, action: Action): Response {
       return res
     case 'setStatus':
       return res.status(action.status)
+    case 'setFile':
+      res.sendFile(action.path)
+      return res
   }
 }
 
