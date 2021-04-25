@@ -72,6 +72,7 @@ Added in v0.5.0
   - [middleware](#middleware)
   - [modifyConnection](#modifyconnection)
   - [orElse](#orelse)
+  - [pipeStream](#pipestream)
   - [redirect](#redirect)
   - [right](#right)
   - [rightIO](#rightio)
@@ -129,6 +130,7 @@ export interface Connection<S> {
   readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
   readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
   readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
+  readonly pipeStream: (this: Connection<BodyOpen>, stream: Readable) => Connection<ResponseEnded>
   readonly endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
 }
 ```
@@ -907,6 +909,18 @@ export declare function orElse<E, I, O, M, A>(
 ```
 
 Added in v0.5.0
+
+## pipeStream
+
+Returns a middleware that pipes a stream to the response object.
+
+**Signature**
+
+```ts
+export declare function pipeStream<E>(stream: Readable): Middleware<BodyOpen, ResponseEnded, E, void>
+```
+
+Added in v0.6.2
 
 ## redirect
 

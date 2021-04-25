@@ -27,6 +27,7 @@ Added in v0.5.0
     - [setHeader (method)](#setheader-method)
     - [setStatus (method)](#setstatus-method)
     - [setBody (method)](#setbody-method)
+    - [pipeStream (method)](#pipestream-method)
     - [endResponse (method)](#endresponse-method)
     - [\_S (property)](#_s-property)
   - [fromRequestHandler](#fromrequesthandler)
@@ -183,6 +184,16 @@ setBody(body: unknown): ExpressConnection<ResponseEnded>
 ```
 
 Added in v0.5.0
+
+### pipeStream (method)
+
+**Signature**
+
+```ts
+pipeStream(stream: Readable): ExpressConnection<ResponseEnded>
+```
+
+Added in v0.6.2
 
 ### endResponse (method)
 
