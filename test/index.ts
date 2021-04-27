@@ -9,15 +9,16 @@ import { pipe } from 'fp-ts/lib/pipeable'
 import { Readable } from 'stream'
 
 class MockRequest {
+  readonly query: querystring.ParsedQs
   constructor(
     readonly params?: unknown,
-    readonly query: string = '',
+    readonly rawQuery: string = '',
     readonly body?: unknown,
     readonly headers: Record<string, string> = {},
     readonly originalUrl: string = '',
     readonly method: string = 'GET'
   ) {
-    this.query = querystring.parse(query)
+    this.query = querystring.parse(rawQuery)
   }
   header(name: string) {
     return this.headers[name]

@@ -208,17 +208,20 @@ function exec<I, O, E>(
   return execMiddleware(middleware, new ExpressConnection<I>(req, res))().then(e =>
     pipe(
       e,
-      E.fold(next, c => {
-        const { actions: list, res, ended } = c as ExpressConnection<O>
-        const len = list.length
-        const actions = toArray(list)
-        for (let i = 0; i < len; i++) {
-          run(res, actions[i])
+      E.fold(
+        e => next(e),
+        c => {
+          const { actions: list, res, ended } = c as ExpressConnection<O>
+          const len = list.length
+          const actions = toArray(list)
+          for (let i = 0; i < len; i++) {
+            run(res, actions[i])
+          }
+          if (!ended) {
+            next()
+          }
         }
-        if (!ended) {
-          next()
-        }
-      })
+      )
     )
   )
 }
