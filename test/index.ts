@@ -2,34 +2,11 @@ import * as assert from 'assert'
 import * as E from 'fp-ts/lib/Either'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
-import * as querystring from 'qs'
 import * as H from '../src'
-import { Action, ExpressConnection, toArray } from '../src/express'
+import { Action, toArray } from '../src/express'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { MockConnection, MockRequest } from './_helpers'
 import { Readable } from 'stream'
-
-class MockRequest {
-  readonly query: querystring.ParsedQs
-  constructor(
-    readonly params?: unknown,
-    readonly rawQuery: string = '',
-    readonly body?: unknown,
-    readonly headers: Record<string, string> = {},
-    readonly originalUrl: string = '',
-    readonly method: string = 'GET'
-  ) {
-    this.query = querystring.parse(rawQuery)
-  }
-  header(name: string) {
-    return this.headers[name]
-  }
-}
-
-class MockConnection<S> extends ExpressConnection<S> {
-  constructor(req: MockRequest) {
-    super(req as any, null as any)
-  }
-}
 
 function assertSuccess<I, O, A>(m: H.Middleware<I, O, any, A>, cin: MockConnection<I>, a: A, actions: Array<Action>) {
   return m(cin)().then(e => {
