@@ -27,14 +27,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gcanti/hyper-ts.git"
+    "url": "https://github.com/DenisFrezzato/hyper-ts.git"
   },
   "author": "Giulio Canti <giulio.canti@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/gcanti/hyper-ts/issues"
+    "url": "https://github.com/DenisFrezzato/hyper-ts/issues"
   },
-  "homepage": "https://github.com/gcanti/hyper-ts",
+  "homepage": "https://github.com/DenisFrezzato/hyper-ts",
   "devDependencies": {
     "@types/benchmark": "^1.0.31",
     "@types/express": "^4.17.8",
