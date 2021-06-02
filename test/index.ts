@@ -6,17 +6,19 @@ import * as querystring from 'qs'
 import * as H from '../src'
 import { Action, ExpressConnection, toArray } from '../src/express'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { Readable } from 'stream'
 
 class MockRequest {
+  readonly query: querystring.ParsedQs
   constructor(
     readonly params?: unknown,
-    readonly query: string = '',
+    readonly rawQuery: string = '',
     readonly body?: unknown,
     readonly headers: Record<string, string> = {},
     readonly originalUrl: string = '',
     readonly method: string = 'GET'
   ) {
-    this.query = querystring.parse(query)
+    this.query = querystring.parse(rawQuery)
   }
   header(name: string) {
     return this.headers[name]
@@ -142,6 +144,39 @@ describe('Middleware', () => {
         { type: 'setStatus', status: 302 },
         { type: 'setHeader', name: 'Location', value: '/users' }
       ])
+    })
+  })
+
+  describe('pipeStream', () => {
+    it('should pipe a stream', () => {
+      const someStream = (): Readable => {
+        const stream = new Readable()
+        setTimeout(() => {
+          stream.push('a')
+          stream.push(null)
+        }, 1)
+        return stream
+      }
+      const stream = someStream()
+      const c = new MockConnection<H.BodyOpen>(new MockRequest())
+      const m = H.pipeStream(stream)
+
+      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream }])
+    })
+
+    it('should pipe a stream and handle the failure', () => {
+      const someStream = (): Readable => {
+        const stream = new Readable()
+        setTimeout(() => {
+          throw new Error('Boom')
+        }, 1)
+        return stream
+      }
+      const stream = someStream()
+      const c = new MockConnection<H.BodyOpen>(new MockRequest())
+      const m = H.pipeStream(stream)
+
+      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream }])
     })
   })
 

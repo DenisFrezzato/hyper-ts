@@ -13,6 +13,7 @@ import { pipe, pipeable } from 'fp-ts/lib/pipeable'
 import * as T from 'fp-ts/lib/Task'
 import * as TE from 'fp-ts/lib/TaskEither'
 import { IncomingMessage } from 'http'
+import { Readable } from 'stream'
 
 import Either = E.Either
 import Task = T.Task
@@ -196,6 +197,7 @@ export interface Connection<S> {
   readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
   readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
   readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
+  readonly pipeStream: (this: Connection<BodyOpen>, stream: Readable) => Connection<ResponseEnded>
   readonly endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
 }
 
@@ -511,6 +513,15 @@ export function redirect<E = never>(uri: string): Middleware<StatusOpen, Headers
     status(Status.Found),
     ichain(() => header('Location', uri))
   )
+}
+
+/**
+ * Returns a middleware that pipes a stream to the response object.
+ *
+ * @since 0.6.2
+ */
+export function pipeStream<E>(stream: Readable): Middleware<BodyOpen, ResponseEnded, E, void> {
+  return modifyConnection(c => c.pipeStream(stream))
 }
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => u !== null && typeof u === 'object'

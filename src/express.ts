@@ -16,6 +16,7 @@ import {
 } from '.'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
+import { Readable } from 'stream'
 
 /**
  * @internal
@@ -67,6 +68,7 @@ export type Action =
   | { type: 'setHeader'; name: string; value: string }
   | { type: 'clearCookie'; name: string; options: CookieOptions }
   | { type: 'setCookie'; name: string; value: string; options: CookieOptions }
+  | { type: 'pipeStream'; stream: Readable }
 
 const endResponse: Action = { type: 'endResponse' }
 
@@ -163,6 +165,12 @@ export class ExpressConnection<S> implements Connection<S> {
     return this.chain({ type: 'setBody', body }, true)
   }
   /**
+   * @since 0.6.2
+   */
+  pipeStream(stream: Readable): ExpressConnection<ResponseEnded> {
+    return this.chain({ type: 'pipeStream', stream }, true)
+  }
+  /**
    * @since 0.5.0
    */
   endResponse(): ExpressConnection<ResponseEnded> {
@@ -186,6 +194,8 @@ function run(res: Response, action: Action): Response {
       return res
     case 'setStatus':
       return res.status(action.status)
+    case 'pipeStream':
+      return action.stream.pipe(res)
   }
 }
 
@@ -198,17 +208,20 @@ function exec<I, O, E>(
   return execMiddleware(middleware, new ExpressConnection<I>(req, res))().then(e =>
     pipe(
       e,
-      E.fold(next, c => {
-        const { actions: list, res, ended } = c as ExpressConnection<O>
-        const len = list.length
-        const actions = toArray(list)
-        for (let i = 0; i < len; i++) {
-          run(res, actions[i])
+      E.fold(
+        e => next(e),
+        c => {
+          const { actions: list, res, ended } = c as ExpressConnection<O>
+          const len = list.length
+          const actions = toArray(list)
+          for (let i = 0; i < len; i++) {
+            run(res, actions[i])
+          }
+          if (!ended) {
+            next()
+          }
         }
-        if (!ended) {
-          next()
-        }
-      })
+      )
     )
   )
 }
