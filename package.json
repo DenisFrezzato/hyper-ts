@@ -1,6 +1,6 @@
 {
   "name": "hyper-ts",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Type safe middleware architecture for HTTP servers",
   "files": [
     "lib",

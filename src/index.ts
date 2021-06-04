@@ -258,7 +258,10 @@ export interface Middleware<I, O, E, A> {
 }
 
 // TODO: replace with TE.chainW after upgrading to more recent versions of fp-ts
-const TEchainW = <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>) => <E1>(
+/**
+ * @internal
+ */
+export const TEchainW = <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>) => <E1>(
   ma: TE.TaskEither<E1, A>
 ): TE.TaskEither<E1 | E2, B> =>
   pipe(
