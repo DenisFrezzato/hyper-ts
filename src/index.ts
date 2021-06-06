@@ -36,7 +36,7 @@ export const MediaType = {
   textCSV: 'text/csv',
   textHTML: 'text/html',
   textPlain: 'text/plain',
-  textXML: 'text/xml'
+  textXML: 'text/xml',
 } as const
 
 /**
@@ -110,7 +110,7 @@ export const Status = {
   InsufficientStorage: 507,
   LoopDetected: 508,
   NotExtended: 510,
-  NetworkAuthenticationRequired: 511
+  NetworkAuthenticationRequired: 511,
 } as const
 
 /**
@@ -205,7 +205,7 @@ export interface Connection<S> {
  * @since 0.5.0
  */
 export function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>) => A): Middleware<I, I, E, A> {
-  return c => TE.right([f(c), c])
+  return (c) => TE.right([f(c), c])
 }
 
 /**
@@ -214,11 +214,11 @@ export function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>)
 export function fromConnection<I = StatusOpen, E = never, A = never>(
   f: (c: Connection<I>) => Either<E, A>
 ): Middleware<I, I, E, A> {
-  return c =>
+  return (c) =>
     TE.fromEither(
       pipe(
         f(c),
-        E.map(a => [a, c])
+        E.map((a) => [a, c])
       )
     )
 }
@@ -227,7 +227,7 @@ export function fromConnection<I = StatusOpen, E = never, A = never>(
  * @since 0.5.0
  */
 export function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, E, void> {
-  return c => TE.right([undefined, f(c)])
+  return (c) => TE.right([undefined, f(c)])
 }
 
 declare module 'fp-ts/lib/HKT' {
@@ -261,13 +261,13 @@ export interface Middleware<I, O, E, A> {
 /**
  * @internal
  */
-export const TEchainW = <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>) => <E1>(
-  ma: TE.TaskEither<E1, A>
-): TE.TaskEither<E1 | E2, B> =>
-  pipe(
-    ma,
-    T.chain(e => (E.isLeft(e) ? TE.left<E1 | E2, B>(e.left) : f(e.right)))
-  )
+export const TEchainW =
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>) =>
+  <E1>(ma: TE.TaskEither<E1, A>): TE.TaskEither<E1 | E2, B> =>
+    pipe(
+      ma,
+      T.chain((e) => (E.isLeft(e) ? TE.left<E1 | E2, B>(e.left) : f(e.right)))
+    )
 
 /**
  * @since 0.6.1
@@ -275,7 +275,7 @@ export const TEchainW = <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>) => <E1>(
 export function ichainW<A, O, Z, E, B>(
   f: (a: A) => Middleware<O, Z, E, B>
 ): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B> {
-  return ma => ci =>
+  return (ma) => (ci) =>
     pipe(
       ma(ci),
       TEchainW(([a, co]) => f(a)(co))
@@ -318,10 +318,10 @@ export function execMiddleware<I, O, E, A>(
 export function orElse<E, I, O, M, A>(
   f: (e: E) => Middleware<I, O, M, A>
 ): (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A> {
-  return ma => c =>
+  return (ma) => (c) =>
     pipe(
       ma(c),
-      TE.orElse(e => f(e)(c))
+      TE.orElse((e) => f(e)(c))
     )
 }
 
@@ -329,7 +329,7 @@ export function orElse<E, I, O, M, A>(
  * @since 0.5.0
  */
 export function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A): Middleware<I, O, E, A> {
-  return c => TE.right([a, c as any])
+  return (c) => TE.right([a, c as any])
 }
 
 /**
@@ -346,10 +346,10 @@ export function tryCatch<I = StatusOpen, E = never, A = never>(
  * @since 0.5.0
  */
 export function fromTaskEither<I = StatusOpen, E = never, A = never>(fa: TE.TaskEither<E, A>): Middleware<I, I, E, A> {
-  return c =>
+  return (c) =>
     pipe(
       fa,
-      TE.map(a => [a, c])
+      TE.map((a) => [a, c])
     )
 }
 
@@ -408,7 +408,7 @@ export function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<
  * @since 0.5.0
  */
 export function status<E = never>(status: Status): Middleware<StatusOpen, HeadersOpen, E, void> {
-  return modifyConnection(c => c.setStatus(status))
+  return modifyConnection((c) => c.setStatus(status))
 }
 
 /**
@@ -417,7 +417,7 @@ export function status<E = never>(status: Status): Middleware<StatusOpen, Header
  * @since 0.5.0
  */
 export function header<E = never>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, E, void> {
-  return modifyConnection(c => c.setHeader(name, value))
+  return modifyConnection((c) => c.setHeader(name, value))
 }
 
 /**
@@ -439,7 +439,7 @@ export function cookie<E = never>(
   value: string,
   options: CookieOptions
 ): Middleware<HeadersOpen, HeadersOpen, E, void> {
-  return modifyConnection(c => c.setCookie(name, value, options))
+  return modifyConnection((c) => c.setCookie(name, value, options))
 }
 
 /**
@@ -451,7 +451,7 @@ export function clearCookie<E = never>(
   name: string,
   options: CookieOptions
 ): Middleware<HeadersOpen, HeadersOpen, E, void> {
-  return modifyConnection(c => c.clearCookie(name, options))
+  return modifyConnection((c) => c.clearCookie(name, options))
 }
 
 const closedHeaders: Middleware<HeadersOpen, BodyOpen, never, void> = iof(undefined)
@@ -471,10 +471,10 @@ export function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyOpen, E, 
  * @since 0.5.0
  */
 export function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnded, E, void> {
-  return modifyConnection(c => c.setBody(body))
+  return modifyConnection((c) => c.setBody(body))
 }
 
-const ended: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConnection(c => c.endResponse())
+const ended: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConnection((c) => c.endResponse())
 
 /**
  * Returns a middleware that ends the response without sending any response body
@@ -496,7 +496,7 @@ export function json<E>(
 ): Middleware<HeadersOpen, ResponseEnded, E, void> {
   return pipe(
     fromEither<HeadersOpen, E, string>(E.stringifyJSON(body, onError)),
-    ichain(json =>
+    ichain((json) =>
       pipe(
         contentType<E>(MediaType.applicationJSON),
         ichain(() => closeHeaders()),
@@ -524,7 +524,7 @@ export function redirect<E = never>(uri: string): Middleware<StatusOpen, Headers
  * @since 0.6.2
  */
 export function pipeStream<E>(stream: Readable): Middleware<BodyOpen, ResponseEnded, E, void> {
-  return modifyConnection(c => c.pipeStream(stream))
+  return modifyConnection((c) => c.pipeStream(stream))
 }
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => u !== null && typeof u === 'object'
@@ -538,7 +538,7 @@ export function decodeParam<E, A>(
   name: string,
   f: (input: unknown) => Either<E, A>
 ): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection(c => {
+  return fromConnection((c) => {
     const params = c.getParams()
     return f(isUnknownRecord(params) ? params[name] : undefined)
   })
@@ -550,7 +550,7 @@ export function decodeParam<E, A>(
  * @since 0.5.0
  */
 export function decodeParams<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection(c => f(c.getParams()))
+  return fromConnection((c) => f(c.getParams()))
 }
 
 /**
@@ -559,7 +559,7 @@ export function decodeParams<E, A>(f: (input: unknown) => Either<E, A>): Middlew
  * @since 0.5.0
  */
 export function decodeQuery<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection(c => f(c.getQuery()))
+  return fromConnection((c) => f(c.getQuery()))
 }
 
 /**
@@ -568,7 +568,7 @@ export function decodeQuery<E, A>(f: (input: unknown) => Either<E, A>): Middlewa
  * @since 0.5.0
  */
 export function decodeBody<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection(c => f(c.getBody()))
+  return fromConnection((c) => f(c.getBody()))
 }
 
 /**
@@ -577,7 +577,7 @@ export function decodeBody<E, A>(f: (input: unknown) => Either<E, A>): Middlewar
  * @since 0.5.0
  */
 export function decodeMethod<E, A>(f: (method: string) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection(c => f(c.getMethod()))
+  return fromConnection((c) => f(c.getMethod()))
 }
 
 /**
@@ -589,7 +589,7 @@ export function decodeHeader<E, A>(
   name: string,
   f: (input: unknown) => Either<E, A>
 ): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection(c => f(c.getHeader(name)))
+  return fromConnection((c) => f(c.getHeader(name)))
 }
 
 /**
@@ -611,7 +611,10 @@ const bind_ = <A, N extends string, B>(
 /**
  * @internal
  */
-const bindTo_ = <N extends string>(name: N) => <B>(b: B): { [K in N]: B } => ({ [name]: b } as any)
+const bindTo_ =
+  <N extends string>(name: N) =>
+  <B>(b: B): { [K in N]: B } =>
+    ({ [name]: b } as any)
 
 /**
  * @since 0.6.1
@@ -629,10 +632,10 @@ export const bindW = <N extends string, I, A, E2, B>(
 ): (<E1>(
   fa: Middleware<I, I, E1, A>
 ) => Middleware<I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }>) =>
-  ichainW(a =>
+  ichainW((a) =>
     pipe(
       f(a),
-      map(b => bind_(a, name, b))
+      map((b) => bind_(a, name, b))
     )
   )
 
@@ -649,28 +652,28 @@ export const bind: <N extends string, I, E, A, B>(
  */
 export const middleware: Monad3<URI> & Alt3<URI> & Bifunctor3<URI> & MonadThrow3<URI> & MonadTask3<URI> = {
   URI,
-  map: (ma, f) => ci =>
+  map: (ma, f) => (ci) =>
     pipe(
       ma(ci),
       TE.map(([a, co]) => [f(a), co])
     ),
   of: right,
-  ap: (mab, ma) => middleware.chain(mab, f => middleware.map(ma, a => f(a))),
+  ap: (mab, ma) => middleware.chain(mab, (f) => middleware.map(ma, (a) => f(a))),
   chain: (ma, f) => pipe(ma, ichain(f)),
-  alt: (fx, f) => c =>
+  alt: (fx, f) => (c) =>
     pipe(
       fx(c),
       TE.alt(() => f()(c))
     ),
-  bimap: (fea, f, g) => c =>
+  bimap: (fea, f, g) => (c) =>
     pipe(
       fea(c),
       TE.bimap(f, ([a, c]) => [g(a), c])
     ),
-  mapLeft: (fea, f) => c => pipe(fea(c), TE.mapLeft(f)),
+  mapLeft: (fea, f) => (c) => pipe(fea(c), TE.mapLeft(f)),
   throwError: left,
   fromIO: rightIO,
-  fromTask: rightTask
+  fromTask: rightTask,
 }
 
 const {
@@ -687,7 +690,7 @@ const {
   filterOrElse,
   fromEither,
   fromOption,
-  fromPredicate
+  fromPredicate,
 } = pipeable(middleware)
 
 export {
@@ -746,5 +749,5 @@ export {
   /**
    * @since 0.5.0
    */
-  fromPredicate
+  fromPredicate,
 }
