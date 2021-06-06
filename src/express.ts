@@ -12,7 +12,7 @@ import {
   ResponseEnded,
   Status,
   execMiddleware,
-  StatusOpen
+  StatusOpen,
 } from '.'
 import * as E from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/pipeable'
@@ -38,7 +38,7 @@ export function cons<A>(head: A, tail: LinkedList<A>): LinkedList<A> {
     type: 'Cons',
     head,
     tail,
-    length: tail.length + 1
+    length: tail.length + 1,
   }
 }
 
@@ -205,12 +205,12 @@ function exec<I, O, E>(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  return execMiddleware(middleware, new ExpressConnection<I>(req, res))().then(e =>
+  return execMiddleware(middleware, new ExpressConnection<I>(req, res))().then((e) =>
     pipe(
       e,
       E.fold(
-        e => next(e),
-        c => {
+        (e) => next(e),
+        (c) => {
           const { actions: list, res, ended } = c as ExpressConnection<O>
           const len = list.length
           const actions = toArray(list)
@@ -247,10 +247,10 @@ export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
 ): Middleware<I, I, E, A> {
-  return c =>
+  return (c) =>
     rightTask(
       () =>
-        new Promise(resolve => {
+        new Promise((resolve) => {
           const { req, res } = c as ExpressConnection<I>
           requestHandler(req, res, () => resolve([f(req), c]))
         })

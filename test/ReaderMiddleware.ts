@@ -36,7 +36,7 @@ function assertSuccess<R, I, O, A>(
   a: A,
   actions: Array<Action>
 ) {
-  return m(r)(cin)().then(e => {
+  return m(r)(cin)().then((e) => {
     assert.deepStrictEqual(
       pipe(
         e,
@@ -51,7 +51,11 @@ describe('ReaderMiddleware', () => {
   it('ap', () => {
     const fab = pipe(
       _.header('a', 'a'),
-      _.map(() => (s: string): number => s.length)
+      _.map(
+        () =>
+          (s: string): number =>
+            s.length
+      )
     )
     const fa = pipe(
       _.header('b', 'b'),
@@ -61,7 +65,11 @@ describe('ReaderMiddleware', () => {
     const r = 'yee'
     const fab2 = pipe(
       H.header('a', 'a'),
-      H.map(() => (s: string): number => s.length)
+      H.map(
+        () =>
+          (s: string): number =>
+            s.length
+      )
     )
     const fa2 = pipe(
       H.header('b', 'b'),
@@ -219,8 +227,8 @@ describe('ReaderMiddleware', () => {
         order: t.string,
         shoe: t.type({
           color: t.string,
-          type: t.string
-        })
+          type: t.string,
+        }),
       }).decode
       const m1 = _.decodeQuery(decoder)
       const r = 'yee'
@@ -289,7 +297,7 @@ describe('ReaderMiddleware', () => {
   it('chainMiddlewareK', () => {
     const m1 = pipe(
       _.right('foo'),
-      _.chainMiddlewareK(s => H.right(s.length))
+      _.chainMiddlewareK((s) => H.right(s.length))
     )
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
@@ -299,7 +307,7 @@ describe('ReaderMiddleware', () => {
   it('chainTaskEitherK', () => {
     const m1 = pipe(
       _.right('foo'),
-      _.chainTaskEitherK(s => TE.right(s.length))
+      _.chainTaskEitherK((s) => TE.right(s.length))
     )
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
@@ -309,7 +317,7 @@ describe('ReaderMiddleware', () => {
   it('chainReaderTaskEitherK', () => {
     const m1 = pipe(
       _.right('foo'),
-      _.chainReaderTaskEitherK(s => RTE.right(s.length))
+      _.chainReaderTaskEitherK((s) => RTE.right(s.length))
     )
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))

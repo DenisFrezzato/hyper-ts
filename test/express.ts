@@ -16,9 +16,7 @@ describe('express', () => {
     )
     server.use(toRequestHandler(m))
 
-    return supertest(server)
-      .get('/')
-      .expect(500)
+    return supertest(server).get('/').expect(500)
   })
 
   describe('pipeStream', () => {
@@ -41,9 +39,7 @@ describe('express', () => {
       )
       server.use(toRequestHandler(m))
 
-      return supertest(server)
-        .get('/')
-        .expect(200, 'a')
+      return supertest(server).get('/').expect(200, 'a')
     })
   })
 })

@@ -59,7 +59,7 @@ export function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
 export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
   fa: RTE.ReaderTaskEither<R, E, A>
 ): ReaderMiddleware<R, I, I, E, A> {
-  return r => H.fromTaskEither(fa(r))
+  return (r) => H.fromTaskEither(fa(r))
 }
 
 /**
@@ -131,7 +131,7 @@ export const rightReader: <R, I = H.StatusOpen, E = never, A = never>(
 export function leftReader<R, I = H.StatusOpen, E = never, A = never>(
   me: Reader<R, E>
 ): ReaderMiddleware<R, I, I, E, A> {
-  return r => H.left(me(r))
+  return (r) => H.left(me(r))
 }
 
 /**
@@ -151,19 +151,20 @@ export const asks: <R, E = never, A = never>(f: (r: R) => A) => ReaderMiddleware
 export function orElse<R, E, I, O, M, A>(
   f: (e: E) => ReaderMiddleware<R, I, O, M, A>
 ): (ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A> {
-  return ma => r => c =>
+  return (ma) => (r) => (c) =>
     pipe(
       ma(r)(c),
-      TE.orElse(e => f(e)(r)(c))
+      TE.orElse((e) => f(e)(r)(c))
     )
 }
 
 /**
  * @since 0.6.4
  */
-export const orElseW = <R2, E, I, O, M, A>(f: (e: E) => ReaderMiddleware<R2, I, O, M, A>) => <R1, B>(
-  ma: ReaderMiddleware<R1, I, O, E, B>
-): ReaderMiddleware<R2 & R1, I, O, M, A | B> => pipe(ma, orElse<R1 & R2, E, I, O, M, A | B>(f))
+export const orElseW =
+  <R2, E, I, O, M, A>(f: (e: E) => ReaderMiddleware<R2, I, O, M, A>) =>
+  <R1, B>(ma: ReaderMiddleware<R1, I, O, E, B>): ReaderMiddleware<R2 & R1, I, O, M, A | B> =>
+    pipe(ma, orElse<R1 & R2, E, I, O, M, A | B>(f))
 
 /**
  * @since 0.6.3
@@ -327,7 +328,10 @@ const bind_ = <A, N extends string, B>(
 /**
  * @internal
  */
-const bindTo_ = <N extends string>(name: N) => <B>(b: B): { [K in N]: B } => ({ [name]: b } as any)
+const bindTo_ =
+  <N extends string>(name: N) =>
+  <B>(b: B): { [K in N]: B } =>
+    ({ [name]: b } as any)
 
 /**
  * @since 0.6.3
@@ -346,10 +350,10 @@ export const bindW = <N extends string, R, I, A, E2, B>(
 ): (<E1>(
   fa: ReaderMiddleware<R, I, I, E1, A>
 ) => ReaderMiddleware<R, I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }>) =>
-  ichainW(a =>
+  ichainW((a) =>
     pipe(
       f(a),
-      map(b => bind_(a, name, b))
+      map((b) => bind_(a, name, b))
     )
   )
 
@@ -363,19 +367,19 @@ export const bind: <N extends string, R, I, E, A, B>(
   fa: ReaderMiddleware<R, I, I, E, A>
 ) => ReaderMiddleware<R, I, I, E, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bindW
 
-const _alt: Alt4<URI>['alt'] = (fx, f) => r => c =>
+const _alt: Alt4<URI>['alt'] = (fx, f) => (r) => (c) =>
   pipe(
     fx(r)(c),
     TE.alt(() => f()(r)(c))
   )
 
-const _bimap: Bifunctor4<URI>['bimap'] = (fea, f, g) => r => c =>
+const _bimap: Bifunctor4<URI>['bimap'] = (fea, f, g) => (r) => (c) =>
   pipe(
     fea(r)(c),
     TE.bimap(f, ([a, c]) => [g(a), c])
   )
 
-const _mapLeft: Bifunctor4<URI>['mapLeft'] = (fea, f) => r => c => pipe(fea(r)(c), TE.mapLeft(f))
+const _mapLeft: Bifunctor4<URI>['mapLeft'] = (fea, f) => (r) => (c) => pipe(fea(r)(c), TE.mapLeft(f))
 
 /**
  * `map` can be used to turn functions `(a: A) => B` into functions `(fa: F<A>) => F<B>` whose argument and return types
@@ -384,9 +388,10 @@ const _mapLeft: Bifunctor4<URI>['mapLeft'] = (fea, f) => r => c => pipe(fea(r)(c
  * @category Functor
  * @since 0.6.3
  */
-export const map = <A, B>(f: (a: A) => B) => <R, I, E>(
-  fa: ReaderMiddleware<R, I, I, E, A>
-): ReaderMiddleware<R, I, I, E, B> => T.map(fa, f)
+export const map =
+  <A, B>(f: (a: A) => B) =>
+  <R, I, E>(fa: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, B> =>
+    T.map(fa, f)
 
 /**
  * Map a pair of functions over the two last type arguments of the bifunctor.
@@ -394,9 +399,10 @@ export const map = <A, B>(f: (a: A) => B) => <R, I, E>(
  * @category Bifunctor
  * @since 0.6.3
  */
-export const bimap = <E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => <R, I>(
-  fa: ReaderMiddleware<R, I, I, E, A>
-): ReaderMiddleware<R, I, I, G, B> => _bimap(fa, f, g)
+export const bimap =
+  <E, G, A, B>(f: (e: E) => G, g: (a: A) => B) =>
+  <R, I>(fa: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, G, B> =>
+    _bimap(fa, f, g)
 
 /**
  * Map a function over the second type argument of a bifunctor.
@@ -404,9 +410,10 @@ export const bimap = <E, G, A, B>(f: (e: E) => G, g: (a: A) => B) => <R, I>(
  * @category Bifunctor
  * @since 0.6.3
  */
-export const mapLeft = <E, G>(f: (e: E) => G) => <R, I, A>(
-  fa: ReaderMiddleware<R, I, I, E, A>
-): ReaderMiddleware<R, I, I, G, A> => _mapLeft(fa, f)
+export const mapLeft =
+  <E, G>(f: (e: E) => G) =>
+  <R, I, A>(fa: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, G, A> =>
+    _mapLeft(fa, f)
 
 /**
  * Apply a function to an argument under a type constructor.
@@ -414,9 +421,10 @@ export const mapLeft = <E, G>(f: (e: E) => G) => <R, I, A>(
  * @category Apply
  * @since 0.6.3
  */
-export const ap = <R, I, E, A>(fa: ReaderMiddleware<R, I, I, E, A>) => <B>(
-  fab: ReaderMiddleware<R, I, I, E, (a: A) => B>
-): ReaderMiddleware<R, I, I, E, B> => T.ap(fab, fa)
+export const ap =
+  <R, I, E, A>(fa: ReaderMiddleware<R, I, I, E, A>) =>
+  <B>(fab: ReaderMiddleware<R, I, I, E, (a: A) => B>): ReaderMiddleware<R, I, I, E, B> =>
+    T.ap(fab, fa)
 
 /**
  * Less strict version of [`ap`](#ap).
@@ -426,9 +434,8 @@ export const ap = <R, I, E, A>(fa: ReaderMiddleware<R, I, I, E, A>) => <B>(
  */
 export const apW: <R2, I, E2, A>(
   fa: ReaderMiddleware<R2, I, I, E2, A>
-) => <R1, E1, B>(
-  fab: ReaderMiddleware<R1, I, I, E1, (a: A) => B>
-) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> = ap as any
+) => <R1, E1, B>(fab: ReaderMiddleware<R1, I, I, E1, (a: A) => B>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> =
+  ap as any
 
 /**
  * @category Pointed
@@ -451,9 +458,10 @@ export function iof<R, I = H.StatusOpen, O = H.StatusOpen, E = never, A = never>
  * @category Monad
  * @since 0.6.3
  */
-export const chain = <R, I, E, A, B>(f: (a: A) => ReaderMiddleware<R, I, I, E, B>) => (
-  ma: ReaderMiddleware<R, I, I, E, A>
-): ReaderMiddleware<R, I, I, E, B> => T.chain(ma, f)
+export const chain =
+  <R, I, E, A, B>(f: (a: A) => ReaderMiddleware<R, I, I, E, B>) =>
+  (ma: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, B> =>
+    T.chain(ma, f)
 
 /**
  * Less strict version of [`chain`](#chain).
@@ -478,7 +486,7 @@ export const ichain: <R, A, O, Z, E, B>(
 export function ichainW<R2, A, O, Z, E2, B>(
   f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
 ): <R1, I, E1>(ma: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B> {
-  return ma => r => ci =>
+  return (ma) => (r) => (ci) =>
     pipe(
       ma(r)(ci),
       H.TEchainW(([a, co]) => f(a)(r)(co))
@@ -488,9 +496,10 @@ export function ichainW<R2, A, O, Z, E2, B>(
 /**
  * @since 0.6.3
  */
-export const chainMiddlewareK = <R, I, E, A, B>(f: (a: A) => H.Middleware<I, I, E, B>) => (
-  ma: ReaderMiddleware<R, I, I, E, A>
-): ReaderMiddleware<R, I, I, E, B> => T.chain(ma, a => fromMiddleware(f(a)))
+export const chainMiddlewareK =
+  <R, I, E, A, B>(f: (a: A) => H.Middleware<I, I, E, B>) =>
+  (ma: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, B> =>
+    T.chain(ma, (a) => fromMiddleware(f(a)))
 
 /**
  * @since 0.6.3
@@ -511,10 +520,10 @@ export const ichainMiddlewareKW: <R, A, O, Z, E, B>(
  */
 export const chainTaskEitherK: <E, A, B>(
   f: (a: A) => TE.TaskEither<E, B>
-) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = f => ma => r =>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = (f) => (ma) => (r) =>
   pipe(
     ma(r),
-    H.chain(a => H.fromTaskEither(f(a)))
+    H.chain((a) => H.fromTaskEither(f(a)))
   )
 
 /**
@@ -529,10 +538,10 @@ export const chainTaskEitherKW: <E2, A, B>(
  */
 export const chainReaderTaskEitherK: <R, E, A, B>(
   f: (a: A) => RTE.ReaderTaskEither<R, E, B>
-) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = f => ma => r =>
+) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = (f) => (ma) => (r) =>
   pipe(
     ma(r),
-    H.chain(a => H.fromTaskEither(f(a)(r)))
+    H.chain((a) => H.fromTaskEither(f(a)(r)))
   )
 
 /**
@@ -540,16 +549,15 @@ export const chainReaderTaskEitherK: <R, E, A, B>(
  */
 export const chainReaderTaskEitherKW: <R2, E2, A, B>(
   f: (a: A) => RTE.ReaderTaskEither<R2, E2, B>
-) => <R1, I, E1>(
-  ma: ReaderMiddleware<R1, I, I, E1, A>
-) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> = chainReaderTaskEitherK as any
+) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> =
+  chainReaderTaskEitherK as any
 
 /**
  * @since 0.6.3
  */
 export const Functor: Functor4<URI> = {
   URI,
-  map: T.map
+  map: T.map,
 }
 
 /**
@@ -557,7 +565,7 @@ export const Functor: Functor4<URI> = {
  */
 export const Apply: Apply4<URI> = {
   ...Functor,
-  ap: T.ap
+  ap: T.ap,
 }
 
 /**
@@ -565,7 +573,7 @@ export const Apply: Apply4<URI> = {
  */
 export const Applicative: Applicative4<URI> = {
   ...Apply,
-  of
+  of,
 }
 
 /**
@@ -573,7 +581,7 @@ export const Applicative: Applicative4<URI> = {
  */
 export const Monad: Monad4<URI> = {
   ...Applicative,
-  chain: T.chain
+  chain: T.chain,
 }
 
 /**
@@ -581,7 +589,7 @@ export const Monad: Monad4<URI> = {
  */
 export const MonadThrow: MonadThrow4<URI> = {
   ...Monad,
-  throwError: left
+  throwError: left,
 }
 
 /**
@@ -589,7 +597,7 @@ export const MonadThrow: MonadThrow4<URI> = {
  */
 export const Alt: Alt4<URI> = {
   ...Functor,
-  alt: _alt
+  alt: _alt,
 }
 
 /**
@@ -598,5 +606,5 @@ export const Alt: Alt4<URI> = {
 export const Bifunctor: Bifunctor4<URI> = {
   URI,
   bimap: _bimap,
-  mapLeft: _mapLeft
+  mapLeft: _mapLeft,
 }
