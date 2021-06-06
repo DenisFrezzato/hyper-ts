@@ -21,7 +21,7 @@
     "prebuild": "npm run clean",
     "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json",
     "postbuild": "import-path-rewrite && prettier --write \"./{lib,es6}/**/*.ts\"",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "dtslint": "dtslint dtslint",
     "docs": "docs-ts"
   },
