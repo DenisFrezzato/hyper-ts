@@ -65,7 +65,7 @@ Added in v0.6.3
   - [header](#header)
   - [ichain](#ichain)
   - [ichainMiddlewareK](#ichainmiddlewarek)
-  - [ichainMiddlewareW](#ichainmiddlewarew)
+  - [ichainMiddlewareKW](#ichainmiddlewarekw)
   - [ichainW](#ichainw)
   - [iof](#iof)
   - [json](#json)
@@ -661,17 +661,17 @@ export declare const ichainMiddlewareK: <R, A, O, Z, E, B>(
 
 Added in v0.6.3
 
-## ichainMiddlewareW
+## ichainMiddlewareKW
 
 **Signature**
 
 ```ts
-export declare const ichainMiddlewareW: <R, A, O, Z, E, B>(
+export declare const ichainMiddlewareKW: <R, A, O, Z, E, B>(
   f: (a: A) => H.Middleware<O, Z, E, B>
 ) => <I, D>(ma: ReaderMiddleware<R, I, O, D, A>) => ReaderMiddleware<R, I, Z, E | D, B>
 ```
 
-Added in v0.6.3
+Added in v0.6.5
 
 ## ichainW
 
