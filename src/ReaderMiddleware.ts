@@ -159,6 +159,13 @@ export function orElse<R, E, I, O, M, A>(
 }
 
 /**
+ * @since 0.6.4
+ */
+export const orElseW = <R2, E, I, O, M, A>(f: (e: E) => ReaderMiddleware<R2, I, O, M, A>) => <R1, B>(
+  ma: ReaderMiddleware<R1, I, O, E, B>
+): ReaderMiddleware<R2 & R1, I, O, M, A | B> => pipe(ma, orElse<R1 & R2, E, I, O, M, A | B>(f))
+
+/**
  * @since 0.6.3
  */
 export function status<R, E = never>(status: H.Status): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void> {
