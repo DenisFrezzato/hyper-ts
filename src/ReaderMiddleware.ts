@@ -500,9 +500,9 @@ export const ichainMiddlewareK: <R, A, O, Z, E, B>(
 ) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B> = chainMiddlewareK as any
 
 /**
- * @since 0.6.3
+ * @since 0.6.5
  */
-export const ichainMiddlewareW: <R, A, O, Z, E, B>(
+export const ichainMiddlewareKW: <R, A, O, Z, E, B>(
   f: (a: A) => H.Middleware<O, Z, E, B>
 ) => <I, D>(ma: ReaderMiddleware<R, I, O, D, A>) => ReaderMiddleware<R, I, Z, D | E, B> = chainMiddlewareK as any
 
