@@ -74,6 +74,7 @@ Added in v0.6.3
   - [leftReader](#leftreader)
   - [leftTask](#lefttask)
   - [orElse](#orelse)
+  - [orElseW](#orelsew)
   - [redirect](#redirect)
   - [right](#right)
   - [rightIO](#rightio)
@@ -764,6 +765,18 @@ export declare function orElse<R, E, I, O, M, A>(
 ```
 
 Added in v0.6.3
+
+## orElseW
+
+**Signature**
+
+```ts
+export declare const orElseW: <R2, E, I, O, M, A>(
+  f: (e: E) => ReaderMiddleware<R2, I, O, M, A>
+) => <R1, B>(ma: ReaderMiddleware<R1, I, O, E, B>) => ReaderMiddleware<R2 & R1, I, O, M, A | B>
+```
+
+Added in v0.6.4
 
 ## redirect
 
