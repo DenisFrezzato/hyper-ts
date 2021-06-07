@@ -468,9 +468,9 @@ export const ichain: <R, A, O, Z, E, B>(
 /**
  * @since 0.6.3
  */
-export function ichainW<R, A, O, Z, E, B>(
-  f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
-): <I, D>(ma: ReaderMiddleware<R, I, O, D, A>) => ReaderMiddleware<R, I, Z, D | E, B> {
+export function ichainW<R2, A, O, Z, E2, B>(
+  f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+): <R1, I, E1>(ma: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B> {
   return ma => r => ci =>
     pipe(
       ma(r)(ci),
