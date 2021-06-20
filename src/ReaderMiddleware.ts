@@ -71,7 +71,7 @@ export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
  * @since 0.6.3
  */
 export const fromMiddleware =
-  <R, I = H.StatusOpen, E = never, A = never>(fa: M.Middleware<I, I, E, A>): ReaderMiddleware<R, I, I, E, A> =>
+  <R, I = H.StatusOpen, O = I, E = never, A = never>(fa: M.Middleware<I, O, E, A>): ReaderMiddleware<R, I, O, E, A> =>
   () =>
     fa
 

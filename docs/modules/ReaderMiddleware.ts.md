@@ -571,9 +571,9 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare const fromMiddleware: <R, I = H.StatusOpen, E = never, A = never>(
-  fa: M.Middleware<I, I, E, A>
-) => ReaderMiddleware<R, I, I, E, A>
+export declare const fromMiddleware: <R, I = H.StatusOpen, O = I, E = never, A = never>(
+  fa: M.Middleware<I, O, E, A>
+) => ReaderMiddleware<R, I, O, E, A>
 ```
 
 Added in v0.6.3
