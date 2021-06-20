@@ -1,15 +1,14 @@
 import * as express from 'express'
 import * as H from '../src'
+import * as M from '../src/Middleware'
 import { toRequestHandler } from '../src/express'
 import { str, lit, end, Parser, Route } from 'fp-ts-routing'
-import { right, left } from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { right, left } from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 
 const home = lit('home').then(end)
 
-const user = lit('user')
-  .then(str('user_id'))
-  .then(end)
+const user = lit('user').then(str('user_id')).then(end)
 
 type Location = { type: 'Home' } | { type: 'User'; id: string }
 
@@ -21,8 +20,8 @@ const router: Parser<Location> = home.parser
   .map<Location>(() => homeLocation)
   .alt(user.parser.map(({ user_id }) => userLocation(user_id)))
 
-function fromParser<E, A extends object>(parser: Parser<A>, error: E): H.Middleware<H.StatusOpen, H.StatusOpen, E, A> {
-  return H.fromConnection(c =>
+function fromParser<E, A extends object>(parser: Parser<A>, error: E): M.Middleware<H.StatusOpen, H.StatusOpen, E, A> {
+  return M.fromConnection((c) =>
     parser
       .run(Route.parse(c.getOriginalUrl()))
       .map(([a]) => right<E, A>(a))
@@ -34,36 +33,36 @@ const routingMiddleware = fromParser(router, 'not found')
 
 const notFound = (message: string) =>
   pipe(
-    H.status(H.Status.NotFound),
-    H.ichain(() => H.closeHeaders()),
-    H.ichain(() => H.send(message))
+    M.status(H.Status.NotFound),
+    M.ichain(() => M.closeHeaders()),
+    M.ichain(() => M.send(message))
   )
 
-export const GET: H.Middleware<H.StatusOpen, H.StatusOpen, string, 'GET'> = H.decodeMethod(s =>
+export const GET: M.Middleware<H.StatusOpen, H.StatusOpen, string, 'GET'> = M.decodeMethod((s) =>
   s.toLowerCase() === 'get' ? right('GET') : left('Unknown verb')
 )
 
 const appMiddleware = pipe(
   routingMiddleware,
-  H.ichain(route => {
+  M.ichain((route) => {
     switch (route.type) {
       case 'Home':
         return pipe(
           GET,
-          H.ichain(() => H.status(H.Status.OK)),
-          H.ichain(() => H.closeHeaders()),
-          H.ichain(() => H.send('Welcome!'))
+          M.ichain(() => M.status(H.Status.OK)),
+          M.ichain(() => M.closeHeaders()),
+          M.ichain(() => M.send('Welcome!'))
         )
       case 'User':
         return pipe(
           GET,
-          H.ichain(() => H.status(H.Status.OK)),
-          H.ichain(() => H.closeHeaders()),
-          H.ichain(() => H.send(`Welcome ${route.id} user!`))
+          M.ichain(() => M.status(H.Status.OK)),
+          M.ichain(() => M.closeHeaders()),
+          M.ichain(() => M.send(`Welcome ${route.id} user!`))
         )
     }
   }),
-  H.orElse(notFound)
+  M.orElse(notFound)
 )
 
 const app = express()

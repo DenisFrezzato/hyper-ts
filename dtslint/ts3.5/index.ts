@@ -1,5 +1,5 @@
 import * as H from '../../src'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/function'
 
 // $ExpectError
 const m1 = H.status(1000)

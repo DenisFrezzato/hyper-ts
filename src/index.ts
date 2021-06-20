@@ -1,22 +1,14 @@
 /**
  * @since 0.5.0
  */
-import { Alt3 } from 'fp-ts/lib/Alt'
-import { Bifunctor3 } from 'fp-ts/lib/Bifunctor'
-import * as E from 'fp-ts/lib/Either'
-import { IO } from 'fp-ts/lib/IO'
-import { IOEither } from 'fp-ts/lib/IOEither'
-import { Monad3 } from 'fp-ts/lib/Monad'
-import { MonadTask3 } from 'fp-ts/lib/MonadTask'
-import { MonadThrow3 } from 'fp-ts/lib/MonadThrow'
-import { pipe, pipeable } from 'fp-ts/lib/pipeable'
-import * as T from 'fp-ts/lib/Task'
-import * as TE from 'fp-ts/lib/TaskEither'
+import { Bifunctor3 } from 'fp-ts/Bifunctor'
+import { Alt3 } from 'fp-ts/Alt'
+import { Monad3 } from 'fp-ts/Monad'
+import { MonadTask3 } from 'fp-ts/MonadTask'
+import { MonadThrow3 } from 'fp-ts/MonadThrow'
 import { IncomingMessage } from 'http'
 import { Readable } from 'stream'
-
-import Either = E.Either
-import Task = T.Task
+import * as M from './Middleware'
 
 /**
  * Adapted from https://github.com/purescript-contrib/purescript-media-types
@@ -173,6 +165,7 @@ export interface ResponseEnded {
  * both request and response.
  * State changes are tracked by the phantom type `S`
  *
+ * @category model
  * @since 0.5.0
  */
 export interface Connection<S> {
@@ -202,552 +195,460 @@ export interface Connection<S> {
 }
 
 /**
- * @since 0.5.0
- */
-export function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>) => A): Middleware<I, I, E, A> {
-  return (c) => TE.right([f(c), c])
-}
-
-/**
- * @since 0.5.0
- */
-export function fromConnection<I = StatusOpen, E = never, A = never>(
-  f: (c: Connection<I>) => Either<E, A>
-): Middleware<I, I, E, A> {
-  return (c) =>
-    TE.fromEither(
-      pipe(
-        f(c),
-        E.map((a) => [a, c])
-      )
-    )
-}
-
-/**
- * @since 0.5.0
- */
-export function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, E, void> {
-  return (c) => TE.right([undefined, f(c)])
-}
-
-declare module 'fp-ts/lib/HKT' {
-  interface URItoKind3<R, E, A> {
-    Middleware: Middleware<R, R, E, A>
-  }
-}
-
-/**
- * @since 0.5.0
- */
-export const URI = 'Middleware'
-
-/**
- * @since 0.5.0
- */
-export type URI = typeof URI
-
-/**
- * A middleware is an indexed monadic action transforming one `Connection` to another `Connection`. It operates
- * in the `TaskEither` monad, and is indexed by `I` and `O`, the input and output `Connection` types of the
- * middleware action.
+ * Use [`gets`](./Middleware.ts.html#gets) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export interface Middleware<I, O, E, A> {
-  (c: Connection<I>): TE.TaskEither<E, [A, Connection<O>]>
-}
-
-// TODO: replace with TE.chainW after upgrading to more recent versions of fp-ts
-/**
- * @internal
- */
-export const TEchainW =
-  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>) =>
-  <E1>(ma: TE.TaskEither<E1, A>): TE.TaskEither<E1 | E2, B> =>
-    pipe(
-      ma,
-      T.chain((e) => (E.isLeft(e) ? TE.left<E1 | E2, B>(e.left) : f(e.right)))
-    )
+export const gets = M.gets
 
 /**
+ * Use [`fromConnection`](./Middleware.ts.html#fromConnection) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const fromConnection = M.fromConnection
+
+/**
+ * Use [`modifyConnection`](./Middleware.ts.html#modifyConnection) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const modifyConnection = M.modifyConnection
+
+/**
+ * Use [`URI`](./Middleware.ts.html#uri) instead.
+ *
+ * @category instances
+ * @since 0.5.0
+ * @deprecated
+ */
+export const URI = M.URI
+
+/**
+ * Use [`URI`](./Middleware.ts.html#uri) instead.
+ *
+ * @category instances
+ * @since 0.5.0
+ * @deprecated
+ */
+export type URI = typeof M.URI
+
+/**
+ * Use [`Middleware`](./Middleware.ts.html#middleware) instead.
+ *
+ * @category model
+ * @since 0.5.0
+ * @deprecated
+ */
+export type Middleware<I, O, E, A> = M.Middleware<I, O, E, A>
+
+/**
+ * Use [`map`](./Middleware.ts.html#map) instead.
+ *
+ * @category Functor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const map = M.map
+
+/**
+ * Use [`bimap`](./Middleware.ts.html#bimap) instead.
+ *
+ * @category Bifunctor
+ * @since 0.6.3
+ * @deprecated
+ */
+export const bimap = M.bimap
+
+/**
+ * Use [`mapLeft`](./Middleware.ts.html#mapLeft) instead.
+ *
+ * @category Bifunctor
+ * @since 0.6.3
+ * @deprecated
+ */
+export const mapLeft = M.mapLeft
+
+/**
+ * Use [`ap`](./Middleware.ts.html#ap) instead.
+ *
+ * @category Apply
+ * @since 0.6.3
+ * @deprecated
+ */
+export const ap = M.ap
+
+/**
+ * Use [`apW`](./Middleware.ts.html#apw) instead.
+ *
+ * @category Apply
+ * @since 0.6.3
+ * @deprecated
+ */
+export const apW = M.apW
+
+/**
+ * Use [`of`](./Middleware.ts.html#of) instead.
+ *
+ * @category Pointed
+ * @since 0.6.3
+ * @deprecated
+ */
+export const of = M.of
+
+/**
+ * Use [`iof`](./Middleware.ts.html#iof) instead.
+ *
+ * @category Pointed
+ * @since 0.5.0
+ * @deprecated
+ */
+export const iof = M.iof
+
+/**
+ * Use [`chain`](./Middleware.ts.html#chain) instead.
+ *
+ * @category Monad
+ * @since 0.6.3
+ * @deprecated
+ */
+export const chain = M.chain
+
+/**
+ * Use [`chainW`](./Middleware.ts.html#chainW) instead.
+ *
+ * @category Monad
+ * @since 0.6.3
+ * @deprecated
+ */
+export const chainW = M.chainW
+
+/**
+ * Use [`ichain`](./Middleware.ts.html#ichain) instead.
+ *
+ * @category Monad
+ * @since 0.5.0
+ * @deprecated
+ */
+export const ichain = M.ichain
+
+/**
+ * Use [`ichainW`](./Middleware.ts.html#ichainW) instead.
+ *
+ * @category Monad
  * @since 0.6.1
+ * @deprecated
  */
-export function ichainW<A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B> {
-  return (ma) => (ci) =>
-    pipe(
-      ma(ci),
-      TEchainW(([a, co]) => f(a)(co))
-    )
-}
+export const ichainW = M.ichainW
 
 /**
- * @since 0.5.0
- */
-export const ichain: <A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> = ichainW
-
-/**
- * @since 0.5.0
- */
-export function evalMiddleware<I, O, E, A>(ma: Middleware<I, O, E, A>, c: Connection<I>): TE.TaskEither<E, A> {
-  return pipe(
-    ma(c),
-    TE.map(([a]) => a)
-  )
-}
-
-/**
- * @since 0.5.0
- */
-export function execMiddleware<I, O, E, A>(
-  ma: Middleware<I, O, E, A>,
-  c: Connection<I>
-): TE.TaskEither<E, Connection<O>> {
-  return pipe(
-    ma(c),
-    TE.map(([, c]) => c)
-  )
-}
-
-/**
- * @since 0.5.0
- */
-export function orElse<E, I, O, M, A>(
-  f: (e: E) => Middleware<I, O, M, A>
-): (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A> {
-  return (ma) => (c) =>
-    pipe(
-      ma(c),
-      TE.orElse((e) => f(e)(c))
-    )
-}
-
-/**
- * @since 0.5.0
- */
-export function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A): Middleware<I, O, E, A> {
-  return (c) => TE.right([a, c as any])
-}
-
-/**
- * @since 0.5.0
- */
-export function tryCatch<I = StatusOpen, E = never, A = never>(
-  f: () => Promise<A>,
-  onRejected: (reason: unknown) => E
-): Middleware<I, I, E, A> {
-  return fromTaskEither(TE.tryCatch(f, onRejected))
-}
-
-/**
- * @since 0.5.0
- */
-export function fromTaskEither<I = StatusOpen, E = never, A = never>(fa: TE.TaskEither<E, A>): Middleware<I, I, E, A> {
-  return (c) =>
-    pipe(
-      fa,
-      TE.map((a) => [a, c])
-    )
-}
-
-/**
- * @since 0.5.0
- */
-export function right<I = StatusOpen, E = never, A = never>(a: A): Middleware<I, I, E, A> {
-  return iof(a)
-}
-
-/**
- * @since 0.5.0
- */
-export function left<I = StatusOpen, E = never, A = never>(e: E): Middleware<I, I, E, A> {
-  return fromTaskEither(TE.left(e))
-}
-
-/**
- * @since 0.5.0
- */
-export function rightTask<I = StatusOpen, E = never, A = never>(fa: Task<A>): Middleware<I, I, E, A> {
-  return fromTaskEither(TE.rightTask(fa))
-}
-
-/**
- * @since 0.5.0
- */
-export function leftTask<I = StatusOpen, E = never, A = never>(te: Task<E>): Middleware<I, I, E, A> {
-  return fromTaskEither(TE.leftTask(te))
-}
-
-/**
- * @since 0.5.0
- */
-export function rightIO<I = StatusOpen, E = never, A = never>(fa: IO<A>): Middleware<I, I, E, A> {
-  return fromTaskEither(TE.rightIO(fa))
-}
-
-/**
- * @since 0.5.0
- */
-export function leftIO<I = StatusOpen, E = never, A = never>(fe: IO<E>): Middleware<I, I, E, A> {
-  return fromTaskEither(TE.leftIO(fe))
-}
-
-/**
- * @since 0.5.0
- */
-export function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<E, A>): Middleware<I, I, E, A> {
-  return fromTaskEither(TE.fromIOEither(fa))
-}
-
-/**
- * Returns a middleware that writes the response status
+ * Use [`evalMiddleware`](./Middleware.ts.html#evalMiddleware) instead.
  *
  * @since 0.5.0
+ * @deprecated
  */
-export function status<E = never>(status: Status): Middleware<StatusOpen, HeadersOpen, E, void> {
-  return modifyConnection((c) => c.setStatus(status))
-}
+export const evalMiddleware = M.evalMiddleware
 
 /**
- * Returns a middleware that writes the given header
+ * Use [`execMiddleware`](./Middleware.ts.html#execMiddleware) instead.
  *
  * @since 0.5.0
+ * @deprecated
  */
-export function header<E = never>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, E, void> {
-  return modifyConnection((c) => c.setHeader(name, value))
-}
+export const execMiddleware = M.execMiddleware
 
 /**
- * Returns a middleware that sets the given `mediaType`
+ * Use [`orElse`](./Middleware.ts.html#orelse) instead.
  *
+ * @category combinators
  * @since 0.5.0
+ * @deprecated
  */
-export function contentType<E = never>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, E, void> {
-  return header('Content-Type', mediaType)
-}
+export const orElse = M.orElse
 
 /**
- * Returns a middleware that sets the cookie `name` to `value`, with the given `options`
+ * Use [`tryCatch`](./Middleware.ts.html#tryCatch) instead.
  *
+ * @category interop
  * @since 0.5.0
+ * @deprecated
  */
-export function cookie<E = never>(
-  name: string,
-  value: string,
-  options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, E, void> {
-  return modifyConnection((c) => c.setCookie(name, value, options))
-}
+export const tryCatch = M.tryCatch
 
 /**
- * Returns a middleware that clears the cookie `name`
+ * Use [`fromTaskEither`](./Middleware.ts.html#fromTaskEither) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function clearCookie<E = never>(
-  name: string,
-  options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, E, void> {
-  return modifyConnection((c) => c.clearCookie(name, options))
-}
-
-const closedHeaders: Middleware<HeadersOpen, BodyOpen, never, void> = iof(undefined)
+export const fromTaskEither = M.fromTaskEither
 
 /**
- * Returns a middleware that changes the connection status to `BodyOpen`
+ * Use [`right`](./Middleware.ts.html#right) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyOpen, E, void> {
-  return closedHeaders
-}
+export const right = M.right
 
 /**
- * Returns a middleware that sends `body` as response body
+ * Use [`left`](./Middleware.ts.html#left) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnded, E, void> {
-  return modifyConnection((c) => c.setBody(body))
-}
-
-const ended: Middleware<BodyOpen, ResponseEnded, never, void> = modifyConnection((c) => c.endResponse())
+export const left = M.left
 
 /**
- * Returns a middleware that ends the response without sending any response body
+ * Use [`rightTask`](./Middleware.ts.html#rightTask) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function end<E = never>(): Middleware<BodyOpen, ResponseEnded, E, void> {
-  return ended
-}
+export const rightTask = M.rightTask
 
 /**
- * Returns a middleware that sends `body` as JSON
+ * Use [`leftTask`](./Middleware.ts.html#leftTask) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function json<E>(
-  body: unknown,
-  onError: (reason: unknown) => E
-): Middleware<HeadersOpen, ResponseEnded, E, void> {
-  return pipe(
-    fromEither<HeadersOpen, E, string>(E.stringifyJSON(body, onError)),
-    ichain((json) =>
-      pipe(
-        contentType<E>(MediaType.applicationJSON),
-        ichain(() => closeHeaders()),
-        ichain(() => send(json))
-      )
-    )
-  )
-}
+export const leftTask = M.leftTask
 
 /**
- * Returns a middleware that sends a redirect to `uri`
+ * Use [`rightIO`](./Middleware.ts.html#rightIO) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function redirect<E = never>(uri: string): Middleware<StatusOpen, HeadersOpen, E, void> {
-  return pipe(
-    status(Status.Found),
-    ichain(() => header('Location', uri))
-  )
-}
+export const rightIO = M.rightIO
 
 /**
- * Returns a middleware that pipes a stream to the response object.
+ * Use [`leftIO`](./Middleware.ts.html#leftIO) instead.
  *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const leftIO = M.leftIO
+
+/**
+ * Use [`fromIOEither`](./Middleware.ts.html#fromIOEither) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const fromIOEither = M.fromIOEither
+
+/**
+ * Use [`status`](./Middleware.ts.html#status) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const status = M.status
+
+/**
+ * Use [`header`](./Middleware.ts.html#header) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const header = M.header
+
+/**
+ * Use [`contentType`](./Middleware.ts.html#contentType) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const contentType = M.contentType
+
+/**
+ * Use [`cookie`](./Middleware.ts.html#cookie) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const cookie = M.cookie
+
+/**
+ * Use [`clearCookie`](./Middleware.ts.html#clearCookie) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const clearCookie = M.clearCookie
+
+/**
+ * Use [`closeHeaders`](./Middleware.ts.html#closeHeaders) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const closeHeaders = M.closeHeaders
+
+/**
+ * Use [`send`](./Middleware.ts.html#send) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const send = M.send
+
+/**
+ * Use [`end`](./Middleware.ts.html#end) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const end = M.end
+
+/**
+ * Use [`json`](./Middleware.ts.html#json) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const json = M.json
+
+/**
+ * Use [`redirect`](./Middleware.ts.html#redirect) instead.
+ *
+ * @category constructor
+ * @since 0.5.0
+ * @deprecated
+ */
+export const redirect = M.redirect
+
+/**
+ * Use [`pipeStream`](./Middleware.ts.html#pipeStream) instead.
+ *
+ * @category constructor
  * @since 0.6.2
+ * @deprecated
  */
-export function pipeStream<E>(stream: Readable): Middleware<BodyOpen, ResponseEnded, E, void> {
-  return modifyConnection((c) => c.pipeStream(stream))
-}
-
-const isUnknownRecord = (u: unknown): u is Record<string, unknown> => u !== null && typeof u === 'object'
+export const pipeStream = M.pipeStream
 
 /**
- * Returns a middleware that tries to decode `connection.getParams()[name]`
+ * Use [`decodeParam`](./Middleware.ts.html#decodeParam) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function decodeParam<E, A>(
-  name: string,
-  f: (input: unknown) => Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection((c) => {
-    const params = c.getParams()
-    return f(isUnknownRecord(params) ? params[name] : undefined)
-  })
-}
+export const decodeParam = M.decodeParam
 
 /**
- * Returns a middleware that tries to decode `connection.getParams()`
+ * Use [`decodeParams`](./Middleware.ts.html#decodeParams) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function decodeParams<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection((c) => f(c.getParams()))
-}
+export const decodeParams = M.decodeParams
 
 /**
- * Returns a middleware that tries to decode `connection.getQuery()`
+ * Use [`decodeQuery`](./Middleware.ts.html#decodeQuery) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function decodeQuery<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection((c) => f(c.getQuery()))
-}
+export const decodeQuery = M.decodeQuery
 
 /**
- * Returns a middleware that tries to decode `connection.getBody()`
+ * Use [`decodeBody`](./Middleware.ts.html#decodeBody) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function decodeBody<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection((c) => f(c.getBody()))
-}
+export const decodeBody = M.decodeBody
 
 /**
- * Returns a middleware that tries to decode `connection.getMethod()`
+ * Use [`decodeMethod`](./Middleware.ts.html#decodeMethod) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function decodeMethod<E, A>(f: (method: string) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection((c) => f(c.getMethod()))
-}
+export const decodeMethod = M.decodeMethod
 
 /**
- * Returns a middleware that tries to decode `connection.getHeader(name)`
+ * Use [`decodeHeader`](./Middleware.ts.html#decodeHeader) instead.
  *
+ * @category constructor
  * @since 0.5.0
+ * @deprecated
  */
-export function decodeHeader<E, A>(
-  name: string,
-  f: (input: unknown) => Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A> {
-  return fromConnection((c) => f(c.getHeader(name)))
-}
+export const decodeHeader = M.decodeHeader
 
 /**
+ * Use [`Do`](./Middleware.ts.html#do) instead.
+ *
  * @since 0.6.1
+ * @deprecated
  */
-export const Do =
-  /*#__PURE__*/
-  iof<unknown, unknown, never, {}>({})
+export const Do = M.Do
 
 /**
- * @internal
- */
-const bind_ = <A, N extends string, B>(
-  a: A,
-  name: Exclude<N, keyof A>,
-  b: B
-): { [K in keyof A | N]: K extends keyof A ? A[K] : B } => Object.assign({}, a, { [name]: b }) as any
-
-/**
- * @internal
- */
-const bindTo_ =
-  <N extends string>(name: N) =>
-  <B>(b: B): { [K in N]: B } =>
-    ({ [name]: b } as any)
-
-/**
+ * Use [`bindTo`](./Middleware.ts.html#bindTo) instead.
+ *
  * @since 0.6.1
+ * @deprecated
  */
-export const bindTo = <N extends string>(
-  name: N
-): (<I, E, A>(fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N]: A }>) => map(bindTo_(name))
+export const bindTo = M.bindTo
 
 /**
+ * Use [`bindW`](./Middleware.ts.html#bindW) instead.
+ *
  * @since 0.6.1
+ * @deprecated
  */
-export const bindW = <N extends string, I, A, E2, B>(
-  name: Exclude<N, keyof A>,
-  f: (a: A) => Middleware<I, I, E2, B>
-): (<E1>(
-  fa: Middleware<I, I, E1, A>
-) => Middleware<I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }>) =>
-  ichainW((a) =>
-    pipe(
-      f(a),
-      map((b) => bind_(a, name, b))
-    )
-  )
+export const bindW = M.bindW
 
 /**
+ * Use [`bind`](./Middleware.ts.html#bind) instead.
+ *
  * @since 0.6.1
+ * @deprecated
  */
-export const bind: <N extends string, I, E, A, B>(
-  name: Exclude<N, keyof A>,
-  f: (a: A) => Middleware<I, I, E, B>
-) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bindW
+export const bind = M.bind
 
 /**
+ * Use smaller instances from [`Middleware`](./Middleware.ts.html) module instead.
+ *
+ * @category instances
  * @since 0.5.0
+ * @deprecated
  */
-export const middleware: Monad3<URI> & Alt3<URI> & Bifunctor3<URI> & MonadThrow3<URI> & MonadTask3<URI> = {
-  URI,
-  map: (ma, f) => (ci) =>
-    pipe(
-      ma(ci),
-      TE.map(([a, co]) => [f(a), co])
-    ),
-  of: right,
-  ap: (mab, ma) => middleware.chain(mab, (f) => middleware.map(ma, (a) => f(a))),
-  chain: (ma, f) => pipe(ma, ichain(f)),
-  alt: (fx, f) => (c) =>
-    pipe(
-      fx(c),
-      TE.alt(() => f()(c))
-    ),
-  bimap: (fea, f, g) => (c) =>
-    pipe(
-      fea(c),
-      TE.bimap(f, ([a, c]) => [g(a), c])
-    ),
-  mapLeft: (fea, f) => (c) => pipe(fea(c), TE.mapLeft(f)),
-  throwError: left,
-  fromIO: rightIO,
-  fromTask: rightTask,
-}
-
-const {
-  alt,
-  ap,
-  apFirst,
-  apSecond,
-  bimap,
-  chain,
-  chainFirst,
-  flatten,
-  map,
-  mapLeft,
-  filterOrElse,
-  fromEither,
-  fromOption,
-  fromPredicate,
-} = pipeable(middleware)
-
-export {
-  /**
-   * @since 0.5.0
-   */
-  alt,
-  /**
-   * @since 0.5.0
-   */
-  ap,
-  /**
-   * @since 0.5.0
-   */
-  apFirst,
-  /**
-   * @since 0.5.0
-   */
-  apSecond,
-  /**
-   * @since 0.5.0
-   */
-  bimap,
-  /**
-   * @since 0.5.0
-   */
-  chain,
-  /**
-   * @since 0.5.0
-   */
-  chainFirst,
-  /**
-   * @since 0.5.0
-   */
-  flatten,
-  /**
-   * @since 0.5.0
-   */
-  map,
-  /**
-   * @since 0.5.0
-   */
-  mapLeft,
-  /**
-   * @since 0.5.0
-   */
-  filterOrElse,
-  /**
-   * @since 0.5.0
-   */
-  fromEither,
-  /**
-   * @since 0.5.0
-   */
-  fromOption,
-  /**
-   * @since 0.5.0
-   */
-  fromPredicate,
+export const middleware: Monad3<M.URI> & Alt3<M.URI> & Bifunctor3<M.URI> & MonadThrow3<M.URI> & MonadTask3<M.URI> = {
+  ...M.Functor,
+  ...M.Bifunctor,
+  ...M.MonadTask,
+  ...M.MonadThrow,
+  ...M.Alt,
 }
