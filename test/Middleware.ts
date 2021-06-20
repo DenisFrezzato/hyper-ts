@@ -3,18 +3,19 @@ import * as E from 'fp-ts/Either'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as H from '../src'
-import { Action, toArray } from '../src/express'
+import { Action } from '../src/express'
 import { pipe } from 'fp-ts/function'
 import { MockConnection, MockRequest } from './_helpers'
 import { Readable } from 'stream'
 import * as _ from '../src/Middleware'
+import * as L from 'fp-ts-contrib/List'
 
 function assertSuccess<I, O, A>(m: _.Middleware<I, O, any, A>, cin: MockConnection<I>, a: A, actions: Array<Action>) {
   return m(cin)().then((e) => {
     assert.deepStrictEqual(
       pipe(
         e,
-        E.map(([a, cout]) => [a, toArray((cout as MockConnection<O>).actions)])
+        E.map(([a, cout]) => [a, L.toReversedArray((cout as MockConnection<O>).actions)])
       ),
       E.right([a, actions])
     )

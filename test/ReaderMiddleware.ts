@@ -8,7 +8,8 @@ import { pipe } from 'fp-ts/function'
 import { MockRequest, MockConnection } from './_helpers'
 import * as H from '../src'
 import * as M from '../src/Middleware'
-import { toArray, Action } from '../src/express'
+import { Action } from '../src/express'
+import * as L from 'fp-ts-contrib/List'
 
 function assertProperty<R, I, O, A>(
   m1: _.ReaderMiddleware<R, I, O, any, A>,
@@ -20,11 +21,11 @@ function assertProperty<R, I, O, A>(
     assert.deepStrictEqual(
       pipe(
         e1,
-        E.map(([a1, cout1]) => [a1, toArray((cout1 as MockConnection<O>).actions)])
+        E.map(([a1, cout1]) => [a1, L.toReversedArray((cout1 as MockConnection<O>).actions)])
       ),
       pipe(
         e2,
-        E.map(([a2, cout2]) => [a2, toArray((cout2 as MockConnection<O>).actions)])
+        E.map(([a2, cout2]) => [a2, L.toReversedArray((cout2 as MockConnection<O>).actions)])
       )
     )
   })
@@ -41,7 +42,7 @@ function assertSuccess<R, I, O, A>(
     assert.deepStrictEqual(
       pipe(
         e,
-        E.map(([a, cout]) => [a, toArray((cout as MockConnection<O>).actions)])
+        E.map(([a, cout]) => [a, L.toArray((cout as MockConnection<O>).actions)])
       ),
       E.right([a, actions])
     )

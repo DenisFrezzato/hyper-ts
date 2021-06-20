@@ -48,7 +48,7 @@ export declare class ExpressConnection<S> {
   constructor(
     readonly req: Request,
     readonly res: Response,
-    readonly actions: LinkedList<Action> = nil,
+    readonly actions: L.List<Action> = L.nil,
     readonly ended: boolean = false
   )
 }
