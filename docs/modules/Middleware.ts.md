@@ -98,6 +98,8 @@ Added in v0.7.0
   - [Middleware (interface)](#middleware-interface)
 - [utils](#utils)
   - [Do](#do)
+  - [apS](#aps)
+  - [apSW](#apsw)
   - [bind](#bind)
   - [bindTo](#bindto)
   - [bindW](#bindw)
@@ -965,15 +967,43 @@ export declare const Do: Middleware<unknown, unknown, never, {}>
 
 Added in v0.7.0
 
+## apS
+
+**Signature**
+
+```ts
+export declare const apS: <N, A, R, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: Middleware<R, R, E, B>
+) => (fa: Middleware<R, R, E, A>) => Middleware<R, R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
+## apSW
+
+**Signature**
+
+```ts
+export declare const apSW: <A, N extends string, I, E2, B>(
+  name: Exclude<N, keyof A>,
+  fb: Middleware<I, I, E2, B>
+) => <E1>(
+  fa: Middleware<I, I, E1, A>
+) => Middleware<I, I, E2 | E1, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
 ## bind
 
 **Signature**
 
 ```ts
-export declare const bind: <N extends string, I, E, A, B>(
+export declare const bind: <N, A, R, E, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Middleware<I, I, E, B>
-) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  f: (a: A) => Middleware<R, R, E, B>
+) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.7.0
@@ -983,9 +1013,9 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const bindTo: <N extends string>(
+export declare const bindTo: <N>(
   name: N
-) => <I, E, A>(fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N]: A }>
+) => <R, E, A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, { readonly [K in N]: A }>
 ```
 
 Added in v0.7.0

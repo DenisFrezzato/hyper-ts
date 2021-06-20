@@ -2,6 +2,7 @@
  * @since 0.6.3
  */
 import { flow, pipe } from 'fp-ts/function'
+import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { Task } from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
 import * as H from '.'
@@ -13,8 +14,8 @@ import { Monad4 } from 'fp-ts/Monad'
 import { Alt4 } from 'fp-ts/Alt'
 import { Bifunctor4 } from 'fp-ts/Bifunctor'
 import { MonadThrow4 } from 'fp-ts/MonadThrow'
-import { Functor4 } from 'fp-ts/Functor'
-import { Apply4 } from 'fp-ts/Apply'
+import { Functor4, bindTo as bindTo_ } from 'fp-ts/Functor'
+import { Apply4, apS as apS_ } from 'fp-ts/Apply'
 import { Applicative4 } from 'fp-ts/Applicative'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
@@ -345,63 +346,6 @@ export function decodeHeader<R, E, A>(
 ): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
   return () => M.decodeHeader(name, f)
 }
-
-/**
- * @since 0.6.3
- */
-export const Do = iof<unknown, unknown, unknown, never, {}>({})
-
-/**
- * @internal
- */
-const bind_ = <A, N extends string, B>(
-  a: A,
-  name: Exclude<N, keyof A>,
-  b: B
-): { [K in keyof A | N]: K extends keyof A ? A[K] : B } => Object.assign({}, a, { [name]: b }) as any
-
-/**
- * @internal
- */
-const bindTo_ =
-  <N extends string>(name: N) =>
-  <B>(b: B): { [K in N]: B } =>
-    ({ [name]: b } as any)
-
-/**
- * @since 0.6.3
- */
-export const bindTo = <N extends string>(
-  name: N
-): (<R, I, E, A>(fa: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, { [K in N]: A }>) =>
-  map(bindTo_(name))
-
-/**
- * @since 0.6.3
- */
-export const bindW = <N extends string, R, I, A, E2, B>(
-  name: Exclude<N, keyof A>,
-  f: (a: A) => ReaderMiddleware<R, I, I, E2, B>
-): (<E1>(
-  fa: ReaderMiddleware<R, I, I, E1, A>
-) => ReaderMiddleware<R, I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }>) =>
-  ichainW((a) =>
-    pipe(
-      f(a),
-      map((b) => bind_(a, name, b))
-    )
-  )
-
-/**
- * @since 0.6.3
- */
-export const bind: <N extends string, R, I, E, A, B>(
-  name: Exclude<N, keyof A>,
-  f: (a: A) => ReaderMiddleware<R, I, I, E, B>
-) => (
-  fa: ReaderMiddleware<R, I, I, E, A>
-) => ReaderMiddleware<R, I, I, E, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bindW
-
 const _map: Functor4<URI>['map'] = (fa, f) => (r) => pipe(fa(r), M.map(f))
 
 const _apPar: Monad4<URI>['ap'] = (fab, fa) => pipe(fab, ap(fa))
@@ -677,6 +621,15 @@ export const Applicative: Applicative4<URI> = ApplicativeSeq
 
 /**
  * @category instances
+ * @since 0.7.0
+ */
+export const Chain: Chain4<URI> = {
+  ...ApplyPar,
+  chain: _chain,
+}
+
+/**
+ * @category instances
  * @since 0.6.3
  */
 export const Monad: Monad4<URI> = {
@@ -711,3 +664,69 @@ export const Bifunctor: Bifunctor4<URI> = {
   bimap: _bimap,
   mapLeft: _mapLeft,
 }
+
+/**
+ * Composes computations in sequence, using the return value of one computation to determine
+ * the next computation and keeping only the result of the first.
+ *
+ * Derivable from `Chain`.
+ *
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirst: <R, I, E, A, B>(
+  f: (a: A) => ReaderMiddleware<R, I, I, E, B>
+) => (ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A> = chainFirst_(Chain)
+
+/**
+ * Less strict version of [`chainFirst`](#chainfirst).
+ *
+ * Derivable from `Chain`.
+ *
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstW: <R2, I, E2, A, B>(
+  f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
+) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> = chainFirst as any
+
+/**
+ * @since 0.6.3
+ */
+export const Do = iof<unknown, unknown, unknown, never, {}>({})
+
+/**
+ * @since 0.6.3
+ */
+export const bindTo = bindTo_(Functor)
+
+/**
+ * @since 0.6.3
+ */
+export const bind = bind_(Chain)
+
+/**
+ * @since 0.6.3
+ */
+export const bindW: <N extends string, R, I, A, E2, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => ReaderMiddleware<R, I, I, E2, B>
+) => <E1>(
+  fa: ReaderMiddleware<R, I, I, E1, A>
+) => ReaderMiddleware<R, I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bind as any
+
+/**
+ * @since 0.7.0
+ */
+export const apS = apS_(ApplyPar)
+
+/**
+ * @since 0.7.0
+ */
+export const apSW: <A, N extends string, I, R2, E2, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderMiddleware<R2, I, I, E2, B>
+) => <R1, E1>(
+  fa: ReaderMiddleware<R1, I, I, E1, A>
+) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, { readonly [K in keyof A | N]: K extends keyof A ? A[K] : B }> =
+  apS as any
