@@ -14,9 +14,9 @@
     "lint": "tslint -p .",
     "jest": "jest",
     "mocha": "TS_NODE_CACHE=false mocha -r ts-node/register test/*.ts",
-    "prettier": "prettier --list-different \"{src,test}/**/*.ts\"",
+    "prettier": "prettier \"{src,test}/**/*.ts\"",
     "fix-prettier": "prettier --write \"{src,test}/**/*.ts\"",
-    "test": "npm run lint && npm run prettier && npm run dtslint && npm run jest && npm run docs",
+    "test": "npm run dtslint && npm run jest && npm run docs",
     "clean": "rm -rf ./lib ./es6",
     "prebuild": "npm run clean",
     "build": "tsc -p ./tsconfig.build.json && tsc -p ./tsconfig.build-es6.json",
@@ -48,10 +48,12 @@
     "express": "^4.17.1",
     "fp-ts": "^2.10.0",
     "fp-ts-routing": "^0.4.1",
+    "husky": "^4.3.8",
     "import-path-rewrite": "github:gcanti/import-path-rewrite",
     "io-ts": "^2.0.1",
     "io-ts-types": "^0.5.0",
     "jest": "^24.8.0",
+    "lint-staged": "^11.0.0",
     "mocha": "^5.2.0",
     "prettier": "^2.3.1",
     "qs": "^6.10.1",
@@ -83,5 +85,17 @@
     "io-ts",
     "functional-programming",
     "hyper"
-  ]
+  ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run build && npm run test"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "prettier --write",
+      "npm run lint"
+    ]
+  }
 }
