@@ -12,92 +12,645 @@ Added in v0.5.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Apply](#apply)
+  - [~~apW~~](#apw)
+  - [~~ap~~](#ap)
+- [Bifunctor](#bifunctor)
+  - [~~bimap~~](#bimap)
+  - [~~mapLeft~~](#mapleft)
+- [Functor](#functor)
+  - [~~map~~](#map)
+- [Monad](#monad)
+  - [~~chainW~~](#chainw)
+  - [~~chain~~](#chain)
+  - [~~ichainW~~](#ichainw)
+  - [~~ichain~~](#ichain)
+- [Pointed](#pointed)
+  - [~~iof~~](#iof)
+  - [~~of~~](#of)
+- [combinators](#combinators)
+  - [~~orElse~~](#orelse)
+- [constructor](#constructor)
+  - [~~clearCookie~~](#clearcookie)
+  - [~~closeHeaders~~](#closeheaders)
+  - [~~contentType~~](#contenttype)
+  - [~~cookie~~](#cookie)
+  - [~~decodeBody~~](#decodebody)
+  - [~~decodeHeader~~](#decodeheader)
+  - [~~decodeMethod~~](#decodemethod)
+  - [~~decodeParams~~](#decodeparams)
+  - [~~decodeParam~~](#decodeparam)
+  - [~~decodeQuery~~](#decodequery)
+  - [~~end~~](#end)
+  - [~~fromConnection~~](#fromconnection)
+  - [~~fromIOEither~~](#fromioeither)
+  - [~~fromTaskEither~~](#fromtaskeither)
+  - [~~gets~~](#gets)
+  - [~~header~~](#header)
+  - [~~json~~](#json)
+  - [~~leftIO~~](#leftio)
+  - [~~leftTask~~](#lefttask)
+  - [~~left~~](#left)
+  - [~~modifyConnection~~](#modifyconnection)
+  - [~~pipeStream~~](#pipestream)
+  - [~~redirect~~](#redirect)
+  - [~~rightIO~~](#rightio)
+  - [~~rightTask~~](#righttask)
+  - [~~right~~](#right)
+  - [~~send~~](#send)
+  - [~~status~~](#status)
+- [instances](#instances)
+  - [~~URI~~](#uri)
+  - [~~URI~~ (type alias)](#uri-type-alias)
+  - [~~middleware~~](#middleware)
+- [interop](#interop)
+  - [~~tryCatch~~](#trycatch)
+- [model](#model)
+  - [Connection (interface)](#connection-interface)
+  - [~~Middleware~~ (type alias)](#middleware-type-alias)
 - [utils](#utils)
   - [BodyOpen (interface)](#bodyopen-interface)
-  - [Connection (interface)](#connection-interface)
   - [CookieOptions (interface)](#cookieoptions-interface)
-  - [Do](#do)
   - [HeadersOpen (interface)](#headersopen-interface)
   - [MediaType](#mediatype)
   - [MediaType (type alias)](#mediatype-type-alias)
-  - [Middleware (interface)](#middleware-interface)
   - [ResponseEnded (interface)](#responseended-interface)
   - [Status](#status)
   - [Status (type alias)](#status-type-alias)
   - [StatusOpen (interface)](#statusopen-interface)
-  - [URI](#uri)
-  - [URI (type alias)](#uri-type-alias)
-  - [alt](#alt)
-  - [ap](#ap)
-  - [apFirst](#apfirst)
-  - [apSecond](#apsecond)
-  - [bimap](#bimap)
-  - [bind](#bind)
-  - [bindTo](#bindto)
-  - [bindW](#bindw)
-  - [chain](#chain)
-  - [chainFirst](#chainfirst)
-  - [clearCookie](#clearcookie)
-  - [closeHeaders](#closeheaders)
-  - [contentType](#contenttype)
-  - [cookie](#cookie)
-  - [decodeBody](#decodebody)
-  - [decodeHeader](#decodeheader)
-  - [decodeMethod](#decodemethod)
-  - [decodeParam](#decodeparam)
-  - [decodeParams](#decodeparams)
-  - [decodeQuery](#decodequery)
-  - [end](#end)
-  - [evalMiddleware](#evalmiddleware)
-  - [execMiddleware](#execmiddleware)
-  - [filterOrElse](#filterorelse)
-  - [flatten](#flatten)
-  - [fromConnection](#fromconnection)
-  - [fromEither](#fromeither)
-  - [fromIOEither](#fromioeither)
-  - [fromOption](#fromoption)
-  - [fromPredicate](#frompredicate)
-  - [fromTaskEither](#fromtaskeither)
-  - [gets](#gets)
-  - [header](#header)
-  - [ichain](#ichain)
-  - [ichainW](#ichainw)
-  - [iof](#iof)
-  - [json](#json)
-  - [left](#left)
-  - [leftIO](#leftio)
-  - [leftTask](#lefttask)
-  - [map](#map)
-  - [mapLeft](#mapleft)
-  - [middleware](#middleware)
-  - [modifyConnection](#modifyconnection)
-  - [orElse](#orelse)
-  - [pipeStream](#pipestream)
-  - [redirect](#redirect)
-  - [right](#right)
-  - [rightIO](#rightio)
-  - [rightTask](#righttask)
-  - [send](#send)
-  - [status](#status)
-  - [tryCatch](#trycatch)
+  - [~~Do~~](#do)
+  - [~~bindTo~~](#bindto)
+  - [~~bindW~~](#bindw)
+  - [~~bind~~](#bind)
+  - [~~evalMiddleware~~](#evalmiddleware)
+  - [~~execMiddleware~~](#execmiddleware)
 
 ---
 
-# utils
+# Apply
 
-## BodyOpen (interface)
+## ~~apW~~
 
-Type indicating that headers have already been sent, and that the body is currently streaming
+Use [`apW`](./Middleware.ts.html#apw) instead.
 
 **Signature**
 
 ```ts
-export interface BodyOpen {
-  readonly BodyOpen: unique symbol
-}
+export declare const apW: <I, E2, A>(
+  fa: M.Middleware<I, I, E2, A>
+) => <E1, B>(fab: M.Middleware<I, I, E1, (a: A) => B>) => M.Middleware<I, I, E2 | E1, B>
+```
+
+Added in v0.6.3
+
+## ~~ap~~
+
+Use [`ap`](./Middleware.ts.html#ap) instead.
+
+**Signature**
+
+```ts
+export declare const ap: <I, E, A>(
+  fa: M.Middleware<I, I, E, A>
+) => <B>(fab: M.Middleware<I, I, E, (a: A) => B>) => M.Middleware<I, I, E, B>
+```
+
+Added in v0.6.3
+
+# Bifunctor
+
+## ~~bimap~~
+
+Use [`bimap`](./Middleware.ts.html#bimap) instead.
+
+**Signature**
+
+```ts
+export declare const bimap: <E, G, A, B>(
+  f: (e: E) => G,
+  g: (a: A) => B
+) => <I>(fa: M.Middleware<I, I, E, A>) => M.Middleware<I, I, G, B>
+```
+
+Added in v0.6.3
+
+## ~~mapLeft~~
+
+Use [`mapLeft`](./Middleware.ts.html#mapLeft) instead.
+
+**Signature**
+
+```ts
+export declare const mapLeft: <E, G>(f: (e: E) => G) => <I, A>(fa: M.Middleware<I, I, E, A>) => M.Middleware<I, I, G, A>
+```
+
+Added in v0.6.3
+
+# Functor
+
+## ~~map~~
+
+Use [`map`](./Middleware.ts.html#map) instead.
+
+**Signature**
+
+```ts
+export declare const map: <A, B>(f: (a: A) => B) => <I, E>(fa: M.Middleware<I, I, E, A>) => M.Middleware<I, I, E, B>
 ```
 
 Added in v0.5.0
+
+# Monad
+
+## ~~chainW~~
+
+Use [`chainW`](./Middleware.ts.html#chainW) instead.
+
+**Signature**
+
+```ts
+export declare const chainW: <I, E2, A, B>(
+  f: (a: A) => M.Middleware<I, I, E2, B>
+) => <E1>(ma: M.Middleware<I, I, E1, A>) => M.Middleware<I, I, E2 | E1, B>
+```
+
+Added in v0.6.3
+
+## ~~chain~~
+
+Use [`chain`](./Middleware.ts.html#chain) instead.
+
+**Signature**
+
+```ts
+export declare const chain: <I, E, A, B>(
+  f: (a: A) => M.Middleware<I, I, E, B>
+) => (ma: M.Middleware<I, I, E, A>) => M.Middleware<I, I, E, B>
+```
+
+Added in v0.6.3
+
+## ~~ichainW~~
+
+Use [`ichainW`](./Middleware.ts.html#ichainW) instead.
+
+**Signature**
+
+```ts
+export declare const ichainW: typeof M.ichainW
+```
+
+Added in v0.6.1
+
+## ~~ichain~~
+
+Use [`ichain`](./Middleware.ts.html#ichain) instead.
+
+**Signature**
+
+```ts
+export declare const ichain: <A, O, Z, E, B>(
+  f: (a: A) => M.Middleware<O, Z, E, B>
+) => <I>(ma: M.Middleware<I, O, E, A>) => M.Middleware<I, Z, E, B>
+```
+
+Added in v0.5.0
+
+# Pointed
+
+## ~~iof~~
+
+Use [`iof`](./Middleware.ts.html#iof) instead.
+
+**Signature**
+
+```ts
+export declare const iof: typeof M.iof
+```
+
+Added in v0.5.0
+
+## ~~of~~
+
+Use [`of`](./Middleware.ts.html#of) instead.
+
+**Signature**
+
+```ts
+export declare const of: <I = StatusOpen, E = never, A = never>(a: A) => M.Middleware<I, I, E, A>
+```
+
+Added in v0.6.3
+
+# combinators
+
+## ~~orElse~~
+
+Use [`orElse`](./Middleware.ts.html#orelse) instead.
+
+**Signature**
+
+```ts
+export declare const orElse: typeof M.orElse
+```
+
+Added in v0.5.0
+
+# constructor
+
+## ~~clearCookie~~
+
+Use [`clearCookie`](./Middleware.ts.html#clearCookie) instead.
+
+**Signature**
+
+```ts
+export declare const clearCookie: typeof M.clearCookie
+```
+
+Added in v0.5.0
+
+## ~~closeHeaders~~
+
+Use [`closeHeaders`](./Middleware.ts.html#closeHeaders) instead.
+
+**Signature**
+
+```ts
+export declare const closeHeaders: typeof M.closeHeaders
+```
+
+Added in v0.5.0
+
+## ~~contentType~~
+
+Use [`contentType`](./Middleware.ts.html#contentType) instead.
+
+**Signature**
+
+```ts
+export declare const contentType: typeof M.contentType
+```
+
+Added in v0.5.0
+
+## ~~cookie~~
+
+Use [`cookie`](./Middleware.ts.html#cookie) instead.
+
+**Signature**
+
+```ts
+export declare const cookie: typeof M.cookie
+```
+
+Added in v0.5.0
+
+## ~~decodeBody~~
+
+Use [`decodeBody`](./Middleware.ts.html#decodeBody) instead.
+
+**Signature**
+
+```ts
+export declare const decodeBody: typeof M.decodeBody
+```
+
+Added in v0.5.0
+
+## ~~decodeHeader~~
+
+Use [`decodeHeader`](./Middleware.ts.html#decodeHeader) instead.
+
+**Signature**
+
+```ts
+export declare const decodeHeader: typeof M.decodeHeader
+```
+
+Added in v0.5.0
+
+## ~~decodeMethod~~
+
+Use [`decodeMethod`](./Middleware.ts.html#decodeMethod) instead.
+
+**Signature**
+
+```ts
+export declare const decodeMethod: typeof M.decodeMethod
+```
+
+Added in v0.5.0
+
+## ~~decodeParams~~
+
+Use [`decodeParams`](./Middleware.ts.html#decodeParams) instead.
+
+**Signature**
+
+```ts
+export declare const decodeParams: typeof M.decodeParams
+```
+
+Added in v0.5.0
+
+## ~~decodeParam~~
+
+Use [`decodeParam`](./Middleware.ts.html#decodeParam) instead.
+
+**Signature**
+
+```ts
+export declare const decodeParam: typeof M.decodeParam
+```
+
+Added in v0.5.0
+
+## ~~decodeQuery~~
+
+Use [`decodeQuery`](./Middleware.ts.html#decodeQuery) instead.
+
+**Signature**
+
+```ts
+export declare const decodeQuery: typeof M.decodeQuery
+```
+
+Added in v0.5.0
+
+## ~~end~~
+
+Use [`end`](./Middleware.ts.html#end) instead.
+
+**Signature**
+
+```ts
+export declare const end: typeof M.end
+```
+
+Added in v0.5.0
+
+## ~~fromConnection~~
+
+Use [`fromConnection`](./Middleware.ts.html#fromConnection) instead.
+
+**Signature**
+
+```ts
+export declare const fromConnection: typeof M.fromConnection
+```
+
+Added in v0.5.0
+
+## ~~fromIOEither~~
+
+Use [`fromIOEither`](./Middleware.ts.html#fromIOEither) instead.
+
+**Signature**
+
+```ts
+export declare const fromIOEither: typeof M.fromIOEither
+```
+
+Added in v0.5.0
+
+## ~~fromTaskEither~~
+
+Use [`fromTaskEither`](./Middleware.ts.html#fromTaskEither) instead.
+
+**Signature**
+
+```ts
+export declare const fromTaskEither: typeof M.fromTaskEither
+```
+
+Added in v0.5.0
+
+## ~~gets~~
+
+Use [`gets`](./Middleware.ts.html#gets) instead.
+
+**Signature**
+
+```ts
+export declare const gets: typeof M.gets
+```
+
+Added in v0.5.0
+
+## ~~header~~
+
+Use [`header`](./Middleware.ts.html#header) instead.
+
+**Signature**
+
+```ts
+export declare const header: typeof M.header
+```
+
+Added in v0.5.0
+
+## ~~json~~
+
+Use [`json`](./Middleware.ts.html#json) instead.
+
+**Signature**
+
+```ts
+export declare const json: typeof M.json
+```
+
+Added in v0.5.0
+
+## ~~leftIO~~
+
+Use [`leftIO`](./Middleware.ts.html#leftIO) instead.
+
+**Signature**
+
+```ts
+export declare const leftIO: typeof M.leftIO
+```
+
+Added in v0.5.0
+
+## ~~leftTask~~
+
+Use [`leftTask`](./Middleware.ts.html#leftTask) instead.
+
+**Signature**
+
+```ts
+export declare const leftTask: typeof M.leftTask
+```
+
+Added in v0.5.0
+
+## ~~left~~
+
+Use [`left`](./Middleware.ts.html#left) instead.
+
+**Signature**
+
+```ts
+export declare const left: typeof M.left
+```
+
+Added in v0.5.0
+
+## ~~modifyConnection~~
+
+Use [`modifyConnection`](./Middleware.ts.html#modifyConnection) instead.
+
+**Signature**
+
+```ts
+export declare const modifyConnection: typeof M.modifyConnection
+```
+
+Added in v0.5.0
+
+## ~~pipeStream~~
+
+Use [`pipeStream`](./Middleware.ts.html#pipeStream) instead.
+
+**Signature**
+
+```ts
+export declare const pipeStream: typeof M.pipeStream
+```
+
+Added in v0.6.2
+
+## ~~redirect~~
+
+Use [`redirect`](./Middleware.ts.html#redirect) instead.
+
+**Signature**
+
+```ts
+export declare const redirect: typeof M.redirect
+```
+
+Added in v0.5.0
+
+## ~~rightIO~~
+
+Use [`rightIO`](./Middleware.ts.html#rightIO) instead.
+
+**Signature**
+
+```ts
+export declare const rightIO: typeof M.rightIO
+```
+
+Added in v0.5.0
+
+## ~~rightTask~~
+
+Use [`rightTask`](./Middleware.ts.html#rightTask) instead.
+
+**Signature**
+
+```ts
+export declare const rightTask: typeof M.rightTask
+```
+
+Added in v0.5.0
+
+## ~~right~~
+
+Use [`right`](./Middleware.ts.html#right) instead.
+
+**Signature**
+
+```ts
+export declare const right: typeof M.right
+```
+
+Added in v0.5.0
+
+## ~~send~~
+
+Use [`send`](./Middleware.ts.html#send) instead.
+
+**Signature**
+
+```ts
+export declare const send: typeof M.send
+```
+
+Added in v0.5.0
+
+## ~~status~~
+
+Use [`status`](./Middleware.ts.html#status) instead.
+
+**Signature**
+
+```ts
+export declare const status: typeof M.status
+```
+
+Added in v0.5.0
+
+# instances
+
+## ~~URI~~
+
+Use [`URI`](./Middleware.ts.html#uri) instead.
+
+**Signature**
+
+```ts
+export declare const URI: 'Middleware'
+```
+
+Added in v0.5.0
+
+## ~~URI~~ (type alias)
+
+Use [`URI`](./Middleware.ts.html#uri) instead.
+
+**Signature**
+
+```ts
+export type URI = typeof M.URI
+```
+
+Added in v0.5.0
+
+## ~~middleware~~
+
+Use smaller instances from [`Middleware`](./Middleware.ts.html) module instead.
+
+**Signature**
+
+```ts
+export declare const middleware: Monad3<'Middleware'> &
+  Alt3<'Middleware'> &
+  Bifunctor3<'Middleware'> &
+  MonadThrow3<'Middleware'> &
+  MonadTask3<'Middleware'>
+```
+
+Added in v0.5.0
+
+# interop
+
+## ~~tryCatch~~
+
+Use [`tryCatch`](./Middleware.ts.html#tryCatch) instead.
+
+**Signature**
+
+```ts
+export declare const tryCatch: typeof M.tryCatch
+```
+
+Added in v0.5.0
+
+# model
 
 ## Connection (interface)
 
@@ -137,6 +690,34 @@ export interface Connection<S> {
 
 Added in v0.5.0
 
+## ~~Middleware~~ (type alias)
+
+Use [`Middleware`](./Middleware.ts.html#middleware) instead.
+
+**Signature**
+
+```ts
+export type Middleware<I, O, E, A> = M.Middleware<I, O, E, A>
+```
+
+Added in v0.5.0
+
+# utils
+
+## BodyOpen (interface)
+
+Type indicating that headers have already been sent, and that the body is currently streaming
+
+**Signature**
+
+```ts
+export interface BodyOpen {
+  readonly BodyOpen: unique symbol
+}
+```
+
+Added in v0.5.0
+
 ## CookieOptions (interface)
 
 **Signature**
@@ -155,16 +736,6 @@ export interface CookieOptions {
 ```
 
 Added in v0.5.0
-
-## Do
-
-**Signature**
-
-```ts
-export declare const Do: Middleware<unknown, unknown, never, {}>
-```
-
-Added in v0.6.1
 
 ## HeadersOpen (interface)
 
@@ -212,22 +783,6 @@ Added in v0.5.0
 
 ```ts
 export type MediaType = typeof MediaType[keyof typeof MediaType]
-```
-
-Added in v0.5.0
-
-## Middleware (interface)
-
-A middleware is an indexed monadic action transforming one `Connection` to another `Connection`. It operates
-in the `TaskEither` monad, and is indexed by `I` and `O`, the input and output `Connection` types of the
-middleware action.
-
-**Signature**
-
-```ts
-export interface Middleware<I, O, E, A> {
-  (c: Connection<I>): TE.TaskEither<E, [A, Connection<O>]>
-}
 ```
 
 Added in v0.5.0
@@ -344,659 +899,84 @@ export interface StatusOpen {
 
 Added in v0.5.0
 
-## URI
+## ~~Do~~
+
+Use [`Do`](./Middleware.ts.html#do) instead.
 
 **Signature**
 
 ```ts
-export declare const URI: 'Middleware'
-```
-
-Added in v0.5.0
-
-## URI (type alias)
-
-**Signature**
-
-```ts
-export type URI = typeof URI
-```
-
-Added in v0.5.0
-
-## alt
-
-**Signature**
-
-```ts
-export declare const alt: <R, E, A>(
-  that: () => Middleware<R, R, E, A>
-) => (fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-## ap
-
-**Signature**
-
-```ts
-export declare const ap: <R, E, A>(
-  fa: Middleware<R, R, E, A>
-) => <B>(fab: Middleware<R, R, E, (a: A) => B>) => Middleware<R, R, E, B>
-```
-
-Added in v0.5.0
-
-## apFirst
-
-**Signature**
-
-```ts
-export declare const apFirst: <R, E, B>(
-  fb: Middleware<R, R, E, B>
-) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-## apSecond
-
-**Signature**
-
-```ts
-export declare const apSecond: <R, E, B>(
-  fb: Middleware<R, R, E, B>
-) => <A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
-```
-
-Added in v0.5.0
-
-## bimap
-
-**Signature**
-
-```ts
-export declare const bimap: <E, G, A, B>(
-  f: (e: E) => G,
-  g: (a: A) => B
-) => <R>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, B>
-```
-
-Added in v0.5.0
-
-## bind
-
-**Signature**
-
-```ts
-export declare const bind: <N extends string, I, E, A, B>(
-  name: Exclude<N, keyof A>,
-  f: (a: A) => Middleware<I, I, E, B>
-) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+export declare const Do: M.Middleware<unknown, unknown, never, {}>
 ```
 
 Added in v0.6.1
 
-## bindTo
+## ~~bindTo~~
+
+Use [`bindTo`](./Middleware.ts.html#bindTo) instead.
 
 **Signature**
 
 ```ts
 export declare const bindTo: <N extends string>(
   name: N
-) => <I, E, A>(fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N]: A }>
+) => <I, E, A>(fa: M.Middleware<I, I, E, A>) => M.Middleware<I, I, E, { [K in N]: A }>
 ```
 
 Added in v0.6.1
 
-## bindW
+## ~~bindW~~
+
+Use [`bindW`](./Middleware.ts.html#bindW) instead.
 
 **Signature**
 
 ```ts
 export declare const bindW: <N extends string, I, A, E2, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => Middleware<I, I, E2, B>
+  f: (a: A) => M.Middleware<I, I, E2, B>
 ) => <E1>(
-  fa: Middleware<I, I, E1, A>
-) => Middleware<I, I, E2 | E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  fa: M.Middleware<I, I, E1, A>
+) => M.Middleware<I, I, E2 | E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.6.1
 
-## chain
+## ~~bind~~
+
+Use [`bind`](./Middleware.ts.html#bind) instead.
 
 **Signature**
 
 ```ts
-export declare const chain: <R, E, A, B>(
-  f: (a: A) => Middleware<R, R, E, B>
-) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
-```
-
-Added in v0.5.0
-
-## chainFirst
-
-**Signature**
-
-```ts
-export declare const chainFirst: <R, E, A, B>(
-  f: (a: A) => Middleware<R, R, E, B>
-) => (ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-## clearCookie
-
-Returns a middleware that clears the cookie `name`
-
-**Signature**
-
-```ts
-export declare function clearCookie<E = never>(
-  name: string,
-  options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, E, void>
-```
-
-Added in v0.5.0
-
-## closeHeaders
-
-Returns a middleware that changes the connection status to `BodyOpen`
-
-**Signature**
-
-```ts
-export declare function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyOpen, E, void>
-```
-
-Added in v0.5.0
-
-## contentType
-
-Returns a middleware that sets the given `mediaType`
-
-**Signature**
-
-```ts
-export declare function contentType<E = never>(mediaType: MediaType): Middleware<HeadersOpen, HeadersOpen, E, void>
-```
-
-Added in v0.5.0
-
-## cookie
-
-Returns a middleware that sets the cookie `name` to `value`, with the given `options`
-
-**Signature**
-
-```ts
-export declare function cookie<E = never>(
-  name: string,
-  value: string,
-  options: CookieOptions
-): Middleware<HeadersOpen, HeadersOpen, E, void>
-```
-
-Added in v0.5.0
-
-## decodeBody
-
-Returns a middleware that tries to decode `connection.getBody()`
-
-**Signature**
-
-```ts
-export declare function decodeBody<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A>
-```
-
-Added in v0.5.0
-
-## decodeHeader
-
-Returns a middleware that tries to decode `connection.getHeader(name)`
-
-**Signature**
-
-```ts
-export declare function decodeHeader<E, A>(
-  name: string,
-  f: (input: unknown) => Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
-```
-
-Added in v0.5.0
-
-## decodeMethod
-
-Returns a middleware that tries to decode `connection.getMethod()`
-
-**Signature**
-
-```ts
-export declare function decodeMethod<E, A>(
-  f: (method: string) => Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
-```
-
-Added in v0.5.0
-
-## decodeParam
-
-Returns a middleware that tries to decode `connection.getParams()[name]`
-
-**Signature**
-
-```ts
-export declare function decodeParam<E, A>(
-  name: string,
-  f: (input: unknown) => Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
-```
-
-Added in v0.5.0
-
-## decodeParams
-
-Returns a middleware that tries to decode `connection.getParams()`
-
-**Signature**
-
-```ts
-export declare function decodeParams<E, A>(
-  f: (input: unknown) => Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
-```
-
-Added in v0.5.0
-
-## decodeQuery
-
-Returns a middleware that tries to decode `connection.getQuery()`
-
-**Signature**
-
-```ts
-export declare function decodeQuery<E, A>(f: (input: unknown) => Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A>
-```
-
-Added in v0.5.0
-
-## end
-
-Returns a middleware that ends the response without sending any response body
-
-**Signature**
-
-```ts
-export declare function end<E = never>(): Middleware<BodyOpen, ResponseEnded, E, void>
-```
-
-Added in v0.5.0
-
-## evalMiddleware
-
-**Signature**
-
-```ts
-export declare function evalMiddleware<I, O, E, A>(ma: Middleware<I, O, E, A>, c: Connection<I>): TE.TaskEither<E, A>
-```
-
-Added in v0.5.0
-
-## execMiddleware
-
-**Signature**
-
-```ts
-export declare function execMiddleware<I, O, E, A>(
-  ma: Middleware<I, O, E, A>,
-  c: Connection<I>
-): TE.TaskEither<E, Connection<O>>
-```
-
-Added in v0.5.0
-
-## filterOrElse
-
-**Signature**
-
-```ts
-export declare const filterOrElse: {
-  <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R>(
-    ma: Middleware<R, R, E, A>
-  ) => Middleware<R, R, E, B>
-  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(ma: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
-}
-```
-
-Added in v0.5.0
-
-## flatten
-
-**Signature**
-
-```ts
-export declare const flatten: <R, E, A>(mma: Middleware<R, R, E, Middleware<R, R, E, A>>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-## fromConnection
-
-**Signature**
-
-```ts
-export declare function fromConnection<I = StatusOpen, E = never, A = never>(
-  f: (c: Connection<I>) => Either<E, A>
-): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## fromEither
-
-**Signature**
-
-```ts
-export declare const fromEither: <R, E, A>(ma: E.Either<E, A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-## fromIOEither
-
-**Signature**
-
-```ts
-export declare function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<E, A>): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## fromOption
-
-**Signature**
-
-```ts
-export declare const fromOption: <E>(onNone: () => E) => <R, A>(ma: Option<A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.5.0
-
-## fromPredicate
-
-**Signature**
-
-```ts
-export declare const fromPredicate: {
-  <E, A, B>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <U>(a: A) => Middleware<U, U, E, B>
-  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R>(a: A) => Middleware<R, R, E, A>
-}
-```
-
-Added in v0.5.0
-
-## fromTaskEither
-
-**Signature**
-
-```ts
-export declare function fromTaskEither<I = StatusOpen, E = never, A = never>(
-  fa: TE.TaskEither<E, A>
-): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## gets
-
-**Signature**
-
-```ts
-export declare function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>) => A): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## header
-
-Returns a middleware that writes the given header
-
-**Signature**
-
-```ts
-export declare function header<E = never>(name: string, value: string): Middleware<HeadersOpen, HeadersOpen, E, void>
-```
-
-Added in v0.5.0
-
-## ichain
-
-**Signature**
-
-```ts
-export declare const ichain: <A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B>
-```
-
-Added in v0.5.0
-
-## ichainW
-
-**Signature**
-
-```ts
-export declare function ichainW<A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B>
+export declare const bind: <N extends string, I, E, A, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => M.Middleware<I, I, E, B>
+) => (fa: M.Middleware<I, I, E, A>) => M.Middleware<I, I, E, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.6.1
 
-## iof
+## ~~evalMiddleware~~
+
+Use [`evalMiddleware`](./Middleware.ts.html#evalMiddleware) instead.
 
 **Signature**
 
 ```ts
-export declare function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A): Middleware<I, O, E, A>
+export declare const evalMiddleware: typeof M.evalMiddleware
 ```
 
 Added in v0.5.0
 
-## json
+## ~~execMiddleware~~
 
-Returns a middleware that sends `body` as JSON
-
-**Signature**
-
-```ts
-export declare function json<E>(
-  body: unknown,
-  onError: (reason: unknown) => E
-): Middleware<HeadersOpen, ResponseEnded, E, void>
-```
-
-Added in v0.5.0
-
-## left
+Use [`execMiddleware`](./Middleware.ts.html#execMiddleware) instead.
 
 **Signature**
 
 ```ts
-export declare function left<I = StatusOpen, E = never, A = never>(e: E): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## leftIO
-
-**Signature**
-
-```ts
-export declare function leftIO<I = StatusOpen, E = never, A = never>(fe: IO<E>): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## leftTask
-
-**Signature**
-
-```ts
-export declare function leftTask<I = StatusOpen, E = never, A = never>(te: Task<E>): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## map
-
-**Signature**
-
-```ts
-export declare const map: <A, B>(f: (a: A) => B) => <R, E>(fa: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
-```
-
-Added in v0.5.0
-
-## mapLeft
-
-**Signature**
-
-```ts
-export declare const mapLeft: <E, G>(f: (e: E) => G) => <R, A>(fa: Middleware<R, R, E, A>) => Middleware<R, R, G, A>
-```
-
-Added in v0.5.0
-
-## middleware
-
-**Signature**
-
-```ts
-export declare const middleware: Monad3<'Middleware'> &
-  Alt3<'Middleware'> &
-  Bifunctor3<'Middleware'> &
-  MonadThrow3<'Middleware'> &
-  MonadTask3<'Middleware'>
-```
-
-Added in v0.5.0
-
-## modifyConnection
-
-**Signature**
-
-```ts
-export declare function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, E, void>
-```
-
-Added in v0.5.0
-
-## orElse
-
-**Signature**
-
-```ts
-export declare function orElse<E, I, O, M, A>(
-  f: (e: E) => Middleware<I, O, M, A>
-): (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A>
-```
-
-Added in v0.5.0
-
-## pipeStream
-
-Returns a middleware that pipes a stream to the response object.
-
-**Signature**
-
-```ts
-export declare function pipeStream<E>(stream: Readable): Middleware<BodyOpen, ResponseEnded, E, void>
-```
-
-Added in v0.6.2
-
-## redirect
-
-Returns a middleware that sends a redirect to `uri`
-
-**Signature**
-
-```ts
-export declare function redirect<E = never>(uri: string): Middleware<StatusOpen, HeadersOpen, E, void>
-```
-
-Added in v0.5.0
-
-## right
-
-**Signature**
-
-```ts
-export declare function right<I = StatusOpen, E = never, A = never>(a: A): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## rightIO
-
-**Signature**
-
-```ts
-export declare function rightIO<I = StatusOpen, E = never, A = never>(fa: IO<A>): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## rightTask
-
-**Signature**
-
-```ts
-export declare function rightTask<I = StatusOpen, E = never, A = never>(fa: Task<A>): Middleware<I, I, E, A>
-```
-
-Added in v0.5.0
-
-## send
-
-Returns a middleware that sends `body` as response body
-
-**Signature**
-
-```ts
-export declare function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnded, E, void>
-```
-
-Added in v0.5.0
-
-## status
-
-Returns a middleware that writes the response status
-
-**Signature**
-
-```ts
-export declare function status<E = never>(status: Status): Middleware<StatusOpen, HeadersOpen, E, void>
-```
-
-Added in v0.5.0
-
-## tryCatch
-
-**Signature**
-
-```ts
-export declare function tryCatch<I = StatusOpen, E = never, A = never>(
-  f: () => Promise<A>,
-  onRejected: (reason: unknown) => E
-): Middleware<I, I, E, A>
+export declare const execMiddleware: typeof M.execMiddleware
 ```
 
 Added in v0.5.0

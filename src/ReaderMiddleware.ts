@@ -1,151 +1,171 @@
 /**
  * @since 0.6.3
  */
-import { pipe } from 'fp-ts/lib/pipeable'
-import { Task } from 'fp-ts/lib/Task'
-import * as TE from 'fp-ts/lib/TaskEither'
+import { flow, pipe } from 'fp-ts/function'
+import { Task } from 'fp-ts/Task'
+import * as TE from 'fp-ts/TaskEither'
 import * as H from '.'
-import { IO } from 'fp-ts/lib/IO'
-import { IOEither } from 'fp-ts/lib/IOEither'
-import * as E from 'fp-ts/lib/Either'
-import { Monad4 } from 'fp-ts/lib/Monad'
-import { Alt4 } from 'fp-ts/lib/Alt'
-import { Bifunctor4 } from 'fp-ts/lib/Bifunctor'
-import { MonadThrow4 } from 'fp-ts/lib/MonadThrow'
-import { Functor4 } from 'fp-ts/lib/Functor'
-import { Apply4 } from 'fp-ts/lib/Apply'
-import { Applicative4 } from 'fp-ts/lib/Applicative'
-import * as RTE from 'fp-ts/lib/ReaderTaskEither'
-import { getReaderM } from 'fp-ts/lib/ReaderT'
-import { Reader } from 'fp-ts/lib/Reader'
-
-const T = getReaderM(H.middleware)
+import * as M from './Middleware'
+import { IO } from 'fp-ts/IO'
+import { IOEither } from 'fp-ts/IOEither'
+import * as E from 'fp-ts/Either'
+import { Monad4 } from 'fp-ts/Monad'
+import { Alt4 } from 'fp-ts/Alt'
+import { Bifunctor4 } from 'fp-ts/Bifunctor'
+import { MonadThrow4 } from 'fp-ts/MonadThrow'
+import { Functor4 } from 'fp-ts/Functor'
+import { Apply4 } from 'fp-ts/Apply'
+import { Applicative4 } from 'fp-ts/Applicative'
+import * as RTE from 'fp-ts/ReaderTaskEither'
+import { Reader } from 'fp-ts/Reader'
 
 /**
+ * @category instances
  * @since 0.6.3
  */
 export const URI = 'ReaderMiddleware'
 
 /**
+ * @category instances
  * @since 0.6.3
  */
 export type URI = typeof URI
 
-declare module 'fp-ts/lib/HKT' {
+declare module 'fp-ts/HKT' {
   interface URItoKind4<S, R, E, A> {
     readonly [URI]: ReaderMiddleware<S, R, R, E, A>
   }
 }
 
 /**
+ * @category model
  * @since 0.6.3
  */
 export interface ReaderMiddleware<R, I, O, E, A> {
-  (r: R): H.Middleware<I, O, E, A>
+  (r: R): M.Middleware<I, O, E, A>
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
   fa: TE.TaskEither<E, A>
 ): ReaderMiddleware<R, I, I, E, A> {
-  return () => H.fromTaskEither(fa)
+  return () => M.fromTaskEither(fa)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
   fa: RTE.ReaderTaskEither<R, E, A>
 ): ReaderMiddleware<R, I, I, E, A> {
-  return (r) => H.fromTaskEither(fa(r))
+  return (r) => M.fromTaskEither(fa(r))
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
-export const fromMiddleware: <R, I = H.StatusOpen, E = never, A = never>(
-  fa: H.Middleware<I, I, E, A>
-) => ReaderMiddleware<R, I, I, E, A> = T.fromM
+export const fromMiddleware =
+  <R, I = H.StatusOpen, E = never, A = never>(fa: M.Middleware<I, I, E, A>): ReaderMiddleware<R, I, I, E, A> =>
+  () =>
+    fa
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
-export const right: <R, I = H.StatusOpen, E = never, A = never>(a: A) => ReaderMiddleware<R, I, I, E, A> = T.of
+export function right<R, I = H.StatusOpen, E = never, A = never>(a: A): ReaderMiddleware<R, I, I, E, A> {
+  return fromMiddleware(M.right(a))
+}
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function left<R, I = H.StatusOpen, E = never, A = never>(e: E): ReaderMiddleware<R, I, I, E, A> {
-  return fromMiddleware(H.left(e))
+  return fromMiddleware(M.left(e))
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function rightTask<R, I = H.StatusOpen, E = never, A = never>(fa: Task<A>): ReaderMiddleware<R, I, I, E, A> {
-  return fromMiddleware(H.rightTask(fa))
+  return fromMiddleware(M.rightTask(fa))
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function leftTask<R, I = H.StatusOpen, E = never, A = never>(te: Task<E>): ReaderMiddleware<R, I, I, E, A> {
-  return fromMiddleware(H.leftTask(te))
+  return fromMiddleware(M.leftTask(te))
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function rightIO<R, I = H.StatusOpen, E = never, A = never>(fa: IO<A>): ReaderMiddleware<R, I, I, E, A> {
-  return fromMiddleware(H.rightIO(fa))
+  return fromMiddleware(M.rightIO(fa))
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function leftIO<R, I = H.StatusOpen, E = never, A = never>(fe: IO<E>): ReaderMiddleware<R, I, I, E, A> {
-  return fromMiddleware(H.leftIO(fe))
+  return fromMiddleware(M.leftIO(fe))
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function fromIOEither<R, I = H.StatusOpen, E = never, A = never>(
   fa: IOEither<E, A>
 ): ReaderMiddleware<R, I, I, E, A> {
-  return fromMiddleware(H.fromIOEither(fa))
+  return fromMiddleware(M.fromIOEither(fa))
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
-export const rightReader: <R, I = H.StatusOpen, E = never, A = never>(
-  ma: Reader<R, A>
-) => ReaderMiddleware<R, I, I, E, A> = T.fromReader
+export const rightReader =
+  <R, I = H.StatusOpen, E = never, A = never>(ma: Reader<R, A>): ReaderMiddleware<R, I, I, E, A> =>
+  (r) =>
+    M.right(ma(r))
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function leftReader<R, I = H.StatusOpen, E = never, A = never>(
   me: Reader<R, E>
 ): ReaderMiddleware<R, I, I, E, A> {
-  return (r) => H.left(me(r))
+  return (r) => M.left(me(r))
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
-export const ask: <R, I = H.StatusOpen, E = never>() => ReaderMiddleware<R, I, I, E, R> = T.ask
+export const ask = <R, I = H.StatusOpen, E = never>(): ReaderMiddleware<R, I, I, E, R> => M.right
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
-export const asks: <R, E = never, A = never>(f: (r: R) => A) => ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> =
-  T.asks
+export const asks = <R, E = never, A = never>(f: (r: R) => A): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> =>
+  flow(f, M.right)
 
 /**
+ * @category combinators
  * @since 0.6.3
  */
 export function orElse<R, E, I, O, M, A>(
@@ -159,6 +179,7 @@ export function orElse<R, E, I, O, M, A>(
 }
 
 /**
+ * @category combinators
  * @since 0.6.4
  */
 export const orElseW =
@@ -167,23 +188,26 @@ export const orElseW =
     pipe(ma, orElse<R1 & R2, E, I, O, M, A | B>(f))
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function status<R, E = never>(status: H.Status): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void> {
-  return () => H.status(status)
+  return () => M.status(status)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function header<R, E = never>(
   name: string,
   value: string
 ): ReaderMiddleware<R, H.HeadersOpen, H.HeadersOpen, E, void> {
-  return () => H.header(name, value)
+  return () => M.header(name, value)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function contentType<R, E = never>(
@@ -193,6 +217,7 @@ export function contentType<R, E = never>(
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function cookie<R, E = never>(
@@ -200,22 +225,24 @@ export function cookie<R, E = never>(
   value: string,
   options: H.CookieOptions
 ): ReaderMiddleware<R, H.HeadersOpen, H.HeadersOpen, E, void> {
-  return () => H.cookie(name, value, options)
+  return () => M.cookie(name, value, options)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function clearCookie<R, E = never>(
   name: string,
   options: H.CookieOptions
 ): ReaderMiddleware<R, H.HeadersOpen, H.HeadersOpen, E, void> {
-  return () => H.clearCookie(name, options)
+  return () => M.clearCookie(name, options)
 }
 
 const closedHeaders: ReaderMiddleware<any, H.HeadersOpen, H.BodyOpen, never, void> = iof(undefined)
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function closeHeaders<R, E = never>(): ReaderMiddleware<R, H.HeadersOpen, H.BodyOpen, E, void> {
@@ -223,98 +250,106 @@ export function closeHeaders<R, E = never>(): ReaderMiddleware<R, H.HeadersOpen,
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function send<R, E = never>(body: string): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
-  return () => H.send(body)
+  return () => M.send(body)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function end<R, E = never>(): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
-  return H.end
+  return M.end
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function json<R, E>(
   body: unknown,
   onError: (reason: unknown) => E
 ): ReaderMiddleware<R, H.HeadersOpen, H.ResponseEnded, E, void> {
-  return () => H.json(body, onError)
+  return () => M.json(body, onError)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function redirect<R, E = never>(uri: string): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void> {
-  return () => H.redirect(uri)
+  return () => M.redirect(uri)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function decodeParam<R, E, A>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
 ): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
-  return () => H.decodeParam(name, f)
+  return () => M.decodeParam(name, f)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function decodeParams<R, E, A>(
   f: (input: unknown) => E.Either<E, A>
 ): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
-  return () => H.decodeParams(f)
+  return () => M.decodeParams(f)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function decodeQuery<R, E, A>(
   f: (input: unknown) => E.Either<E, A>
 ): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
-  return () => H.decodeQuery(f)
+  return () => M.decodeQuery(f)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function decodeBody<R, E, A>(
   f: (input: unknown) => E.Either<E, A>
 ): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
-  return () => H.decodeBody(f)
+  return () => M.decodeBody(f)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function decodeMethod<R, E, A>(
   f: (method: string) => E.Either<E, A>
 ): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
-  return () => H.decodeMethod(f)
+  return () => M.decodeMethod(f)
 }
 
 /**
+ * @category constructor
  * @since 0.6.3
  */
 export function decodeHeader<R, E, A>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
 ): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
-  return () => H.decodeHeader(name, f)
+  return () => M.decodeHeader(name, f)
 }
 
 /**
  * @since 0.6.3
  */
-export const Do =
-  /*#__PURE__*/
-  iof<unknown, unknown, unknown, never, {}>({})
+export const Do = iof<unknown, unknown, unknown, never, {}>({})
 
 /**
  * @internal
@@ -367,6 +402,17 @@ export const bind: <N extends string, R, I, E, A, B>(
   fa: ReaderMiddleware<R, I, I, E, A>
 ) => ReaderMiddleware<R, I, I, E, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bindW
 
+const _map: Functor4<URI>['map'] = (fa, f) => (r) => pipe(fa(r), M.map(f))
+
+const _apPar: Monad4<URI>['ap'] = (fab, fa) => pipe(fab, ap(fa))
+const _apSeq: Apply4<URI>['ap'] = (fab, fa) => _chain(fab, (f) => _map(fa, (a) => f(a)))
+
+const _chain: Monad4<URI>['chain'] = (ma, f) => (r) =>
+  pipe(
+    ma(r),
+    M.chain((a) => f(a)(r))
+  )
+
 const _alt: Alt4<URI>['alt'] = (fx, f) => (r) => (c) =>
   pipe(
     fx(r)(c),
@@ -391,7 +437,7 @@ const _mapLeft: Bifunctor4<URI>['mapLeft'] = (fea, f) => (r) => (c) => pipe(fea(
 export const map =
   <A, B>(f: (a: A) => B) =>
   <R, I, E>(fa: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, B> =>
-    T.map(fa, f)
+    _map(fa, f)
 
 /**
  * Map a pair of functions over the two last type arguments of the bifunctor.
@@ -424,7 +470,8 @@ export const mapLeft =
 export const ap =
   <R, I, E, A>(fa: ReaderMiddleware<R, I, I, E, A>) =>
   <B>(fab: ReaderMiddleware<R, I, I, E, (a: A) => B>): ReaderMiddleware<R, I, I, E, B> =>
-    T.ap(fab, fa)
+  (r) =>
+    pipe(fab(r), M.ap(fa(r)))
 
 /**
  * Less strict version of [`ap`](#ap).
@@ -441,15 +488,16 @@ export const apW: <R2, I, E2, A>(
  * @category Pointed
  * @since 0.6.3
  */
-export const of: <R, I = H.StatusOpen, E = never, A = never>(a: A) => ReaderMiddleware<R, I, I, E, A> = T.of
+export const of: <R, I = H.StatusOpen, E = never, A = never>(a: A) => ReaderMiddleware<R, I, I, E, A> = right
 
 /**
+ * @category Pointed
  * @since 0.6.3
  */
 export function iof<R, I = H.StatusOpen, O = H.StatusOpen, E = never, A = never>(
   a: A
 ): ReaderMiddleware<R, I, O, E, A> {
-  return () => H.iof(a)
+  return () => M.iof(a)
 }
 
 /**
@@ -461,7 +509,7 @@ export function iof<R, I = H.StatusOpen, O = H.StatusOpen, E = never, A = never>
 export const chain =
   <R, I, E, A, B>(f: (a: A) => ReaderMiddleware<R, I, I, E, B>) =>
   (ma: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, B> =>
-    T.chain(ma, f)
+    _chain(ma, f)
 
 /**
  * Less strict version of [`chain`](#chain).
@@ -474,6 +522,7 @@ export const chainW: <R2, I, E2, A, B>(
 ) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> = chain as any
 
 /**
+ * @category Monad
  * @since 0.6.3
  */
 export const ichain: <R, A, O, Z, E, B>(
@@ -481,6 +530,7 @@ export const ichain: <R, A, O, Z, E, B>(
 ) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B> = ichainW
 
 /**
+ * @category Monad
  * @since 0.6.3
  */
 export function ichainW<R2, A, O, Z, E2, B>(
@@ -489,33 +539,40 @@ export function ichainW<R2, A, O, Z, E2, B>(
   return (ma) => (r) => (ci) =>
     pipe(
       ma(r)(ci),
-      H.TEchainW(([a, co]) => f(a)(r)(co))
+      TE.chainW(([a, co]) => f(a)(r)(co))
     )
 }
 
 /**
+ * @category combinators
  * @since 0.6.3
  */
 export const chainMiddlewareK =
-  <R, I, E, A, B>(f: (a: A) => H.Middleware<I, I, E, B>) =>
+  <R, I, E, A, B>(f: (a: A) => M.Middleware<I, I, E, B>) =>
   (ma: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, B> =>
-    T.chain(ma, (a) => fromMiddleware(f(a)))
+    pipe(
+      ma,
+      chain((a) => fromMiddleware(f(a)))
+    )
 
 /**
+ * @category combinators
  * @since 0.6.3
  */
 export const ichainMiddlewareK: <R, A, O, Z, E, B>(
-  f: (a: A) => H.Middleware<O, Z, E, B>
+  f: (a: A) => M.Middleware<O, Z, E, B>
 ) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B> = chainMiddlewareK as any
 
 /**
+ * @category combinators
  * @since 0.6.5
  */
 export const ichainMiddlewareKW: <R, A, O, Z, E, B>(
-  f: (a: A) => H.Middleware<O, Z, E, B>
+  f: (a: A) => M.Middleware<O, Z, E, B>
 ) => <I, D>(ma: ReaderMiddleware<R, I, O, D, A>) => ReaderMiddleware<R, I, Z, D | E, B> = chainMiddlewareK as any
 
 /**
+ * @category combinators
  * @since 0.6.3
  */
 export const chainTaskEitherK: <E, A, B>(
@@ -523,10 +580,11 @@ export const chainTaskEitherK: <E, A, B>(
 ) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = (f) => (ma) => (r) =>
   pipe(
     ma(r),
-    H.chain((a) => H.fromTaskEither(f(a)))
+    M.chain((a) => M.fromTaskEither(f(a)))
   )
 
 /**
+ * @category combinators
  * @since 0.6.3
  */
 export const chainTaskEitherKW: <E2, A, B>(
@@ -534,6 +592,7 @@ export const chainTaskEitherKW: <E2, A, B>(
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = chainTaskEitherK as any
 
 /**
+ * @category combinators
  * @since 0.6.3
  */
 export const chainReaderTaskEitherK: <R, E, A, B>(
@@ -541,10 +600,11 @@ export const chainReaderTaskEitherK: <R, E, A, B>(
 ) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = (f) => (ma) => (r) =>
   pipe(
     ma(r),
-    H.chain((a) => H.fromTaskEither(f(a)(r)))
+    M.chain((a) => M.fromTaskEither(f(a)(r)))
   )
 
 /**
+ * @category combinators
  * @since 0.6.3
  */
 export const chainReaderTaskEitherKW: <R2, E2, A, B>(
@@ -553,38 +613,79 @@ export const chainReaderTaskEitherKW: <R2, E2, A, B>(
   chainReaderTaskEitherK as any
 
 /**
+ * @category instances
  * @since 0.6.3
  */
 export const Functor: Functor4<URI> = {
   URI,
-  map: T.map,
+  map: _map,
 }
 
 /**
- * @since 0.6.3
+ * @category instances
+ * @since 0.7.0
  */
-export const Apply: Apply4<URI> = {
+export const ApplyPar: Apply4<URI> = {
   ...Functor,
-  ap: T.ap,
+  ap: _apPar,
 }
 
 /**
- * @since 0.6.3
+ * @category instances
+ * @since 0.7.0
  */
-export const Applicative: Applicative4<URI> = {
-  ...Apply,
+export const ApplySeq: Apply4<URI> = {
+  ...Functor,
+  ap: _apSeq,
+}
+
+/**
+ * Use [`ApplySeq`](./ReaderMiddleware.ts.html#ApplySeq) instead.
+ *
+ * @category instances
+ * @since 0.6.3
+ * @deprecated
+ */
+export const Apply: Apply4<URI> = ApplySeq
+
+/**
+ * @category instances
+ * @since 0.7.0
+ */
+export const ApplicativePar: Applicative4<URI> = {
+  ...ApplyPar,
   of,
 }
 
 /**
- * @since 0.6.3
+ * @category instances
+ * @since 0.7.0
  */
-export const Monad: Monad4<URI> = {
-  ...Applicative,
-  chain: T.chain,
+export const ApplicativeSeq: Applicative4<URI> = {
+  ...ApplySeq,
+  of,
 }
 
 /**
+ * Use [`ApplicativeSeq`](./ReaderMiddleware.ts.html#ApplicativeSeq) instead.
+ *
+ * @category instances
+ * @since 0.6.3
+ * @deprecated
+ */
+export const Applicative: Applicative4<URI> = ApplicativeSeq
+
+/**
+ * @category instances
+ * @since 0.6.3
+ */
+export const Monad: Monad4<URI> = {
+  ...ApplicativeSeq,
+  chain: _chain,
+}
+
+/**
+ * @category instances
  * @since 0.6.3
  */
 export const MonadThrow: MonadThrow4<URI> = {
@@ -593,6 +694,7 @@ export const MonadThrow: MonadThrow4<URI> = {
 }
 
 /**
+ * @category instances
  * @since 0.6.3
  */
 export const Alt: Alt4<URI> = {
@@ -601,6 +703,7 @@ export const Alt: Alt4<URI> = {
 }
 
 /**
+ * @category instances
  * @since 0.6.3
  */
 export const Bifunctor: Bifunctor4<URI> = {

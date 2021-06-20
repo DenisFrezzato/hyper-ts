@@ -1,6 +1,5 @@
 {
   "printWidth": 120,
   "semi": false,
-  "singleQuote": true,
-  "parser": "typescript"
+  "singleQuote": true
 }

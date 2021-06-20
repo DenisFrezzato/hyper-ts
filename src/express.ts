@@ -2,20 +2,12 @@
  * @since 0.5.0
  */
 import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
-import { rightTask } from 'fp-ts/lib/TaskEither'
+import { rightTask } from 'fp-ts/TaskEither'
 import { IncomingMessage } from 'http'
-import {
-  Connection,
-  CookieOptions,
-  HeadersOpen,
-  Middleware,
-  ResponseEnded,
-  Status,
-  execMiddleware,
-  StatusOpen,
-} from '.'
-import * as E from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { Connection, CookieOptions, HeadersOpen, ResponseEnded, Status, StatusOpen } from '.'
+import { Middleware, execMiddleware } from './Middleware'
+import * as E from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 import { Readable } from 'stream'
 
 /**
@@ -73,6 +65,7 @@ export type Action =
 const endResponse: Action = { type: 'endResponse' }
 
 /**
+ * @category model
  * @since 0.5.0
  */
 export class ExpressConnection<S> implements Connection<S> {

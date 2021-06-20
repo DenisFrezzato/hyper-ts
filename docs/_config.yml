@@ -6,4 +6,4 @@ search_enabled: true
 # Aux links for the upper right navigation
 aux_links:
   'hyper-ts on GitHub':
-    - 'https://github.com/gcanti/hyper-ts'
+    - 'https://github.com/DenisFrezzato/hyper-ts'
