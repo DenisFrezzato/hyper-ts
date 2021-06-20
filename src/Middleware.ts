@@ -7,11 +7,11 @@
  */
 import * as TE from 'fp-ts/TaskEither'
 import { Alt3 } from 'fp-ts/Alt'
-import { apFirst as apFirst_, apSecond as apSecond_, Apply3 } from 'fp-ts/Apply'
-import { Chain3, chainFirst as chainFirst_ } from 'fp-ts/Chain'
+import { apFirst as apFirst_, apSecond as apSecond_, Apply3, apS as apS_ } from 'fp-ts/Apply'
+import { bind as bind_, Chain3, chainFirst as chainFirst_ } from 'fp-ts/Chain'
 import { Bifunctor3 } from 'fp-ts/Bifunctor'
 import { identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
-import { Functor3 } from 'fp-ts/Functor'
+import { Functor3, bindTo as bindTo_ } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { BodyOpen, Connection, CookieOptions, HeadersOpen, MediaType, ResponseEnded, Status, StatusOpen } from '.'
 import { Task } from 'fp-ts/Task'
@@ -587,59 +587,6 @@ export function decodeHeader<E, A>(
 }
 
 /**
- * @since 0.7.0
- */
-export const Do = iof<unknown, unknown, never, {}>({})
-
-/**
- * @internal
- */
-const bind_ = <A, N extends string, B>(
-  a: A,
-  name: Exclude<N, keyof A>,
-  b: B
-): { [K in keyof A | N]: K extends keyof A ? A[K] : B } => Object.assign({}, a, { [name]: b }) as any
-
-/**
- * @internal
- */
-const bindTo_ =
-  <N extends string>(name: N) =>
-  <B>(b: B): { [K in N]: B } =>
-    ({ [name]: b } as any)
-
-/**
- * @since 0.7.0
- */
-export const bindTo = <N extends string>(
-  name: N
-): (<I, E, A>(fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in N]: A }>) => map(bindTo_(name))
-
-/**
- * @since 0.7.0
- */
-export const bindW = <N extends string, I, A, E2, B>(
-  name: Exclude<N, keyof A>,
-  f: (a: A) => Middleware<I, I, E2, B>
-): (<E1>(
-  fa: Middleware<I, I, E1, A>
-) => Middleware<I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }>) =>
-  ichainW((a) =>
-    pipe(
-      f(a),
-      map((b) => bind_(a, name, b))
-    )
-  )
-
-/**
- * @since 0.7.0
- */
-export const bind: <N extends string, I, E, A, B>(
-  name: Exclude<N, keyof A>,
-  f: (a: A) => Middleware<I, I, E, B>
-) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bindW
-
-/**
  * @category instances
  * @since 0.7.0
  */
@@ -835,3 +782,43 @@ export const filterOrElseW: {
  */
 export const fromOption: <E>(onNone: Lazy<E>) => <I, A>(ma: O.Option<A>) => Middleware<I, I, E, A> =
   fromOption_(FromEither)
+
+/**
+ * @since 0.7.0
+ */
+export const Do = iof<unknown, unknown, never, {}>({})
+
+/**
+ * @since 0.7.0
+ */
+export const bindTo = bindTo_(Functor)
+
+/**
+ * @since 0.7.0
+ */
+export const bind = bind_(Chain)
+
+/**
+ * @since 0.7.0
+ */
+export const bindW: <N extends string, I, A, E2, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<I, I, E2, B>
+) => <E1>(
+  fa: Middleware<I, I, E1, A>
+) => Middleware<I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bind as any
+
+/**
+ * @since 0.7.0
+ */
+export const apS = apS_(ApplyPar)
+
+/**
+ * @since 0.7.0
+ */
+export const apSW: <A, N extends string, I, E2, B>(
+  name: Exclude<N, keyof A>,
+  fb: Middleware<I, I, E2, B>
+) => <E1>(
+  fa: Middleware<I, I, E1, A>
+) => Middleware<I, I, E1 | E2, { readonly [K in keyof A | N]: K extends keyof A ? A[K] : B }> = apS as any

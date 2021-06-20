@@ -918,9 +918,9 @@ Use [`bindTo`](./Middleware.ts.html#bindTo) instead.
 **Signature**
 
 ```ts
-export declare const bindTo: <N extends string>(
+export declare const bindTo: <N>(
   name: N
-) => <I, E, A>(fa: M.Middleware<I, I, E, A>) => M.Middleware<I, I, E, { [K in N]: A }>
+) => <R, E, A>(fa: M.Middleware<R, R, E, A>) => M.Middleware<R, R, E, { readonly [K in N]: A }>
 ```
 
 Added in v0.6.1
@@ -949,10 +949,12 @@ Use [`bind`](./Middleware.ts.html#bind) instead.
 **Signature**
 
 ```ts
-export declare const bind: <N extends string, I, E, A, B>(
+export declare const bind: <N, A, R, E, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => M.Middleware<I, I, E, B>
-) => (fa: M.Middleware<I, I, E, A>) => M.Middleware<I, I, E, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  f: (a: A) => M.Middleware<R, R, E, B>
+) => (
+  ma: M.Middleware<R, R, E, A>
+) => M.Middleware<R, R, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.6.1
