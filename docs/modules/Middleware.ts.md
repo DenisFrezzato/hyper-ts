@@ -37,8 +37,12 @@ Added in v0.7.0
 - [combinators](#combinators)
   - [apFirst](#apfirst)
   - [apSecond](#apsecond)
+  - [chainEitherK](#chaineitherk)
+  - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
   - [chainFirstW](#chainfirstw)
+  - [chainTaskEitherK](#chaintaskeitherk)
+  - [chainTaskEitherKW](#chaintaskeitherkw)
   - [filterOrElse](#filterorelse)
   - [filterOrElseW](#filterorelsew)
   - [flatten](#flatten)
@@ -300,6 +304,32 @@ export declare const apSecond: <R, E, B>(
 
 Added in v0.7.0
 
+## chainEitherK
+
+**Signature**
+
+```ts
+export declare const chainEitherK: <E, A, B>(
+  f: (a: A) => E.Either<E, B>
+) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
+```
+
+Added in v0.7.0
+
+## chainEitherKW
+
+Less strict version of [`chainEitherK`](#chaineitherk).
+
+**Signature**
+
+```ts
+export declare const chainEitherKW: <E2, A, B>(
+  f: (a: A) => E.Either<E2, B>
+) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
+```
+
+Added in v0.7.0
+
 ## chainFirst
 
 Composes computations in sequence, using the return value of one computation to determine the next computation and
@@ -329,6 +359,32 @@ Derivable from `Chain`.
 export declare const chainFirstW: <I, E2, A, B>(
   f: (a: A) => Middleware<I, I, E2, B>
 ) => <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
+```
+
+Added in v0.7.0
+
+## chainTaskEitherK
+
+**Signature**
+
+```ts
+export declare const chainTaskEitherK: <E, A, B>(
+  f: (a: A) => TE.TaskEither<E, B>
+) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
+```
+
+Added in v0.7.0
+
+## chainTaskEitherKW
+
+Less strict version of [`chainTaskEitherK`](#chaintaskeitherk).
+
+**Signature**
+
+```ts
+export declare const chainTaskEitherKW: <E2, A, B>(
+  f: (a: A) => TE.TaskEither<E2, B>
+) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
 ```
 
 Added in v0.7.0

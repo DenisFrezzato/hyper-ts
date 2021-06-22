@@ -27,6 +27,7 @@ import {
   fromPredicate as fromPredicate_,
   fromOption as fromOption_,
   filterOrElse as filterOrElse_,
+  chainEitherK as chainEitherK_,
   FromEither3,
 } from 'fp-ts/FromEither'
 import * as O from 'fp-ts/Option'
@@ -782,6 +783,42 @@ export const filterOrElseW: {
  */
 export const fromOption: <E>(onNone: Lazy<E>) => <I, A>(ma: O.Option<A>) => Middleware<I, I, E, A> =
   fromOption_(FromEither)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainEitherK: <E, A, B>(
+  f: (a: A) => E.Either<E, B>
+) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B> = chainEitherK_(FromEither, Chain)
+
+/**
+ * Less strict version of [`chainEitherK`](#chaineitherk).
+ *
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainEitherKW: <E2, A, B>(
+  f: (a: A) => E.Either<E2, B>
+) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = chainEitherK as any
+
+/**
+ * Less strict version of [`chainTaskEitherK`](#chaintaskeitherk).
+ *
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainTaskEitherKW: <E2, A, B>(
+  f: (a: A) => TE.TaskEither<E2, B>
+) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = (f) => chainW((a) => fromTaskEither(f(a)))
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainTaskEitherK: <E, A, B>(
+  f: (a: A) => TE.TaskEither<E, B>
+) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B> = chainTaskEitherKW
 
 /**
  * @since 0.7.0
