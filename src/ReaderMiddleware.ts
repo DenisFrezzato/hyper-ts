@@ -19,6 +19,7 @@ import { Apply4, apS as apS_ } from 'fp-ts/Apply'
 import { Applicative4 } from 'fp-ts/Applicative'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
+import { chainEitherK as chainEitherK_, FromEither4 } from 'fp-ts/FromEither'
 
 /**
  * @category instances
@@ -122,6 +123,14 @@ export function rightIO<R, I = H.StatusOpen, E = never, A = never>(fa: IO<A>): R
 export function leftIO<R, I = H.StatusOpen, E = never, A = never>(fe: IO<E>): ReaderMiddleware<R, I, I, E, A> {
   return fromMiddleware(M.leftIO(fe))
 }
+
+/**
+ * @category constructors
+ * @since 0.7.0
+ */
+export const fromEither = <R, I = H.StatusOpen, E = never, A = never>(
+  e: E.Either<E, A>
+): ReaderMiddleware<R, I, I, E, A> => fromMiddleware(M.fromEither(e))
 
 /**
  * @category constructor
@@ -666,6 +675,15 @@ export const Bifunctor: Bifunctor4<URI> = {
 }
 
 /**
+ * @category instances
+ * @since 0.7.0
+ */
+export const FromEither: FromEither4<URI> = {
+  URI,
+  fromEither,
+}
+
+/**
  * Composes computations in sequence, using the return value of one computation to determine
  * the next computation and keeping only the result of the first.
  *
@@ -689,6 +707,24 @@ export const chainFirst: <R, I, E, A, B>(
 export const chainFirstW: <R2, I, E2, A, B>(
   f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
 ) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> = chainFirst as any
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainEitherK: <E, A, B>(
+  f: (a: A) => E.Either<E, B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainEitherK_(FromEither, Chain)
+
+/**
+ * Less strict version of [`chainEitherK`](#chaineitherk).
+ *
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainEitherKW: <E2, A, B>(
+  f: (a: A) => E.Either<E2, B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = chainEitherK as any
 
 /**
  * @since 0.6.3

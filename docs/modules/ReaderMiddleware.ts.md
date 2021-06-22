@@ -29,6 +29,8 @@ Added in v0.6.3
   - [iof](#iof)
   - [of](#of)
 - [combinators](#combinators)
+  - [chainEitherK](#chaineitherk)
+  - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
   - [chainFirstW](#chainfirstw)
   - [chainMiddlewareK](#chainmiddlewarek)
@@ -71,6 +73,8 @@ Added in v0.6.3
   - [rightTask](#righttask)
   - [send](#send)
   - [status](#status)
+- [constructors](#constructors)
+  - [fromEither](#fromeither)
 - [instances](#instances)
   - [Alt](#alt)
   - [ApplicativePar](#applicativepar)
@@ -79,6 +83,7 @@ Added in v0.6.3
   - [ApplySeq](#applyseq)
   - [Bifunctor](#bifunctor-1)
   - [Chain](#chain)
+  - [FromEither](#fromeither)
   - [Functor](#functor-1)
   - [Monad](#monad-1)
   - [MonadThrow](#monadthrow)
@@ -255,6 +260,32 @@ export declare const of: <R, I = H.StatusOpen, E = never, A = never>(a: A) => Re
 Added in v0.6.3
 
 # combinators
+
+## chainEitherK
+
+**Signature**
+
+```ts
+export declare const chainEitherK: <E, A, B>(
+  f: (a: A) => E.Either<E, B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.0
+
+## chainEitherKW
+
+Less strict version of [`chainEitherK`](#chaineitherk).
+
+**Signature**
+
+```ts
+export declare const chainEitherKW: <E2, A, B>(
+  f: (a: A) => E.Either<E2, B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
+```
+
+Added in v0.7.0
 
 ## chainFirst
 
@@ -748,6 +779,20 @@ export declare function status<R, E = never>(
 
 Added in v0.6.3
 
+# constructors
+
+## fromEither
+
+**Signature**
+
+```ts
+export declare const fromEither: <R, I = H.StatusOpen, E = never, A = never>(
+  e: E.Either<E, A>
+) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
+
 # instances
 
 ## Alt
@@ -816,6 +861,16 @@ Added in v0.6.3
 
 ```ts
 export declare const Chain: Chain4<'ReaderMiddleware'>
+```
+
+Added in v0.7.0
+
+## FromEither
+
+**Signature**
+
+```ts
+export declare const FromEither: FromEither4<'ReaderMiddleware'>
 ```
 
 Added in v0.7.0
