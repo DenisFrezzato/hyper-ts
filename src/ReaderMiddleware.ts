@@ -48,7 +48,7 @@ export interface ReaderMiddleware<R, I, O, E, A> {
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
@@ -58,7 +58,7 @@ export function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
@@ -68,7 +68,7 @@ export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export const fromMiddleware =
@@ -77,7 +77,7 @@ export const fromMiddleware =
     fa
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function right<R, I = H.StatusOpen, E = never, A = never>(a: A): ReaderMiddleware<R, I, I, E, A> {
@@ -85,7 +85,7 @@ export function right<R, I = H.StatusOpen, E = never, A = never>(a: A): ReaderMi
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function left<R, I = H.StatusOpen, E = never, A = never>(e: E): ReaderMiddleware<R, I, I, E, A> {
@@ -93,7 +93,7 @@ export function left<R, I = H.StatusOpen, E = never, A = never>(e: E): ReaderMid
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function rightTask<R, I = H.StatusOpen, E = never, A = never>(fa: Task<A>): ReaderMiddleware<R, I, I, E, A> {
@@ -101,7 +101,7 @@ export function rightTask<R, I = H.StatusOpen, E = never, A = never>(fa: Task<A>
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function leftTask<R, I = H.StatusOpen, E = never, A = never>(te: Task<E>): ReaderMiddleware<R, I, I, E, A> {
@@ -109,7 +109,7 @@ export function leftTask<R, I = H.StatusOpen, E = never, A = never>(te: Task<E>)
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function rightIO<R, I = H.StatusOpen, E = never, A = never>(fa: IO<A>): ReaderMiddleware<R, I, I, E, A> {
@@ -117,7 +117,7 @@ export function rightIO<R, I = H.StatusOpen, E = never, A = never>(fa: IO<A>): R
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function leftIO<R, I = H.StatusOpen, E = never, A = never>(fe: IO<E>): ReaderMiddleware<R, I, I, E, A> {
@@ -133,7 +133,7 @@ export const fromEither = <R, I = H.StatusOpen, E = never, A = never>(
 ): ReaderMiddleware<R, I, I, E, A> => fromMiddleware(M.fromEither(e))
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function fromIOEither<R, I = H.StatusOpen, E = never, A = never>(
@@ -143,7 +143,7 @@ export function fromIOEither<R, I = H.StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export const rightReader =
@@ -152,7 +152,7 @@ export const rightReader =
     M.right(ma(r))
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function leftReader<R, I = H.StatusOpen, E = never, A = never>(
@@ -162,13 +162,13 @@ export function leftReader<R, I = H.StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export const ask = <R, I = H.StatusOpen, E = never>(): ReaderMiddleware<R, I, I, E, R> => M.right
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export const asks = <R, E = never, A = never>(f: (r: R) => A): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> =>
@@ -198,7 +198,7 @@ export const orElseW =
     pipe(ma, orElse<R1 & R2, E, I, O, M, A | B>(f))
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function status<R, E = never>(status: H.Status): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void> {
@@ -206,7 +206,7 @@ export function status<R, E = never>(status: H.Status): ReaderMiddleware<R, H.St
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function header<R, E = never>(
@@ -217,7 +217,7 @@ export function header<R, E = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function contentType<R, E = never>(
@@ -227,7 +227,7 @@ export function contentType<R, E = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function cookie<R, E = never>(
@@ -239,7 +239,7 @@ export function cookie<R, E = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function clearCookie<R, E = never>(
@@ -252,7 +252,7 @@ export function clearCookie<R, E = never>(
 const closedHeaders: ReaderMiddleware<any, H.HeadersOpen, H.BodyOpen, never, void> = iof(undefined)
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function closeHeaders<R, E = never>(): ReaderMiddleware<R, H.HeadersOpen, H.BodyOpen, E, void> {
@@ -260,7 +260,7 @@ export function closeHeaders<R, E = never>(): ReaderMiddleware<R, H.HeadersOpen,
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function send<R, E = never>(body: string): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
@@ -268,7 +268,7 @@ export function send<R, E = never>(body: string): ReaderMiddleware<R, H.BodyOpen
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function end<R, E = never>(): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
@@ -276,7 +276,7 @@ export function end<R, E = never>(): ReaderMiddleware<R, H.BodyOpen, H.ResponseE
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function json<R, E>(
@@ -287,7 +287,7 @@ export function json<R, E>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function redirect<R, E = never>(uri: string): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void> {
@@ -295,7 +295,7 @@ export function redirect<R, E = never>(uri: string): ReaderMiddleware<R, H.Statu
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function decodeParam<R, E, A>(
@@ -306,7 +306,7 @@ export function decodeParam<R, E, A>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function decodeParams<R, E, A>(
@@ -316,7 +316,7 @@ export function decodeParams<R, E, A>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function decodeQuery<R, E, A>(
@@ -326,7 +326,7 @@ export function decodeQuery<R, E, A>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function decodeBody<R, E, A>(
@@ -336,7 +336,7 @@ export function decodeBody<R, E, A>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function decodeMethod<R, E, A>(
@@ -346,7 +346,7 @@ export function decodeMethod<R, E, A>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.6.3
  */
 export function decodeHeader<R, E, A>(

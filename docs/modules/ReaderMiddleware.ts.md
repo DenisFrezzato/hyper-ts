@@ -42,7 +42,7 @@ Added in v0.6.3
   - [ichainMiddlewareKW](#ichainmiddlewarekw)
   - [orElse](#orelse)
   - [orElseW](#orelsew)
-- [constructor](#constructor)
+- [constructors](#constructors)
   - [ask](#ask)
   - [asks](#asks)
   - [clearCookie](#clearcookie)
@@ -56,6 +56,7 @@ Added in v0.6.3
   - [decodeParams](#decodeparams)
   - [decodeQuery](#decodequery)
   - [end](#end)
+  - [fromEither](#fromeither)
   - [fromIOEither](#fromioeither)
   - [fromMiddleware](#frommiddleware)
   - [fromReaderTaskEither](#fromreadertaskeither)
@@ -73,8 +74,6 @@ Added in v0.6.3
   - [rightTask](#righttask)
   - [send](#send)
   - [status](#status)
-- [constructors](#constructors)
-  - [fromEither](#fromeither)
 - [instances](#instances)
   - [Alt](#alt)
   - [ApplicativePar](#applicativepar)
@@ -428,7 +427,7 @@ export declare const orElseW: <R2, E, I, O, M, A>(
 
 Added in v0.6.4
 
-# constructor
+# constructors
 
 ## ask
 
@@ -584,6 +583,18 @@ export declare function end<R, E = never>(): ReaderMiddleware<R, H.BodyOpen, H.R
 ```
 
 Added in v0.6.3
+
+## fromEither
+
+**Signature**
+
+```ts
+export declare const fromEither: <R, I = H.StatusOpen, E = never, A = never>(
+  e: E.Either<E, A>
+) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
 
 ## fromIOEither
 
@@ -778,20 +789,6 @@ export declare function status<R, E = never>(
 ```
 
 Added in v0.6.3
-
-# constructors
-
-## fromEither
-
-**Signature**
-
-```ts
-export declare const fromEither: <R, I = H.StatusOpen, E = never, A = never>(
-  e: E.Either<E, A>
-) => ReaderMiddleware<R, I, I, E, A>
-```
-
-Added in v0.7.0
 
 # instances
 
