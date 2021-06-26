@@ -33,6 +33,10 @@ Added in v0.6.3
   - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
   - [chainFirstIOK](#chainfirstiok)
+  - [chainFirstReaderTaskEitherK](#chainfirstreadertaskeitherk)
+  - [chainFirstReaderTaskEitherKW](#chainfirstreadertaskeitherkw)
+  - [chainFirstTaskEitherK](#chainfirsttaskeitherk)
+  - [chainFirstTaskEitherKW](#chainfirsttaskeitherkw)
   - [chainFirstTaskK](#chainfirsttaskk)
   - [chainFirstW](#chainfirstw)
   - [chainIOK](#chainiok)
@@ -321,6 +325,58 @@ Added in v0.7.0
 export declare const chainFirstIOK: <A, B>(
   f: (a: A) => IO<B>
 ) => <S, R, E>(first: ReaderMiddleware<S, R, R, E, A>) => ReaderMiddleware<S, R, R, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstReaderTaskEitherK
+
+**Signature**
+
+```ts
+export declare const chainFirstReaderTaskEitherK: <R, E, A, B>(
+  f: (a: A) => RTE.ReaderTaskEither<R, E, B>
+) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstReaderTaskEitherKW
+
+Less strict version of [`chainFirstReaderTaskEitherK`](#chainfirstreadertaskeitherk).
+
+**Signature**
+
+```ts
+export declare const chainFirstReaderTaskEitherKW: <R2, E2, A, B>(
+  f: (a: A) => RTE.ReaderTaskEither<R2, E2, B>
+) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskEitherK
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskEitherK: <E, A, B>(
+  f: (a: A) => TE.TaskEither<E, B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskEitherKW
+
+Less strict version of [`chainFirstTaskEitherK`](#chainfirsttaskeitherk).
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskEitherKW: <E2, A, B>(
+  f: (a: A) => TE.TaskEither<E2, B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, A>
 ```
 
 Added in v0.7.0

@@ -894,6 +894,25 @@ export const chainTaskEitherK: <E, A, B>(
 ) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B> = chainTaskEitherKW
 
 /**
+ * Less strict version of [`chainFirstTaskEitherK`](#chainfirsttaskeitherk).
+ *
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstTaskEitherKW: <E2, A, B>(
+  f: (a: A) => TE.TaskEither<E2, B>
+) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A> = (f) =>
+  chainFirstW((a) => fromTaskEither(f(a)))
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstTaskEitherK: <E, A, B>(
+  f: (a: A) => TE.TaskEither<E, B>
+) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A> = chainFirstTaskEitherKW
+
+/**
  * @since 0.7.0
  */
 export const Do = iof<unknown, unknown, never, {}>({})
