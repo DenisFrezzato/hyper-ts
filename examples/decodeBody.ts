@@ -1,5 +1,5 @@
-import * as H from '../src'
+import * as M from '../src/Middleware'
 import * as t from 'io-ts'
 
 // return a middleware validating `req.body`
-export const middleware = H.decodeBody(t.string.decode)
+export const middleware = M.decodeBody(t.string.decode)

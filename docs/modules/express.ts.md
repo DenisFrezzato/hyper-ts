@@ -12,7 +12,7 @@ Added in v0.5.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [model](#model)
   - [ExpressConnection (class)](#expressconnection-class)
     - [chain (method)](#chain-method)
     - [getRequest (method)](#getrequest-method)
@@ -30,13 +30,14 @@ Added in v0.5.0
     - [pipeStream (method)](#pipestream-method)
     - [endResponse (method)](#endresponse-method)
     - [\_S (property)](#_s-property)
+- [utils](#utils)
   - [fromRequestHandler](#fromrequesthandler)
   - [toErrorRequestHandler](#toerrorrequesthandler)
   - [toRequestHandler](#torequesthandler)
 
 ---
 
-# utils
+# model
 
 ## ExpressConnection (class)
 
@@ -47,7 +48,7 @@ export declare class ExpressConnection<S> {
   constructor(
     readonly req: Request,
     readonly res: Response,
-    readonly actions: LinkedList<Action> = nil,
+    readonly actions: L.List<Action> = L.nil,
     readonly ended: boolean = false
   )
 }
@@ -214,6 +215,8 @@ readonly _S: S
 ```
 
 Added in v0.5.0
+
+# utils
 
 ## fromRequestHandler
 

@@ -116,7 +116,7 @@ Here is a simple example of a middleware called "myLogger". This function just p
 
 ```ts
 import * as express from 'express'
-import { log } from 'fp-ts/lib/Console'
+import { log } from 'fp-ts/Console'
 import { fromIO, StatusOpen } from 'hyper-ts'
 import { toRequestHandler } from 'hyper-ts/lib/express'
 
@@ -158,7 +158,7 @@ Input validation/decoding is done by defining a decoding function with the follo
 
 ```ts
 import { decodeParam } from 'hyper-ts'
-import { right, left } from 'fp-ts/lib/Either'
+import { right, left } from 'fp-ts/Either'
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => typeof u === 'object' && u !== null
 

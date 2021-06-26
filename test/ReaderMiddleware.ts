@@ -1,29 +1,31 @@
 import * as assert from 'assert'
-import * as E from 'fp-ts/lib/Either'
-import * as TE from 'fp-ts/lib/TaskEither'
-import * as RTE from 'fp-ts/lib/ReaderTaskEither'
+import * as E from 'fp-ts/Either'
+import * as TE from 'fp-ts/TaskEither'
+import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as t from 'io-ts'
 import * as _ from '../src/ReaderMiddleware'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/function'
 import { MockRequest, MockConnection } from './_helpers'
 import * as H from '../src'
-import { toArray, Action } from '../src/express'
+import * as M from '../src/Middleware'
+import { Action } from '../src/express'
+import * as L from 'fp-ts-contrib/List'
 
 function assertProperty<R, I, O, A>(
   m1: _.ReaderMiddleware<R, I, O, any, A>,
   r: R,
-  m2: H.Middleware<I, O, any, A>,
+  m2: M.Middleware<I, O, any, A>,
   cin: MockConnection<I>
 ) {
   return Promise.all([m1(r)(cin)(), m2(cin)()] as const).then(([e1, e2]) => {
     assert.deepStrictEqual(
       pipe(
         e1,
-        E.map(([a1, cout1]) => [a1, toArray((cout1 as MockConnection<O>).actions)])
+        E.map(([a1, cout1]) => [a1, L.toReversedArray((cout1 as MockConnection<O>).actions)])
       ),
       pipe(
         e2,
-        E.map(([a2, cout2]) => [a2, toArray((cout2 as MockConnection<O>).actions)])
+        E.map(([a2, cout2]) => [a2, L.toReversedArray((cout2 as MockConnection<O>).actions)])
       )
     )
   })
@@ -36,11 +38,11 @@ function assertSuccess<R, I, O, A>(
   a: A,
   actions: Array<Action>
 ) {
-  return m(r)(cin)().then(e => {
+  return m(r)(cin)().then((e) => {
     assert.deepStrictEqual(
       pipe(
         e,
-        E.map(([a, cout]) => [a, toArray((cout as MockConnection<O>).actions)])
+        E.map(([a, cout]) => [a, L.toArray((cout as MockConnection<O>).actions)])
       ),
       E.right([a, actions])
     )
@@ -51,7 +53,11 @@ describe('ReaderMiddleware', () => {
   it('ap', () => {
     const fab = pipe(
       _.header('a', 'a'),
-      _.map(() => (s: string): number => s.length)
+      _.map(
+        () =>
+          (s: string): number =>
+            s.length
+      )
     )
     const fa = pipe(
       _.header('b', 'b'),
@@ -60,14 +66,18 @@ describe('ReaderMiddleware', () => {
     const m1 = pipe(fab, _.ap(fa))
     const r = 'yee'
     const fab2 = pipe(
-      H.header('a', 'a'),
-      H.map(() => (s: string): number => s.length)
+      M.header('a', 'a'),
+      M.map(
+        () =>
+          (s: string): number =>
+            s.length
+      )
     )
     const fa2 = pipe(
-      H.header('b', 'b'),
-      H.map(() => 'foo')
+      M.header('b', 'b'),
+      M.map(() => 'foo')
     )
-    const m2 = pipe(fab2, H.ap(fa2))
+    const m2 = pipe(fab2, M.ap(fa2))
     const c = new MockConnection<H.HeadersOpen>(new MockRequest())
     return assertProperty(m1, r, m2, c)
   })
@@ -88,7 +98,7 @@ describe('ReaderMiddleware', () => {
     it('should write the status code', () => {
       const m1 = _.status(200)
       const r = 'yee'
-      const m2 = H.status(200)
+      const m2 = M.status(200)
       const c = new MockConnection<H.StatusOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
     })
@@ -98,7 +108,7 @@ describe('ReaderMiddleware', () => {
     it('should write the headers', () => {
       const m1 = _.header('name', 'value')
       const r = 'yee'
-      const m2 = H.header('name', 'value')
+      const m2 = M.header('name', 'value')
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
     })
@@ -108,7 +118,7 @@ describe('ReaderMiddleware', () => {
     it('should send the content', () => {
       const m1 = _.send('<h1>Hello world!</h1>')
       const r = 'yee'
-      const m2 = H.send('<h1>Hello world!</h1>')
+      const m2 = M.send('<h1>Hello world!</h1>')
       const c = new MockConnection<H.BodyOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
     })
@@ -118,7 +128,7 @@ describe('ReaderMiddleware', () => {
     it('should add the proper header and send the content', () => {
       const m1 = _.json({ a: 1 }, E.toError)
       const r = 'yee'
-      const m2 = H.json({ a: 1 }, E.toError)
+      const m2 = M.json({ a: 1 }, E.toError)
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
     })
@@ -128,7 +138,7 @@ describe('ReaderMiddleware', () => {
     it('should add the cookie', () => {
       const m1 = _.cookie('name', 'value', {})
       const r = 'yee'
-      const m2 = H.cookie('name', 'value', {})
+      const m2 = M.cookie('name', 'value', {})
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
     })
@@ -142,8 +152,8 @@ describe('ReaderMiddleware', () => {
       )
       const r = 'yee'
       const m2 = pipe(
-        H.cookie('name', 'value', {}),
-        H.ichain(() => H.clearCookie('name', {}))
+        M.cookie('name', 'value', {}),
+        M.ichain(() => M.clearCookie('name', {}))
       )
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
@@ -154,7 +164,7 @@ describe('ReaderMiddleware', () => {
     it('should add the `Content-Type` header', () => {
       const m1 = _.contentType(H.MediaType.applicationXML)
       const r = 'yee'
-      const m2 = H.contentType(H.MediaType.applicationXML)
+      const m2 = M.contentType(H.MediaType.applicationXML)
       const c = new MockConnection<H.HeadersOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
     })
@@ -164,7 +174,7 @@ describe('ReaderMiddleware', () => {
     it('should add the correct status / header', () => {
       const m1 = _.redirect('/users')
       const r = 'yee'
-      const m2 = H.redirect('/users')
+      const m2 = M.redirect('/users')
       const c = new MockConnection<H.StatusOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
     })
@@ -174,14 +184,14 @@ describe('ReaderMiddleware', () => {
     it('should validate a param (success case)', () => {
       const m1 = _.decodeParam('foo', t.number.decode)
       const r = 'yee'
-      const m2 = H.decodeParam('foo', t.number.decode)
+      const m2 = M.decodeParam('foo', t.number.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({ foo: 1 }))
       return assertProperty(m1, r, m2, c)
     })
     it('should validate a param (failure case)', () => {
       const m1 = _.decodeParam('foo', t.number.decode)
       const r = 'yee'
-      const m2 = H.decodeParam('foo', t.number.decode)
+      const m2 = M.decodeParam('foo', t.number.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({ foo: 'a' }))
       return assertProperty(m1, r, m2, c)
     })
@@ -190,7 +200,7 @@ describe('ReaderMiddleware', () => {
         const decoder = t.type({ foo: t.number }).decode
         const m1 = _.decodeParams(decoder)
         const r = 'yee'
-        const m2 = H.decodeParams(decoder)
+        const m2 = M.decodeParams(decoder)
         const c = new MockConnection<H.StatusOpen>(new MockRequest({ foo: 1 }))
         return assertProperty(m1, r, m2, c)
       })
@@ -198,7 +208,7 @@ describe('ReaderMiddleware', () => {
         const decoder = t.type({ foo: t.number }).decode
         const m1 = _.decodeParams(decoder)
         const r = 'yee'
-        const m2 = H.decodeParams(decoder)
+        const m2 = M.decodeParams(decoder)
         const c = new MockConnection<H.StatusOpen>(new MockRequest({ foo: 'a' }))
         return assertProperty(m1, r, m2, c)
       })
@@ -210,7 +220,7 @@ describe('ReaderMiddleware', () => {
       const decoder = t.type({ q: t.string }).decode
       const m1 = _.decodeQuery(decoder)
       const r = 'yee'
-      const m2 = H.decodeQuery(decoder)
+      const m2 = M.decodeQuery(decoder)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
       return assertProperty(m1, r, m2, c)
     })
@@ -219,12 +229,12 @@ describe('ReaderMiddleware', () => {
         order: t.string,
         shoe: t.type({
           color: t.string,
-          type: t.string
-        })
+          type: t.string,
+        }),
       }).decode
       const m1 = _.decodeQuery(decoder)
       const r = 'yee'
-      const m2 = H.decodeQuery(decoder)
+      const m2 = M.decodeQuery(decoder)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, 'order=desc&shoe[color]=blue&shoe[type]=converse'))
       return assertProperty(m1, r, m2, c)
     })
@@ -232,7 +242,7 @@ describe('ReaderMiddleware', () => {
       const decoder = t.type({ q: t.number }).decode
       const m1 = _.decodeQuery(decoder)
       const r = 'yee'
-      const m2 = H.decodeQuery(decoder)
+      const m2 = M.decodeQuery(decoder)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, 'q=tobi+ferret'))
       return assertProperty(m1, r, m2, c)
     })
@@ -242,14 +252,14 @@ describe('ReaderMiddleware', () => {
     it('should validate the body (success case)', () => {
       const m1 = _.decodeBody(t.number.decode)
       const r = 'yee'
-      const m2 = H.decodeBody(t.number.decode)
+      const m2 = M.decodeBody(t.number.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, 1))
       return assertProperty(m1, r, m2, c)
     })
     it('should validate the body (failure case)', () => {
       const m1 = _.decodeBody(t.number.decode)
       const r = 'yee'
-      const m2 = H.decodeBody(t.number.decode)
+      const m2 = M.decodeBody(t.number.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, 'a'))
       return assertProperty(m1, r, m2, c)
     })
@@ -259,14 +269,14 @@ describe('ReaderMiddleware', () => {
     it('should validate a header (success case)', () => {
       const m1 = _.decodeHeader('token', t.string.decode)
       const r = 'yee'
-      const m2 = H.decodeHeader('token', t.string.decode)
+      const m2 = M.decodeHeader('token', t.string.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, { token: 'mytoken' }))
       return assertProperty(m1, r, m2, c)
     })
     it('should validate a header (failure case)', () => {
       const m1 = _.decodeHeader('token', t.string.decode)
       const r = 'yee'
-      const m2 = H.decodeHeader('token', t.string.decode)
+      const m2 = M.decodeHeader('token', t.string.decode)
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
       return assertProperty(m1, r, m2, c)
     })
@@ -289,7 +299,7 @@ describe('ReaderMiddleware', () => {
   it('chainMiddlewareK', () => {
     const m1 = pipe(
       _.right('foo'),
-      _.chainMiddlewareK(s => H.right(s.length))
+      _.chainMiddlewareK((s) => M.right(s.length))
     )
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
@@ -299,7 +309,7 @@ describe('ReaderMiddleware', () => {
   it('chainTaskEitherK', () => {
     const m1 = pipe(
       _.right('foo'),
-      _.chainTaskEitherK(s => TE.right(s.length))
+      _.chainTaskEitherK((s) => TE.right(s.length))
     )
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
@@ -309,7 +319,7 @@ describe('ReaderMiddleware', () => {
   it('chainReaderTaskEitherK', () => {
     const m1 = pipe(
       _.right('foo'),
-      _.chainReaderTaskEitherK(s => RTE.right(s.length))
+      _.chainReaderTaskEitherK((s) => RTE.right(s.length))
     )
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
@@ -324,9 +334,9 @@ describe('ReaderMiddleware', () => {
     )
     const r = 'yee'
     const m2 = pipe(
-      H.right(1),
-      H.bindTo('a'),
-      H.bind('b', () => H.right('b'))
+      M.right(1),
+      M.bindTo('a'),
+      M.bind('b', () => M.right('b'))
     )
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertProperty(m1, r, m2, c)

@@ -2,61 +2,14 @@
  * @since 0.5.0
  */
 import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
-import { rightTask } from 'fp-ts/lib/TaskEither'
+import { rightTask } from 'fp-ts/TaskEither'
 import { IncomingMessage } from 'http'
-import {
-  Connection,
-  CookieOptions,
-  HeadersOpen,
-  Middleware,
-  ResponseEnded,
-  Status,
-  execMiddleware,
-  StatusOpen
-} from '.'
-import * as E from 'fp-ts/lib/Either'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { Connection, CookieOptions, HeadersOpen, ResponseEnded, Status, StatusOpen } from '.'
+import { Middleware, execMiddleware } from './Middleware'
+import * as E from 'fp-ts/Either'
+import { pipe } from 'fp-ts/function'
 import { Readable } from 'stream'
-
-/**
- * @internal
- */
-export type LinkedList<A> =
-  | { type: 'Nil'; length: number }
-  | { type: 'Cons'; head: A; tail: LinkedList<A>; length: number }
-
-/**
- * @internal
- */
-export const nil: LinkedList<never> = { type: 'Nil', length: 0 }
-
-/**
- * @internal
- */
-export function cons<A>(head: A, tail: LinkedList<A>): LinkedList<A> {
-  return {
-    type: 'Cons',
-    head,
-    tail,
-    length: tail.length + 1
-  }
-}
-
-/**
- * @internal
- */
-export function toArray<A>(list: LinkedList<A>): Array<A> {
-  const len = list.length
-  const r: Array<A> = new Array(len)
-  let l: LinkedList<A> = list
-  let i = 1
-  while (l.type !== 'Nil') {
-    r[len - i] = l.head
-    i++
-    l = l.tail
-  }
-  return r
-}
+import * as L from 'fp-ts-contrib/List'
 
 /**
  * @internal
@@ -73,6 +26,7 @@ export type Action =
 const endResponse: Action = { type: 'endResponse' }
 
 /**
+ * @category model
  * @since 0.5.0
  */
 export class ExpressConnection<S> implements Connection<S> {
@@ -83,14 +37,14 @@ export class ExpressConnection<S> implements Connection<S> {
   constructor(
     readonly req: Request,
     readonly res: Response,
-    readonly actions: LinkedList<Action> = nil,
+    readonly actions: L.List<Action> = L.nil,
     readonly ended: boolean = false
   ) {}
   /**
    * @since 0.5.0
    */
   chain<T>(action: Action, ended: boolean = false): ExpressConnection<T> {
-    return new ExpressConnection<T>(this.req, this.res, cons(action, this.actions), ended)
+    return new ExpressConnection<T>(this.req, this.res, L.cons(action, this.actions), ended)
   }
   /**
    * @since 0.5.0
@@ -205,15 +159,15 @@ function exec<I, O, E>(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  return execMiddleware(middleware, new ExpressConnection<I>(req, res))().then(e =>
+  return execMiddleware(middleware, new ExpressConnection<I>(req, res))().then((e) =>
     pipe(
       e,
       E.fold(
-        e => next(e),
-        c => {
+        (e) => next(e),
+        (c) => {
           const { actions: list, res, ended } = c as ExpressConnection<O>
           const len = list.length
-          const actions = toArray(list)
+          const actions = L.toReversedArray(list)
           for (let i = 0; i < len; i++) {
             run(res, actions[i])
           }
@@ -247,10 +201,10 @@ export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
 ): Middleware<I, I, E, A> {
-  return c =>
+  return (c) =>
     rightTask(
       () =>
-        new Promise(resolve => {
+        new Promise((resolve) => {
           const { req, res } = c as ExpressConnection<I>
           requestHandler(req, res, () => resolve([f(req), c]))
         })

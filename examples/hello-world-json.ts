@@ -1,11 +1,12 @@
 import * as express from 'express'
 import * as H from '../src'
+import * as M from '../src/Middleware'
 import { toRequestHandler } from '../src/express'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/function'
 
 const hello = pipe(
-  H.status(H.Status.OK),
-  H.ichain(() => H.json({ a: 1 }, () => 'error'))
+  M.status(H.Status.OK),
+  M.ichain(() => M.json({ a: 1 }, () => 'error'))
 )
 
 express()
