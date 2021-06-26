@@ -21,6 +21,12 @@ import * as RTE from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
 import { chainEitherK as chainEitherK_, FromEither4 } from 'fp-ts/FromEither'
 import { FromIO4, fromIOK as fromIOK_, chainIOK as chainIOK_, chainFirstIOK as chainFirstIOK_ } from 'fp-ts/FromIO'
+import {
+  FromTask4,
+  fromTaskK as fromTaskK_,
+  chainTaskK as chainTaskK_,
+  chainFirstTaskK as chainFirstTaskK_,
+} from 'fp-ts/FromTask'
 
 /**
  * @category instances
@@ -759,6 +765,39 @@ export const chainIOK = chainIOK_(FromIO, Chain)
  * @since 0.7.0
  */
 export const chainFirstIOK = chainFirstIOK_(FromIO, Chain)
+
+/**
+ * @category constructors
+ * @since 0.7.0
+ */
+export const fromTask: FromTask4<URI>['fromTask'] = rightTask
+
+/**
+ * @category instances
+ * @since 0.7.0
+ */
+export const FromTask: FromTask4<URI> = {
+  ...FromIO,
+  fromTask,
+}
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const fromTaskK = fromTaskK_(FromTask)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainTaskK = chainTaskK_(FromTask, Chain)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstTaskK = chainFirstTaskK_(FromTask, Chain)
 
 /**
  * @since 0.6.3
