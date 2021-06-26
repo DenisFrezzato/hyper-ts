@@ -1,7 +1,7 @@
 /**
  * @since 0.6.3
  */
-import { flow, pipe } from 'fp-ts/function'
+import { flow, pipe, Predicate, Refinement } from 'fp-ts/function'
 import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { Task } from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
@@ -19,7 +19,12 @@ import { Apply4, apS as apS_ } from 'fp-ts/Apply'
 import { Applicative4 } from 'fp-ts/Applicative'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
-import { chainEitherK as chainEitherK_, FromEither4 } from 'fp-ts/FromEither'
+import {
+  chainEitherK as chainEitherK_,
+  FromEither4,
+  fromPredicate as fromPredicate_,
+  filterOrElse as filterOrElse_,
+} from 'fp-ts/FromEither'
 import { FromIO4, fromIOK as fromIOK_, chainIOK as chainIOK_, chainFirstIOK as chainFirstIOK_ } from 'fp-ts/FromIO'
 import {
   FromTask4,
@@ -733,6 +738,45 @@ export const chainFirst: <R, I, E, A, B>(
 export const chainFirstW: <R2, I, E2, A, B>(
   f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
 ) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> = chainFirst as any
+
+/**
+ * @category constructors
+ * @since 0.7.0
+ */
+export const fromPredicate: {
+  <E, A, B extends A>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R, I>(
+    a: A
+  ) => ReaderMiddleware<R, I, I, E, B>
+  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, I>(a: A) => ReaderMiddleware<R, I, I, E, A>
+} = fromPredicate_(FromEither)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const filterOrElse: {
+  <E, A, B extends A>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R, I>(
+    ma: ReaderMiddleware<R, I, I, E, A>
+  ) => ReaderMiddleware<R, I, I, E, B>
+  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, I>(
+    ma: ReaderMiddleware<R, I, I, E, A>
+  ) => ReaderMiddleware<R, I, I, E, A>
+} = filterOrElse_(FromEither, Chain)
+
+/**
+ * Less strict version of [`filterOrElse`](#filterorelse).
+ *
+ * @category combinators
+ * @since 0.7.0
+ */
+export const filterOrElseW: {
+  <A, B extends A, E2>(refinement: Refinement<A, B>, onFalse: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, B>
+  <A, E2>(predicate: Predicate<A>, onFalse: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, A>
+} = filterOrElse
 
 /**
  * @category combinators
