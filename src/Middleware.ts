@@ -32,6 +32,7 @@ import {
 } from 'fp-ts/FromEither'
 import * as O from 'fp-ts/Option'
 import * as J from 'fp-ts/Json'
+import { FromIO3, fromIOK as fromIOK_, chainIOK as chainIOK_, chainFirstIOK as chainFirstIOK_ } from 'fp-ts/FromIO'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind3<R, E, A> {
@@ -801,6 +802,39 @@ export const chainEitherK: <E, A, B>(
 export const chainEitherKW: <E2, A, B>(
   f: (a: A) => E.Either<E2, B>
 ) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = chainEitherK as any
+
+/**
+ * @category constructors
+ * @since 0.7.0
+ */
+export const fromIO: FromIO3<URI>['fromIO'] = rightIO
+
+/**
+ * @category instances
+ * @since 0.7.0
+ */
+export const FromIO: FromIO3<URI> = {
+  URI,
+  fromIO,
+}
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const fromIOK = fromIOK_(FromIO)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainIOK = chainIOK_(FromIO, Chain)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstIOK = chainFirstIOK_(FromIO, Chain)
 
 /**
  * Less strict version of [`chainTaskEitherK`](#chaintaskeitherk).

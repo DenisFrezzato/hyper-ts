@@ -20,6 +20,7 @@ import { Applicative4 } from 'fp-ts/Applicative'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
 import { chainEitherK as chainEitherK_, FromEither4 } from 'fp-ts/FromEither'
+import { FromIO4, fromIOK as fromIOK_, chainIOK as chainIOK_, chainFirstIOK as chainFirstIOK_ } from 'fp-ts/FromIO'
 
 /**
  * @category instances
@@ -725,6 +726,39 @@ export const chainEitherK: <E, A, B>(
 export const chainEitherKW: <E2, A, B>(
   f: (a: A) => E.Either<E2, B>
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = chainEitherK as any
+
+/**
+ * @category constructors
+ * @since 0.7.0
+ */
+export const fromIO: FromIO4<URI>['fromIO'] = rightIO
+
+/**
+ * @category instances
+ * @since 0.7.0
+ */
+export const FromIO: FromIO4<URI> = {
+  URI,
+  fromIO,
+}
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const fromIOK = fromIOK_(FromIO)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainIOK = chainIOK_(FromIO, Chain)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstIOK = chainFirstIOK_(FromIO, Chain)
 
 /**
  * @since 0.6.3
