@@ -46,6 +46,8 @@ Added in v0.6.3
   - [chainTaskEitherK](#chaintaskeitherk)
   - [chainTaskEitherKW](#chaintaskeitherkw)
   - [chainTaskK](#chaintaskk)
+  - [filterOrElse](#filterorelse)
+  - [filterOrElseW](#filterorelsew)
   - [fromIOK](#fromiok)
   - [fromTaskK](#fromtaskk)
   - [ichainMiddlewareK](#ichainmiddlewarek)
@@ -70,6 +72,7 @@ Added in v0.6.3
   - [fromIO](#fromio)
   - [fromIOEither](#fromioeither)
   - [fromMiddleware](#frommiddleware)
+  - [fromPredicate](#frompredicate)
   - [fromReaderTaskEither](#fromreadertaskeither)
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
@@ -493,6 +496,42 @@ export declare const chainTaskK: <A, B>(
 
 Added in v0.7.0
 
+## filterOrElse
+
+**Signature**
+
+```ts
+export declare const filterOrElse: {
+  <E, A, B extends A>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R, I>(
+    ma: ReaderMiddleware<R, I, I, E, A>
+  ) => ReaderMiddleware<R, I, I, E, B>
+  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, I>(
+    ma: ReaderMiddleware<R, I, I, E, A>
+  ) => ReaderMiddleware<R, I, I, E, A>
+}
+```
+
+Added in v0.7.0
+
+## filterOrElseW
+
+Less strict version of [`filterOrElse`](#filterorelse).
+
+**Signature**
+
+```ts
+export declare const filterOrElseW: {
+  <A, B extends A, E2>(refinement: Refinement<A, B>, onFalse: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, B>
+  <A, E2>(predicate: Predicate<A>, onFalse: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, A>
+}
+```
+
+Added in v0.7.0
+
 ## fromIOK
 
 **Signature**
@@ -763,6 +802,21 @@ export declare const fromMiddleware: <R, I = H.StatusOpen, O = I, E = never, A =
 ```
 
 Added in v0.6.3
+
+## fromPredicate
+
+**Signature**
+
+```ts
+export declare const fromPredicate: {
+  <E, A, B extends A>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R, I>(
+    a: A
+  ) => ReaderMiddleware<R, I, I, E, B>
+  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, I>(a: A) => ReaderMiddleware<R, I, I, E, A>
+}
+```
+
+Added in v0.7.0
 
 ## fromReaderTaskEither
 
