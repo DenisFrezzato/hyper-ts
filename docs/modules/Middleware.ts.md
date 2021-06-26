@@ -41,6 +41,8 @@ Added in v0.7.0
   - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
   - [chainFirstIOK](#chainfirstiok)
+  - [chainFirstTaskEitherK](#chainfirsttaskeitherk)
+  - [chainFirstTaskEitherKW](#chainfirsttaskeitherkw)
   - [chainFirstTaskK](#chainfirsttaskk)
   - [chainFirstW](#chainfirstw)
   - [chainIOK](#chainiok)
@@ -365,6 +367,32 @@ Added in v0.7.0
 export declare const chainFirstIOK: <A, B>(
   f: (a: A) => IO<B>
 ) => <R, E>(first: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskEitherK
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskEitherK: <E, A, B>(
+  f: (a: A) => TE.TaskEither<E, B>
+) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskEitherKW
+
+Less strict version of [`chainFirstTaskEitherK`](#chainfirsttaskeitherk).
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskEitherKW: <E2, A, B>(
+  f: (a: A) => TE.TaskEither<E2, B>
+) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
 ```
 
 Added in v0.7.0
