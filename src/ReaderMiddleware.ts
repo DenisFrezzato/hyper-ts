@@ -89,6 +89,36 @@ export const fromMiddleware =
     fa
 
 /**
+ * @category constructor
+ * @since 0.7.0
+ */
+export function gets<R, I = H.StatusOpen, E = never, A = never>(
+  f: (c: H.Connection<I>) => A
+): ReaderMiddleware<R, I, I, E, A> {
+  return fromMiddleware(M.gets(f))
+}
+
+/**
+ * @category constructor
+ * @since 0.7.0
+ */
+export function fromConnection<R, I = H.StatusOpen, E = never, A = never>(
+  f: (c: H.Connection<I>) => E.Either<E, A>
+): ReaderMiddleware<R, I, I, E, A> {
+  return fromMiddleware(M.fromConnection(f))
+}
+
+/**
+ * @category constructor
+ * @since 0.7.0
+ */
+export function modifyConnection<R, I, O, E>(
+  f: (c: H.Connection<I>) => H.Connection<O>
+): ReaderMiddleware<R, I, O, E, void> {
+  return fromMiddleware(M.modifyConnection(f))
+}
+
+/**
  * @category constructors
  * @since 0.6.3
  */
