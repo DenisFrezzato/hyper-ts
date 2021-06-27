@@ -50,6 +50,13 @@ function assertSuccess<R, I, O, A>(
 }
 
 describe('ReaderMiddleware', () => {
+  it('fromMiddleware', () => {
+    const m2 = M.right(42)
+    const m1 = _.fromMiddleware(m2)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertProperty(m1, undefined, m2, c)
+  })
+
   it('ap', () => {
     const fab = pipe(
       _.header('a', 'a'),

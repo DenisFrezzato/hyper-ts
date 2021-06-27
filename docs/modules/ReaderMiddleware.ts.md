@@ -54,6 +54,10 @@ Added in v0.6.3
   - [ichainMiddlewareKW](#ichainmiddlewarekw)
   - [orElse](#orelse)
   - [orElseW](#orelsew)
+- [constructor](#constructor)
+  - [fromConnection](#fromconnection)
+  - [gets](#gets)
+  - [modifyConnection](#modifyconnection)
 - [constructors](#constructors)
   - [ask](#ask)
   - [asks](#asks)
@@ -599,6 +603,44 @@ export declare const orElseW: <R2, E, I, O, M, A>(
 ```
 
 Added in v0.6.4
+
+# constructor
+
+## fromConnection
+
+**Signature**
+
+```ts
+export declare function fromConnection<R, I = H.StatusOpen, E = never, A = never>(
+  f: (c: H.Connection<I>) => E.Either<E, A>
+): ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
+
+## gets
+
+**Signature**
+
+```ts
+export declare function gets<R, I = H.StatusOpen, E = never, A = never>(
+  f: (c: H.Connection<I>) => A
+): ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
+
+## modifyConnection
+
+**Signature**
+
+```ts
+export declare function modifyConnection<R, I, O, E>(
+  f: (c: H.Connection<I>) => H.Connection<O>
+): ReaderMiddleware<R, I, O, E, void>
+```
+
+Added in v0.7.0
 
 # constructors
 
