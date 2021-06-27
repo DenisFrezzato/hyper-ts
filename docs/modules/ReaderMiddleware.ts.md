@@ -32,12 +32,24 @@ Added in v0.6.3
   - [chainEitherK](#chaineitherk)
   - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
+  - [chainFirstIOK](#chainfirstiok)
+  - [chainFirstReaderTaskEitherK](#chainfirstreadertaskeitherk)
+  - [chainFirstReaderTaskEitherKW](#chainfirstreadertaskeitherkw)
+  - [chainFirstTaskEitherK](#chainfirsttaskeitherk)
+  - [chainFirstTaskEitherKW](#chainfirsttaskeitherkw)
+  - [chainFirstTaskK](#chainfirsttaskk)
   - [chainFirstW](#chainfirstw)
+  - [chainIOK](#chainiok)
   - [chainMiddlewareK](#chainmiddlewarek)
   - [chainReaderTaskEitherK](#chainreadertaskeitherk)
   - [chainReaderTaskEitherKW](#chainreadertaskeitherkw)
   - [chainTaskEitherK](#chaintaskeitherk)
   - [chainTaskEitherKW](#chaintaskeitherkw)
+  - [chainTaskK](#chaintaskk)
+  - [filterOrElse](#filterorelse)
+  - [filterOrElseW](#filterorelsew)
+  - [fromIOK](#fromiok)
+  - [fromTaskK](#fromtaskk)
   - [ichainMiddlewareK](#ichainmiddlewarek)
   - [ichainMiddlewareKW](#ichainmiddlewarekw)
   - [orElse](#orelse)
@@ -57,9 +69,12 @@ Added in v0.6.3
   - [decodeQuery](#decodequery)
   - [end](#end)
   - [fromEither](#fromeither)
+  - [fromIO](#fromio)
   - [fromIOEither](#fromioeither)
   - [fromMiddleware](#frommiddleware)
+  - [fromPredicate](#frompredicate)
   - [fromReaderTaskEither](#fromreadertaskeither)
+  - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
   - [header](#header)
   - [json](#json)
@@ -83,6 +98,8 @@ Added in v0.6.3
   - [Bifunctor](#bifunctor-1)
   - [Chain](#chain)
   - [FromEither](#fromeither)
+  - [FromIO](#fromio)
+  - [FromTask](#fromtask)
   - [Functor](#functor-1)
   - [Monad](#monad-1)
   - [MonadThrow](#monadthrow)
@@ -303,6 +320,82 @@ export declare const chainFirst: <R, I, E, A, B>(
 
 Added in v0.7.0
 
+## chainFirstIOK
+
+**Signature**
+
+```ts
+export declare const chainFirstIOK: <A, B>(
+  f: (a: A) => IO<B>
+) => <S, R, E>(first: ReaderMiddleware<S, R, R, E, A>) => ReaderMiddleware<S, R, R, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstReaderTaskEitherK
+
+**Signature**
+
+```ts
+export declare const chainFirstReaderTaskEitherK: <R, E, A, B>(
+  f: (a: A) => RTE.ReaderTaskEither<R, E, B>
+) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstReaderTaskEitherKW
+
+Less strict version of [`chainFirstReaderTaskEitherK`](#chainfirstreadertaskeitherk).
+
+**Signature**
+
+```ts
+export declare const chainFirstReaderTaskEitherKW: <R2, E2, A, B>(
+  f: (a: A) => RTE.ReaderTaskEither<R2, E2, B>
+) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskEitherK
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskEitherK: <E, A, B>(
+  f: (a: A) => TE.TaskEither<E, B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskEitherKW
+
+Less strict version of [`chainFirstTaskEitherK`](#chainfirsttaskeitherk).
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskEitherKW: <E2, A, B>(
+  f: (a: A) => TE.TaskEither<E2, B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskK
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskK: <A, B>(
+  f: (a: A) => Task<B>
+) => <S, R, E>(first: ReaderMiddleware<S, R, R, E, A>) => ReaderMiddleware<S, R, R, E, A>
+```
+
+Added in v0.7.0
+
 ## chainFirstW
 
 Less strict version of [`chainFirst`](#chainfirst).
@@ -315,6 +408,18 @@ Derivable from `Chain`.
 export declare const chainFirstW: <R2, I, E2, A, B>(
   f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
 ) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
+```
+
+Added in v0.7.0
+
+## chainIOK
+
+**Signature**
+
+```ts
+export declare const chainIOK: <A, B>(
+  f: (a: A) => IO<B>
+) => <S, R, E>(first: ReaderMiddleware<S, R, R, E, A>) => ReaderMiddleware<S, R, R, E, B>
 ```
 
 Added in v0.7.0
@@ -378,6 +483,74 @@ export declare const chainTaskEitherKW: <E2, A, B>(
 ```
 
 Added in v0.6.3
+
+## chainTaskK
+
+**Signature**
+
+```ts
+export declare const chainTaskK: <A, B>(
+  f: (a: A) => Task<B>
+) => <S, R, E>(first: ReaderMiddleware<S, R, R, E, A>) => ReaderMiddleware<S, R, R, E, B>
+```
+
+Added in v0.7.0
+
+## filterOrElse
+
+**Signature**
+
+```ts
+export declare const filterOrElse: {
+  <E, A, B extends A>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R, I>(
+    ma: ReaderMiddleware<R, I, I, E, A>
+  ) => ReaderMiddleware<R, I, I, E, B>
+  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, I>(
+    ma: ReaderMiddleware<R, I, I, E, A>
+  ) => ReaderMiddleware<R, I, I, E, A>
+}
+```
+
+Added in v0.7.0
+
+## filterOrElseW
+
+Less strict version of [`filterOrElse`](#filterorelse).
+
+**Signature**
+
+```ts
+export declare const filterOrElseW: {
+  <A, B extends A, E2>(refinement: Refinement<A, B>, onFalse: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, B>
+  <A, E2>(predicate: Predicate<A>, onFalse: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, A>
+}
+```
+
+Added in v0.7.0
+
+## fromIOK
+
+**Signature**
+
+```ts
+export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <S, R, E>(...a: A) => ReaderMiddleware<S, R, R, E, B>
+```
+
+Added in v0.7.0
+
+## fromTaskK
+
+**Signature**
+
+```ts
+export declare const fromTaskK: <A, B>(f: (...a: A) => Task<B>) => <S, R, E>(...a: A) => ReaderMiddleware<S, R, R, E, B>
+```
+
+Added in v0.7.0
 
 ## ichainMiddlewareK
 
@@ -596,6 +769,16 @@ export declare const fromEither: <R, I = H.StatusOpen, E = never, A = never>(
 
 Added in v0.7.0
 
+## fromIO
+
+**Signature**
+
+```ts
+export declare const fromIO: <S, R, E, A>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
+```
+
+Added in v0.7.0
+
 ## fromIOEither
 
 **Signature**
@@ -620,6 +803,21 @@ export declare const fromMiddleware: <R, I = H.StatusOpen, O = I, E = never, A =
 
 Added in v0.6.3
 
+## fromPredicate
+
+**Signature**
+
+```ts
+export declare const fromPredicate: {
+  <E, A, B extends A>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <R, I>(
+    a: A
+  ) => ReaderMiddleware<R, I, I, E, B>
+  <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <R, I>(a: A) => ReaderMiddleware<R, I, I, E, A>
+}
+```
+
+Added in v0.7.0
+
 ## fromReaderTaskEither
 
 **Signature**
@@ -631,6 +829,16 @@ export declare function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A =
 ```
 
 Added in v0.6.3
+
+## fromTask
+
+**Signature**
+
+```ts
+export declare const fromTask: <S, R, E, A>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
+```
+
+Added in v0.7.0
 
 ## fromTaskEither
 
@@ -868,6 +1076,26 @@ Added in v0.7.0
 
 ```ts
 export declare const FromEither: FromEither4<'ReaderMiddleware'>
+```
+
+Added in v0.7.0
+
+## FromIO
+
+**Signature**
+
+```ts
+export declare const FromIO: FromIO4<'ReaderMiddleware'>
+```
+
+Added in v0.7.0
+
+## FromTask
+
+**Signature**
+
+```ts
+export declare const FromTask: FromTask4<'ReaderMiddleware'>
 ```
 
 Added in v0.7.0

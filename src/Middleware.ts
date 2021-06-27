@@ -32,6 +32,13 @@ import {
 } from 'fp-ts/FromEither'
 import * as O from 'fp-ts/Option'
 import * as J from 'fp-ts/Json'
+import { FromIO3, fromIOK as fromIOK_, chainIOK as chainIOK_, chainFirstIOK as chainFirstIOK_ } from 'fp-ts/FromIO'
+import {
+  FromTask3,
+  fromTaskK as fromTaskK_,
+  chainTaskK as chainTaskK_,
+  chainFirstTaskK as chainFirstTaskK_,
+} from 'fp-ts/FromTask'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind3<R, E, A> {
@@ -803,6 +810,72 @@ export const chainEitherKW: <E2, A, B>(
 ) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = chainEitherK as any
 
 /**
+ * @category constructors
+ * @since 0.7.0
+ */
+export const fromIO: FromIO3<URI>['fromIO'] = rightIO
+
+/**
+ * @category instances
+ * @since 0.7.0
+ */
+export const FromIO: FromIO3<URI> = {
+  URI,
+  fromIO,
+}
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const fromIOK = fromIOK_(FromIO)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainIOK = chainIOK_(FromIO, Chain)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstIOK = chainFirstIOK_(FromIO, Chain)
+
+/**
+ * @category constructors
+ * @since 0.7.0
+ */
+export const fromTask: FromTask3<URI>['fromTask'] = rightTask
+
+/**
+ * @category instances
+ * @since 0.7.0
+ */
+export const FromTask: FromTask3<URI> = {
+  ...FromIO,
+  fromTask,
+}
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const fromTaskK = fromTaskK_(FromTask)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainTaskK = chainTaskK_(FromTask, Chain)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstTaskK = chainFirstTaskK_(FromTask, Chain)
+
+/**
  * Less strict version of [`chainTaskEitherK`](#chaintaskeitherk).
  *
  * @category combinators
@@ -819,6 +892,25 @@ export const chainTaskEitherKW: <E2, A, B>(
 export const chainTaskEitherK: <E, A, B>(
   f: (a: A) => TE.TaskEither<E, B>
 ) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B> = chainTaskEitherKW
+
+/**
+ * Less strict version of [`chainFirstTaskEitherK`](#chainfirsttaskeitherk).
+ *
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstTaskEitherKW: <E2, A, B>(
+  f: (a: A) => TE.TaskEither<E2, B>
+) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A> = (f) =>
+  chainFirstW((a) => fromTaskEither(f(a)))
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const chainFirstTaskEitherK: <E, A, B>(
+  f: (a: A) => TE.TaskEither<E, B>
+) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A> = chainFirstTaskEitherKW
 
 /**
  * @since 0.7.0

@@ -40,12 +40,20 @@ Added in v0.7.0
   - [chainEitherK](#chaineitherk)
   - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
+  - [chainFirstIOK](#chainfirstiok)
+  - [chainFirstTaskEitherK](#chainfirsttaskeitherk)
+  - [chainFirstTaskEitherKW](#chainfirsttaskeitherkw)
+  - [chainFirstTaskK](#chainfirsttaskk)
   - [chainFirstW](#chainfirstw)
+  - [chainIOK](#chainiok)
   - [chainTaskEitherK](#chaintaskeitherk)
   - [chainTaskEitherKW](#chaintaskeitherkw)
+  - [chainTaskK](#chaintaskk)
   - [filterOrElse](#filterorelse)
   - [filterOrElseW](#filterorelsew)
   - [flatten](#flatten)
+  - [fromIOK](#fromiok)
+  - [fromTaskK](#fromtaskk)
   - [orElse](#orelse)
 - [constructor](#constructor)
   - [fromConnection](#fromconnection)
@@ -64,9 +72,11 @@ Added in v0.7.0
   - [decodeQuery](#decodequery)
   - [end](#end)
   - [fromEither](#fromeither)
+  - [fromIO](#fromio)
   - [fromIOEither](#fromioeither)
   - [fromOption](#fromoption)
   - [fromPredicate](#frompredicate)
+  - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
   - [header](#header)
   - [json](#json)
@@ -89,6 +99,8 @@ Added in v0.7.0
   - [Bifunctor](#bifunctor-1)
   - [Chain](#chain)
   - [FromEither](#fromeither)
+  - [FromIO](#fromio)
+  - [FromTask](#fromtask)
   - [Functor](#functor-1)
   - [Monad](#monad-1)
   - [MonadTask](#monadtask)
@@ -347,6 +359,56 @@ export declare const chainFirst: <A, R, E, B>(
 
 Added in v0.7.0
 
+## chainFirstIOK
+
+**Signature**
+
+```ts
+export declare const chainFirstIOK: <A, B>(
+  f: (a: A) => IO<B>
+) => <R, E>(first: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskEitherK
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskEitherK: <E, A, B>(
+  f: (a: A) => TE.TaskEither<E, B>
+) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskEitherKW
+
+Less strict version of [`chainFirstTaskEitherK`](#chainfirsttaskeitherk).
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskEitherKW: <E2, A, B>(
+  f: (a: A) => TE.TaskEither<E2, B>
+) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
+```
+
+Added in v0.7.0
+
+## chainFirstTaskK
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskK: <A, B>(
+  f: (a: A) => Task<B>
+) => <R, E>(first: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.7.0
+
 ## chainFirstW
 
 Less strict version of [`chainFirst`](#chainfirst).
@@ -359,6 +421,18 @@ Derivable from `Chain`.
 export declare const chainFirstW: <I, E2, A, B>(
   f: (a: A) => Middleware<I, I, E2, B>
 ) => <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
+```
+
+Added in v0.7.0
+
+## chainIOK
+
+**Signature**
+
+```ts
+export declare const chainIOK: <A, B>(
+  f: (a: A) => IO<B>
+) => <R, E>(first: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
 ```
 
 Added in v0.7.0
@@ -385,6 +459,18 @@ Less strict version of [`chainTaskEitherK`](#chaintaskeitherk).
 export declare const chainTaskEitherKW: <E2, A, B>(
   f: (a: A) => TE.TaskEither<E2, B>
 ) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
+```
+
+Added in v0.7.0
+
+## chainTaskK
+
+**Signature**
+
+```ts
+export declare const chainTaskK: <A, B>(
+  f: (a: A) => Task<B>
+) => <R, E>(first: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
 ```
 
 Added in v0.7.0
@@ -431,6 +517,26 @@ Derivable from `Chain`.
 
 ```ts
 export declare const flatten: <I, E, A>(mma: Middleware<I, I, E, Middleware<I, I, E, A>>) => Middleware<I, I, E, A>
+```
+
+Added in v0.7.0
+
+## fromIOK
+
+**Signature**
+
+```ts
+export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <R, E>(...a: A) => Middleware<R, R, E, B>
+```
+
+Added in v0.7.0
+
+## fromTaskK
+
+**Signature**
+
+```ts
+export declare const fromTaskK: <A, B>(f: (...a: A) => Task<B>) => <R, E>(...a: A) => Middleware<R, R, E, B>
 ```
 
 Added in v0.7.0
@@ -646,6 +752,16 @@ export declare const fromEither: <I = StatusOpen, E = never, A = never>(fa: E.Ei
 
 Added in v0.7.0
 
+## fromIO
+
+**Signature**
+
+```ts
+export declare const fromIO: <R, E, A>(fa: IO<A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.7.0
+
 ## fromIOEither
 
 **Signature**
@@ -675,6 +791,16 @@ export declare const fromPredicate: {
   <E, A, B extends A>(refinement: Refinement<A, B>, onFalse: (a: A) => E): <I>(a: A) => Middleware<I, I, E, B>
   <E, A>(predicate: Predicate<A>, onFalse: (a: A) => E): <I>(a: A) => Middleware<I, I, E, A>
 }
+```
+
+Added in v0.7.0
+
+## fromTask
+
+**Signature**
+
+```ts
+export declare const fromTask: <R, E, A>(fa: Task<A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.7.0
@@ -904,6 +1030,26 @@ Added in v0.7.0
 
 ```ts
 export declare const FromEither: FromEither3<'Middleware'>
+```
+
+Added in v0.7.0
+
+## FromIO
+
+**Signature**
+
+```ts
+export declare const FromIO: FromIO3<'Middleware'>
+```
+
+Added in v0.7.0
+
+## FromTask
+
+**Signature**
+
+```ts
+export declare const FromTask: FromTask3<'Middleware'>
 ```
 
 Added in v0.7.0
