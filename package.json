@@ -92,7 +92,9 @@
   },
   "lint-staged": {
     "*.{ts,js}": [
-      "prettier --write",
+      "prettier --write"
+    ],
+    "{src,test}/**/*.{ts,js}": [
       "npm run lint"
     ]
   }
