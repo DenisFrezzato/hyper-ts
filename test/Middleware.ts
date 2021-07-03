@@ -271,4 +271,23 @@ describe('Middleware', () => {
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertSuccess(m, c, { a: 1, b: 'b' }, [])
   })
+
+  it('indexed do notation', () => {
+    const m = pipe(
+      _.status(H.Status.OK),
+      _.imap(() => 1),
+      _.ibindTo('a'),
+      _.ibind('b', () =>
+        pipe(
+          _.header('x-header', 'nice header'),
+          _.imap(() => 'b')
+        )
+      )
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, { a: 1, b: 'b' }, [
+      { type: 'setStatus', status: 200 },
+      { type: 'setHeader', name: 'x-header', value: 'nice header' },
+    ])
+  })
 })
