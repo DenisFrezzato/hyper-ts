@@ -144,6 +144,21 @@ export const map =
     _map(fa, f)
 
 /**
+ * Indexed version of [`map`](#map).
+ *
+ * @category IxFunctor
+ * @since 0.7.0
+ */
+export const imap =
+  <A, B>(f: (a: A) => B) =>
+  <I, O, E>(fa: Middleware<I, O, E, A>): Middleware<I, O, E, B> =>
+  (ci) =>
+    pipe(
+      fa(ci),
+      TE.map(([a, co]) => [f(a), co])
+    )
+
+/**
  * Map a pair of functions over the two last type arguments of the bifunctor.
  *
  * @category Bifunctor
@@ -233,7 +248,7 @@ export const flatten: <I, E, A>(mma: Middleware<I, I, E, Middleware<I, I, E, A>>
 /**
  * Less strict version of [`ichain`](#ichain).
  *
- * @category Monad
+ * @category IxMonad
  * @since 0.7.0
  */
 export function ichainW<A, O, Z, E, B>(
@@ -247,7 +262,9 @@ export function ichainW<A, O, Z, E, B>(
 }
 
 /**
- * @category Monad
+ * Indexed version of [`chain`](#chain).
+ *
+ * @category IxMonad
  * @since 0.7.0
  */
 export const ichain: <A, O, Z, E, B>(
@@ -923,6 +940,15 @@ export const Do = iof<unknown, unknown, never, {}>({})
 export const bindTo = bindTo_(Functor)
 
 /**
+ * Indexed version of [`bindTo`](#bindto).
+ *
+ * @since 0.7.0
+ */
+export const ibindTo: <N extends string>(
+  name: N
+) => <I, O, E, A>(fa: Middleware<I, O, E, A>) => Middleware<I, O, E, { readonly [K in N]: A }> = bindTo as any
+
+/**
  * @since 0.7.0
  */
 export const bind = bind_(Chain)
@@ -938,16 +964,62 @@ export const bindW: <N extends string, I, A, E2, B>(
 ) => Middleware<I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bind as any
 
 /**
+ * Less strict version of [`ibind`](#ibind).
+ *
+ * @since 0.7.0
+ */
+export const ibindW: <N extends string, A, O, Z, E2, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<O, Z, E2, B>
+) => <I, E1>(
+  ma: Middleware<I, O, E1, A>
+) => Middleware<I, Z, E1 | E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = bindW as any
+
+/**
+ * @since 0.7.0
+ */
+export const ibind: <N extends string, A, O, Z, E, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<O, Z, E, B>
+) => <I>(
+  ma: Middleware<I, O, E, A>
+) => Middleware<I, Z, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = ibindW
+
+/**
  * @since 0.7.0
  */
 export const apS = apS_(ApplyPar)
 
 /**
+ * Less strict version of [`apS`](#aps).
+ *
  * @since 0.7.0
  */
-export const apSW: <A, N extends string, I, E2, B>(
+export const apSW: <N extends string, A, I, E2, B>(
   name: Exclude<N, keyof A>,
   fb: Middleware<I, I, E2, B>
 ) => <E1>(
   fa: Middleware<I, I, E1, A>
 ) => Middleware<I, I, E1 | E2, { readonly [K in keyof A | N]: K extends keyof A ? A[K] : B }> = apS as any
+
+/**
+ * Less strict version of [`iapS`](#iaps).
+ *
+ * @since 0.7.0
+ */
+export const iapSW: <N extends string, A, I, O, E2, B>(
+  name: Exclude<N, keyof A>,
+  fb: Middleware<I, O, E2, B>
+) => <E1>(
+  fa: Middleware<I, O, E1, A>
+) => Middleware<I, O, E1 | E2, { readonly [K in keyof A | N]: K extends keyof A ? A[K] : B }> = apS as any
+
+/**
+ * @since 0.7.0
+ */
+export const iapS: <N extends string, A, I, O, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: Middleware<I, O, E, B>
+) => (
+  fa: Middleware<I, O, E, A>
+) => Middleware<I, O, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = iapSW

@@ -348,4 +348,32 @@ describe('ReaderMiddleware', () => {
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertProperty(m1, r, m2, c)
   })
+
+  it('indexed do notation', () => {
+    const m1 = pipe(
+      _.status(H.Status.OK),
+      _.imap(() => 1),
+      _.ibindTo('a'),
+      _.ibind('b', () =>
+        pipe(
+          _.header('x-header', 'nice header'),
+          _.imap(() => 'b')
+        )
+      )
+    )
+    const r = 1
+    const m2 = pipe(
+      M.status(H.Status.OK),
+      M.imap(() => 1),
+      M.ibindTo('a'),
+      M.ibind('b', () =>
+        pipe(
+          M.header('x-header', 'nice header'),
+          M.imap(() => 'b')
+        )
+      )
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertProperty(m1, r, m2, c)
+  })
 })

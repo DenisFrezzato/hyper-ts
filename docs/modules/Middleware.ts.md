@@ -26,11 +26,14 @@ Added in v0.7.0
   - [mapLeft](#mapleft)
 - [Functor](#functor)
   - [map](#map)
+- [IxFunctor](#ixfunctor)
+  - [imap](#imap)
+- [IxMonad](#ixmonad)
+  - [ichain](#ichain)
+  - [ichainW](#ichainw)
 - [Monad](#monad)
   - [chain](#chain)
   - [chainW](#chainw)
-  - [ichain](#ichain)
-  - [ichainW](#ichainw)
 - [Pointed](#pointed)
   - [iof](#iof)
   - [of](#of)
@@ -121,6 +124,11 @@ Added in v0.7.0
   - [bindW](#bindw)
   - [evalMiddleware](#evalmiddleware)
   - [execMiddleware](#execmiddleware)
+  - [iapS](#iaps)
+  - [iapSW](#iapsw)
+  - [ibind](#ibind)
+  - [ibindTo](#ibindto)
+  - [ibindW](#ibindw)
 
 ---
 
@@ -212,6 +220,50 @@ export declare const map: <A, B>(f: (a: A) => B) => <I, E>(fa: Middleware<I, I, 
 
 Added in v0.7.0
 
+# IxFunctor
+
+## imap
+
+Indexed version of [`map`](#map).
+
+**Signature**
+
+```ts
+export declare const imap: <A, B>(f: (a: A) => B) => <I, O, E>(fa: Middleware<I, O, E, A>) => Middleware<I, O, E, B>
+```
+
+Added in v0.7.0
+
+# IxMonad
+
+## ichain
+
+Indexed version of [`chain`](#chain).
+
+**Signature**
+
+```ts
+export declare const ichain: <A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B>
+```
+
+Added in v0.7.0
+
+## ichainW
+
+Less strict version of [`ichain`](#ichain).
+
+**Signature**
+
+```ts
+export declare function ichainW<A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B>
+```
+
+Added in v0.7.0
+
 # Monad
 
 ## chain
@@ -238,32 +290,6 @@ Less strict version of [`chain`](#chain).
 export declare const chainW: <I, E2, A, B>(
   f: (a: A) => Middleware<I, I, E2, B>
 ) => <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
-```
-
-Added in v0.7.0
-
-## ichain
-
-**Signature**
-
-```ts
-export declare const ichain: <A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B>
-```
-
-Added in v0.7.0
-
-## ichainW
-
-Less strict version of [`ichain`](#ichain).
-
-**Signature**
-
-```ts
-export declare function ichainW<A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B>
 ```
 
 Added in v0.7.0
@@ -1184,10 +1210,12 @@ Added in v0.7.0
 
 ## apSW
 
+Less strict version of [`apS`](#aps).
+
 **Signature**
 
 ```ts
-export declare const apSW: <A, N extends string, I, E2, B>(
+export declare const apSW: <N extends string, A, I, E2, B>(
   name: Exclude<N, keyof A>,
   fb: Middleware<I, I, E2, B>
 ) => <E1>(
@@ -1256,6 +1284,82 @@ export declare function execMiddleware<I, O, E, A>(
   ma: Middleware<I, O, E, A>,
   c: Connection<I>
 ): TE.TaskEither<E, Connection<O>>
+```
+
+Added in v0.7.0
+
+## iapS
+
+**Signature**
+
+```ts
+export declare const iapS: <N extends string, A, I, O, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: Middleware<I, O, E, B>
+) => (fa: Middleware<I, O, E, A>) => Middleware<I, O, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
+## iapSW
+
+Less strict version of [`iapS`](#iaps).
+
+**Signature**
+
+```ts
+export declare const iapSW: <N extends string, A, I, O, E2, B>(
+  name: Exclude<N, keyof A>,
+  fb: Middleware<I, O, E2, B>
+) => <E1>(
+  fa: Middleware<I, O, E1, A>
+) => Middleware<I, O, E2 | E1, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
+## ibind
+
+**Signature**
+
+```ts
+export declare const ibind: <N extends string, A, O, Z, E, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<O, Z, E, B>
+) => <I>(
+  ma: Middleware<I, O, E, A>
+) => Middleware<I, Z, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
+## ibindTo
+
+Indexed version of [`bindTo`](#bindto).
+
+**Signature**
+
+```ts
+export declare const ibindTo: <N extends string>(
+  name: N
+) => <I, O, E, A>(fa: Middleware<I, O, E, A>) => Middleware<I, O, E, { readonly [K in N]: A }>
+```
+
+Added in v0.7.0
+
+## ibindW
+
+Less strict version of [`ibind`](#ibind).
+
+**Signature**
+
+```ts
+export declare const ibindW: <N extends string, A, O, Z, E2, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => Middleware<O, Z, E2, B>
+) => <I, E1>(
+  ma: Middleware<I, O, E1, A>
+) => Middleware<I, Z, E2 | E1, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.7.0

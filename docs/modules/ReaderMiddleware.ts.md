@@ -20,11 +20,14 @@ Added in v0.6.3
   - [mapLeft](#mapleft)
 - [Functor](#functor)
   - [map](#map)
+- [IxFunctor](#ixfunctor)
+  - [imap](#imap)
+- [IxMonad](#ixmonad)
+  - [ichain](#ichain)
+  - [ichainW](#ichainw)
 - [Monad](#monad)
   - [chain](#chain)
   - [chainW](#chainw)
-  - [ichain](#ichain)
-  - [ichainW](#ichainw)
 - [Pointed](#pointed)
   - [iof](#iof)
   - [of](#of)
@@ -122,6 +125,11 @@ Added in v0.6.3
   - [bind](#bind)
   - [bindTo](#bindto)
   - [bindW](#bindw)
+  - [iapS](#iaps)
+  - [iapSW](#iapsw)
+  - [ibind](#ibind)
+  - [ibindTo](#ibindto)
+  - [ibindW](#ibindw)
 
 ---
 
@@ -203,6 +211,52 @@ export declare const map: <A, B>(
 
 Added in v0.6.3
 
+# IxFunctor
+
+## imap
+
+Indexed version of [`map`](#map).
+
+**Signature**
+
+```ts
+export declare const imap: <A, B>(
+  f: (a: A) => B
+) => <R, I, O, E>(fa: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, E, B>
+```
+
+Added in v0.7.0
+
+# IxMonad
+
+## ichain
+
+Indexed version of [`chain`](#chain).
+
+**Signature**
+
+```ts
+export declare const ichain: <R, A, O, Z, E, B>(
+  f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
+) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B>
+```
+
+Added in v0.6.3
+
+## ichainW
+
+Less strict version of [`ichain`](#ichain).
+
+**Signature**
+
+```ts
+export declare function ichainW<R2, A, O, Z, E2, B>(
+  f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+): <R1, I, E1>(ma: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B>
+```
+
+Added in v0.6.3
+
 # Monad
 
 ## chain
@@ -229,30 +283,6 @@ Less strict version of [`chain`](#chain).
 export declare const chainW: <R2, I, E2, A, B>(
   f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
 ) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, B>
-```
-
-Added in v0.6.3
-
-## ichain
-
-**Signature**
-
-```ts
-export declare const ichain: <R, A, O, Z, E, B>(
-  f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
-) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B>
-```
-
-Added in v0.6.3
-
-## ichainW
-
-**Signature**
-
-```ts
-export declare function ichainW<R2, A, O, Z, E2, B>(
-  f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
-): <R1, I, E1>(ma: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B>
 ```
 
 Added in v0.6.3
@@ -1285,10 +1315,12 @@ Added in v0.7.0
 
 ## apSW
 
+Less strict version of [`apS`](#aps).
+
 **Signature**
 
 ```ts
-export declare const apSW: <A, N extends string, I, R2, E2, B>(
+export declare const apSW: <N extends string, A, I, R2, E2, B>(
   name: Exclude<N, keyof A>,
   fb: ReaderMiddleware<R2, I, I, E2, B>
 ) => <R1, E1>(
@@ -1330,12 +1362,90 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare const bindW: <N extends string, R, I, A, E2, B>(
+export declare const bindW: <N extends string, R2, I, A, E2, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => ReaderMiddleware<R, I, I, E2, B>
-) => <E1>(
-  fa: ReaderMiddleware<R, I, I, E1, A>
-) => ReaderMiddleware<R, I, I, E2 | E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+  f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
+) => <R1, E1>(
+  fa: ReaderMiddleware<R1, I, I, E1, A>
+) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, { [K in N | keyof A]: K extends keyof A ? A[K] : B }>
 ```
 
 Added in v0.6.3
+
+## iapS
+
+**Signature**
+
+```ts
+export declare const iapS: <N extends string, A, R, I, O, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderMiddleware<R, I, O, E, B>
+) => (
+  fa: ReaderMiddleware<R, I, O, E, A>
+) => ReaderMiddleware<R, I, O, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
+## iapSW
+
+Less strict version of [`iapS`](#iaps).
+
+**Signature**
+
+```ts
+export declare const iapSW: <N extends string, A, R2, I, O, E2, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderMiddleware<R2, I, O, E2, B>
+) => <R1, E1>(
+  fa: ReaderMiddleware<R1, I, O, E1, A>
+) => ReaderMiddleware<R1 & R2, I, O, E2 | E1, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
+## ibind
+
+**Signature**
+
+```ts
+export declare const ibind: <N extends string, A, R, O, Z, E, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
+) => <I>(
+  ma: ReaderMiddleware<R, I, O, E, A>
+) => ReaderMiddleware<R, I, Z, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
+## ibindTo
+
+Indexed version of [`bindTo`](#bindto).
+
+**Signature**
+
+```ts
+export declare const ibindTo: <N extends string>(
+  name: N
+) => <R, I, O, E, A>(fa: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, E, { readonly [K in N]: A }>
+```
+
+Added in v0.7.0
+
+## ibindW
+
+Less strict version of [`ibind`](#ibind).
+
+**Signature**
+
+```ts
+export declare const ibindW: <N extends string, A, R2, O, Z, E2, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+) => <R1, I, E1>(
+  ma: ReaderMiddleware<R1, I, O, E1, A>
+) => ReaderMiddleware<R1 & R2, I, Z, E2 | E1, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
