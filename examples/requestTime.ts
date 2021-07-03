@@ -17,7 +17,11 @@ const requestTime: express.RequestHandler = function (req: any, _, next) {
 const decodeNumber = (u: unknown): Either<string, number> => (typeof u === 'number' ? right(u) : left('Invalid number'))
 
 const parseRequestTime = pipe(
-  fromRequestHandler<H.StatusOpen, string, number>(requestTime, (req: any) => req.requestTime),
+  fromRequestHandler<H.StatusOpen, string, number>(
+    requestTime,
+    (req: any) => right(req.requestTime),
+    (err) => String(err)
+  ),
   M.chain((u) => M.fromEither(decodeNumber(u)))
 )
 
