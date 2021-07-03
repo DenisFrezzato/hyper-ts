@@ -435,6 +435,18 @@ export const map =
     _map(fa, f)
 
 /**
+ * Indexed version of [`map`](#map).
+ *
+ * @category IxFunctor
+ * @since 0.7.0
+ */
+export const imap =
+  <A, B>(f: (a: A) => B) =>
+  <R, I, O, E>(fa: ReaderMiddleware<R, I, O, E, A>): ReaderMiddleware<R, I, O, E, B> =>
+  (r) =>
+    pipe(fa(r), M.imap(f))
+
+/**
  * Map a pair of functions over the two last type arguments of the bifunctor.
  *
  * @category Bifunctor
@@ -517,7 +529,9 @@ export const chainW: <R2, I, E2, A, B>(
 ) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> = chain as any
 
 /**
- * @category Monad
+ * Indexed version of [`chain`](#chain).
+ *
+ * @category IxMonad
  * @since 0.6.3
  */
 export const ichain: <R, A, O, Z, E, B>(
@@ -525,7 +539,9 @@ export const ichain: <R, A, O, Z, E, B>(
 ) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B> = ichainW
 
 /**
- * @category Monad
+ * Less strict version of [`ichain`](#ichain).
+ *
+ * @category IxMonad
  * @since 0.6.3
  */
 export function ichainW<R2, A, O, Z, E2, B>(
@@ -922,6 +938,16 @@ export const Do = iof<unknown, unknown, unknown, never, {}>({})
 export const bindTo = bindTo_(Functor)
 
 /**
+ * Indexed version of [`bindTo`](#bindto).
+ *
+ * @since 0.7.0
+ */
+export const ibindTo: <N extends string>(
+  name: N
+) => <R, I, O, E, A>(fa: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, E, { readonly [K in N]: A }> =
+  bindTo as any
+
+/**
  * @since 0.6.3
  */
 export const bind = bind_(Chain)
@@ -929,12 +955,35 @@ export const bind = bind_(Chain)
 /**
  * @since 0.6.3
  */
-export const bindW: <N extends string, R, I, A, E2, B>(
+export const bindW: <N extends string, R2, I, A, E2, B>(
   name: Exclude<N, keyof A>,
-  f: (a: A) => ReaderMiddleware<R, I, I, E2, B>
-) => <E1>(
-  fa: ReaderMiddleware<R, I, I, E1, A>
-) => ReaderMiddleware<R, I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bind as any
+  f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
+) => <R1, E1>(
+  fa: ReaderMiddleware<R1, I, I, E1, A>
+) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, { [K in keyof A | N]: K extends keyof A ? A[K] : B }> = bind as any
+
+/**
+ * Less strict version of [`ibind`](#ibind).
+ *
+ * @since 0.7.0
+ */
+export const ibindW: <N extends string, A, R2, O, Z, E2, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+) => <R1, I, E1>(
+  ma: ReaderMiddleware<R1, I, O, E1, A>
+) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> =
+  bindW as any
+
+/**
+ * @since 0.7.0
+ */
+export const ibind: <N extends string, A, R, O, Z, E, B>(
+  name: Exclude<N, keyof A>,
+  f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
+) => <I>(
+  ma: ReaderMiddleware<R, I, O, E, A>
+) => ReaderMiddleware<R, I, Z, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = ibindW
 
 /**
  * @since 0.7.0
@@ -942,12 +991,37 @@ export const bindW: <N extends string, R, I, A, E2, B>(
 export const apS = apS_(ApplyPar)
 
 /**
+ * Less strict version of [`apS`](#aps).
+ *
  * @since 0.7.0
  */
-export const apSW: <A, N extends string, I, R2, E2, B>(
+export const apSW: <N extends string, A, I, R2, E2, B>(
   name: Exclude<N, keyof A>,
   fb: ReaderMiddleware<R2, I, I, E2, B>
 ) => <R1, E1>(
   fa: ReaderMiddleware<R1, I, I, E1, A>
 ) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, { readonly [K in keyof A | N]: K extends keyof A ? A[K] : B }> =
   apS as any
+
+/**
+ * Less strict version of [`iapS`](#iaps).
+ *
+ * @since 0.7.0
+ */
+export const iapSW: <N extends string, A, R2, I, O, E2, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderMiddleware<R2, I, O, E2, B>
+) => <R1, E1>(
+  fa: ReaderMiddleware<R1, I, O, E1, A>
+) => ReaderMiddleware<R1 & R2, I, O, E1 | E2, { readonly [K in keyof A | N]: K extends keyof A ? A[K] : B }> =
+  apS as any
+
+/**
+ * @since 0.7.0
+ */
+export const iapS: <N extends string, A, R, I, O, E, B>(
+  name: Exclude<N, keyof A>,
+  fb: ReaderMiddleware<R, I, O, E, B>
+) => (
+  fa: ReaderMiddleware<R, I, O, E, A>
+) => ReaderMiddleware<R, I, O, E, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }> = iapSW
