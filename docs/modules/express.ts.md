@@ -220,12 +220,20 @@ Added in v0.5.0
 
 ## fromRequestHandler
 
+The overload without error handler is unsafe and deprecated, use the one with
+the error handler instead.
+
 **Signature**
 
 ```ts
 export declare function fromRequestHandler<I = StatusOpen, E = never, A = never>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
+): Middleware<I, I, E, A>
+export declare function fromRequestHandler<I = StatusOpen, E = never, A = never>(
+  requestHandler: RequestHandler,
+  f: (req: Request) => E.Either<E, A>,
+  onError: (reason: unknown) => E
 ): Middleware<I, I, E, A>
 ```
 

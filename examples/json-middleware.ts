@@ -10,7 +10,11 @@ import { fromRequestHandler, toRequestHandler } from '../src/express'
 // Express middleware
 const json = express.json()
 
-const jsonMiddleware = fromRequestHandler(json, () => undefined)
+const jsonMiddleware = fromRequestHandler(
+  json,
+  () => E.right(undefined),
+  (err) => String(err)
+)
 
 const Body = t.strict({
   name: t.string,

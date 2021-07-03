@@ -2,7 +2,6 @@
  * @since 0.5.0
  */
 import { Request, RequestHandler, ErrorRequestHandler, Response, NextFunction } from 'express'
-import { rightTask } from 'fp-ts/TaskEither'
 import { IncomingMessage } from 'http'
 import { Connection, CookieOptions, HeadersOpen, ResponseEnded, Status, StatusOpen } from '.'
 import { Middleware, execMiddleware } from './Middleware'
@@ -195,18 +194,41 @@ export function toErrorRequestHandler<I, O, E>(f: (err: unknown) => Middleware<I
 }
 
 /**
+ * The overload without error handler is unsafe and deprecated, use the one with
+ * the error handler instead.
+ *
  * @since 0.5.0
  */
 export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
   requestHandler: RequestHandler,
   f: (req: Request) => A
+): Middleware<I, I, E, A>
+export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
+  requestHandler: RequestHandler,
+  f: (req: Request) => E.Either<E, A>,
+  onError: (reason: unknown) => E
+): Middleware<I, I, E, A>
+export function fromRequestHandler<I = StatusOpen, E = never, A = never>(
+  requestHandler: RequestHandler,
+  f: (req: Request) => A | E.Either<E, A>,
+  onError?: (reason: unknown) => E
 ): Middleware<I, I, E, A> {
-  return (c) =>
-    rightTask(
-      () =>
-        new Promise((resolve) => {
-          const { req, res } = c as ExpressConnection<I>
-          requestHandler(req, res, () => resolve([f(req), c]))
-        })
-    )
+  return (c) => () =>
+    new Promise((resolve) => {
+      const { req, res } = c as ExpressConnection<I>
+      // tslint:disable-next-line strict-boolean-expressions
+      const cb = onError
+        ? (err: unknown) =>
+            // tslint:disable-next-line strict-boolean-expressions
+            err
+              ? resolve(E.left(onError(err)))
+              : pipe(
+                  req,
+                  f as (req: Request) => E.Either<E, A>,
+                  E.map((a): [A, Connection<I>] => [a, c]),
+                  resolve
+                )
+        : () => resolve(E.right([(f as (req: Request) => A)(req), c]))
+      requestHandler(req, res, cb)
+    })
 }
