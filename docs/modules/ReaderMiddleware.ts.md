@@ -29,6 +29,8 @@ Added in v0.6.3
   - [iof](#iof)
   - [of](#of)
 - [combinators](#combinators)
+  - [apFirst](#apfirst)
+  - [apSecond](#apsecond)
   - [chainEitherK](#chaineitherk)
   - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
@@ -280,6 +282,30 @@ export declare const of: <R, I = H.StatusOpen, E = never, A = never>(a: A) => Re
 Added in v0.6.3
 
 # combinators
+
+## apFirst
+
+**Signature**
+
+```ts
+export declare const apFirst: <S, R, E, B>(
+  second: ReaderMiddleware<S, R, R, E, B>
+) => <A>(first: ReaderMiddleware<S, R, R, E, A>) => ReaderMiddleware<S, R, R, E, A>
+```
+
+Added in v0.7.0
+
+## apSecond
+
+**Signature**
+
+```ts
+export declare const apSecond: <S, R, E, B>(
+  second: ReaderMiddleware<S, R, R, E, B>
+) => <A>(first: ReaderMiddleware<S, R, R, E, A>) => ReaderMiddleware<S, R, R, E, B>
+```
+
+Added in v0.7.0
 
 ## chainEitherK
 
