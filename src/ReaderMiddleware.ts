@@ -15,7 +15,7 @@ import { Alt4 } from 'fp-ts/Alt'
 import { Bifunctor4 } from 'fp-ts/Bifunctor'
 import { MonadThrow4 } from 'fp-ts/MonadThrow'
 import { Functor4, bindTo as bindTo_ } from 'fp-ts/Functor'
-import { Apply4, apS as apS_ } from 'fp-ts/Apply'
+import { Apply4, apS as apS_, apFirst as apFirst_, apSecond as apSecond_ } from 'fp-ts/Apply'
 import { Applicative4 } from 'fp-ts/Applicative'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
@@ -743,6 +743,18 @@ export const FromEither: FromEither4<URI> = {
   URI,
   fromEither,
 }
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const apFirst = apFirst_(ApplyPar)
+
+/**
+ * @category combinators
+ * @since 0.7.0
+ */
+export const apSecond = apSecond_(ApplyPar)
 
 /**
  * Composes computations in sequence, using the return value of one computation to determine
