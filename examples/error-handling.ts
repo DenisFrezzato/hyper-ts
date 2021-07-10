@@ -1,8 +1,9 @@
 import * as express from 'express'
 import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
 import * as H from '../src'
+import * as M from '../src/Middleware'
 import { toRequestHandler } from '../src/express'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/function'
 
 //
 // model
@@ -25,59 +26,59 @@ const JSONError = 'JSONError' as const
 type UserError = typeof InvalidArguments | typeof UserNotFound | typeof JSONError
 
 /** Parses the `user_id` param */
-const getUserId: H.Middleware<H.StatusOpen, H.StatusOpen, UserError, NonEmptyString> = pipe(
-  H.decodeParam('user_id', NonEmptyString.decode),
-  H.mapLeft(() => InvalidArguments)
+const getUserId: M.Middleware<H.StatusOpen, H.StatusOpen, UserError, NonEmptyString> = pipe(
+  M.decodeParam('user_id', NonEmptyString.decode),
+  M.mapLeft(() => InvalidArguments)
 )
 
 /** Loads a `User` from a database (fake) */
-function loadUser(userId: NonEmptyString): H.Middleware<H.StatusOpen, H.StatusOpen, UserError, User> {
-  return userId === 'ab' ? H.right({ name: 'User name...' }) : H.left(UserNotFound)
+function loadUser(userId: NonEmptyString): M.Middleware<H.StatusOpen, H.StatusOpen, UserError, User> {
+  return userId === 'ab' ? M.right({ name: 'User name...' }) : M.left(UserNotFound)
 }
 
 /** Sends a `User` to the client */
-function sendUser(user: User): H.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> {
+function sendUser(user: User): M.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> {
   return pipe(
-    H.status(H.Status.OK),
-    H.ichain(() => H.json(user, () => JSONError))
+    M.status(H.Status.OK),
+    M.ichain(() => M.json(user, () => JSONError))
   )
 }
 
-const getUser: H.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> = pipe(
+const getUser: M.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> = pipe(
   getUserId,
-  H.ichain(loadUser),
-  H.ichain(sendUser)
+  M.ichain(loadUser),
+  M.ichain(sendUser)
 )
 
 //
 // error handling
 //
 
-function badRequest<E = never>(message: string): H.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
+function badRequest<E = never>(message: string): M.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
   return pipe(
-    H.status(H.Status.BadRequest),
-    H.ichain(() => H.closeHeaders()),
-    H.ichain(() => H.send(message))
+    M.status(H.Status.BadRequest),
+    M.ichain(() => M.closeHeaders()),
+    M.ichain(() => M.send(message))
   )
 }
 
-function notFound<E = never>(message: string): H.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
+function notFound<E = never>(message: string): M.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
   return pipe(
-    H.status(H.Status.NotFound),
-    H.ichain(() => H.closeHeaders()),
-    H.ichain(() => H.send(message))
+    M.status(H.Status.NotFound),
+    M.ichain(() => M.closeHeaders()),
+    M.ichain(() => M.send(message))
   )
 }
 
-function serverError<E = never>(message: string): H.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
+function serverError<E = never>(message: string): M.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
   return pipe(
-    H.status(H.Status.ServerError),
-    H.ichain(() => H.closeHeaders()),
-    H.ichain(() => H.send(message))
+    M.status(H.Status.InternalServerError),
+    M.ichain(() => M.closeHeaders()),
+    M.ichain(() => M.send(message))
   )
 }
 
-function sendError(err: UserError): H.Middleware<H.StatusOpen, H.ResponseEnded, never, void> {
+function sendError(err: UserError): M.Middleware<H.StatusOpen, H.ResponseEnded, never, void> {
   switch (err) {
     case 'UserNotFound':
       return notFound('user not found')
@@ -92,10 +93,7 @@ function sendError(err: UserError): H.Middleware<H.StatusOpen, H.ResponseEnded, 
 // route
 //
 
-const user = pipe(
-  getUser,
-  H.orElse(sendError)
-)
+const user = pipe(getUser, M.orElse(sendError))
 
 express()
   .get('/:user_id', toRequestHandler(user))

@@ -24,6 +24,7 @@ cannot be made. A few examples of such mistakes could be:
 
 | `hyper-ts` version | `fp-ts` version | `typescript` version |
 | ------------------ | --------------- | -------------------- |
+| 0.7.x+             | 2.10.5+         | 4.3+                 |
 | 0.5.x+             | 2.0.5+          | 3.5+                 |
 | 0.4.x+             | 1.15.0+         | 3.0.1+               |
 
@@ -32,13 +33,14 @@ cannot be made. A few examples of such mistakes could be:
 ```ts
 import * as express from 'express'
 import * as H from 'hyper-ts'
+import * as M from 'hyper-ts/lib/Middleware'
 import { toRequestHandler } from 'hyper-ts/lib/express'
-import { pipe } from 'fp-ts/lib/pipeable'
+import { pipe } from 'fp-ts/function'
 
-const hello: H.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
-  H.status(H.Status.OK), // writes the response status
-  H.ichain(() => H.closeHeaders()), // tells hyper-ts that we're done with the headers
-  H.ichain(() => H.send('Hello hyper-ts on express!')) // sends the response as text
+const hello: M.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
+  M.status(H.Status.OK), // writes the response status
+  M.ichain(() => M.closeHeaders()), // tells hyper-ts that we're done with the headers
+  M.ichain(() => M.send('Hello hyper-ts on express!')) // sends the response as text
 )
 
 express()
@@ -50,8 +52,8 @@ express()
 
 ```ts
 const hello = pipe(
-  H.status(H.Status.OK),
-  H.ichain(() => H.json({ a: 1 }, () => 'error'))
+  M.status(H.Status.OK),
+  M.ichain(() => M.json({ a: 1 }, () => 'error'))
 )
 ```
 
@@ -127,12 +129,12 @@ Invalid operations are prevented statically
 import { Status, status } from 'hyper-ts'
 
 pipe(
-  H.status(H.Status.OK),
-  H.ichain(() => H.header('name', 'value')),
-  H.ichain(() => H.closeHeaders()),
-  H.ichain(() => H.send('Hello hyper-ts on express!')),
+  M.status(H.Status.OK),
+  M.ichain(() => M.header('name', 'value')),
+  M.ichain(() => M.closeHeaders()),
+  M.ichain(() => M.send('Hello hyper-ts on express!')),
   // try to write a header after sending the body
-  H.ichain(() => H.header('name', 'value')) // static error
+  M.ichain(() => M.header('name', 'value')) // static error
 )
 ```
 
@@ -150,12 +152,13 @@ Input validation/decoding is done by defining a decoding function with the follo
 
 ```ts
 import * as H from 'hyper-ts'
-import * as E from 'fp-ts/lib/Either'
+import * as M from 'hyper-ts/lib/Middleware'
+import * as E from 'fp-ts/Either'
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => typeof u === 'object' && u !== null
 
 // returns a middleware validating `req.param.user_id`
-export const middleware: H.Middleware<H.StatusOpen, H.StatusOpen, string, string> = H.decodeParam('user_id', u =>
+export const middleware: M.Middleware<H.StatusOpen, H.StatusOpen, string, string> = M.decodeParam('user_id', u =>
   isUnknownRecord(u) && typeof u.user_id === 'string' ? E.right(u.user_id) : E.left('cannot read param user_id')
 )
 ```
@@ -164,10 +167,11 @@ You can also use [io-ts](https://github.com/gcanti/io-ts) decoders.
 
 ```ts
 import * as H from 'hyper-ts'
+import * as M from 'hyper-ts/lib/Middleware'
 import * as t from 'io-ts'
 
 // returns a middleware validating `req.param.user_id`
-export const middleware2: H.Middleware<H.StatusOpen, H.StatusOpen, t.Errors, string> = H.decodeParam(
+export const middleware2: M.Middleware<H.StatusOpen, H.StatusOpen, t.Errors, string> = M.decodeParam(
   'user_id',
   t.string.decode
 )
@@ -177,25 +181,27 @@ Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
 
 ```ts
 import * as H from 'hyper-ts'
+import * as M from 'hyper-ts/lib/Middleware'
 import { IntFromString } from 'io-ts-types/lib/IntFromString'
 
 // validation succeeds only if `req.param.user_id` can be parsed to an integer
-export const middleware3: H.Middleware<
+export const middleware3: M.Middleware<
   H.StatusOpen,
   H.StatusOpen,
   t.Errors,
   t.Branded<number, t.IntBrand>
-> = H.decodeParam('user_id', IntFromString.decode)
+> = M.decodeParam('user_id', IntFromString.decode)
 ```
 
 **Multiple params**
 
 ```ts
 import * as H from 'hyper-ts'
+import * as M from 'hyper-ts/lib/Middleware'
 import * as t from 'io-ts'
 
 // returns a middleware validating both `req.param.user_id` and `req.param.user_name`
-export const middleware = H.decodeParams(
+export const middleware = M.decodeParams(
   t.strict({
     user_id: t.string,
     user_name: t.string
@@ -207,10 +213,11 @@ export const middleware = H.decodeParams(
 
 ```ts
 import * as H from 'hyper-ts'
+import * as M from 'hyper-ts/lib/Middleware'
 import * as t from 'io-ts'
 
 // return a middleware validating the query "order=desc&shoe[color]=blue&shoe[type]=converse"
-export const middleware = H.decodeQuery(
+export const middleware = M.decodeQuery(
   t.strict({
     order: t.string,
     shoe: t.strict({
@@ -225,10 +232,11 @@ export const middleware = H.decodeQuery(
 
 ```ts
 import * as H from 'hyper-ts'
+import * as M from 'hyper-ts/lib/Middleware'
 import * as t from 'io-ts'
 
 // return a middleware validating `req.body`
-export const middleware = H.decodeBody(t.string.decode)
+export const middleware = M.decodeBody(t.string.decode)
 ```
 
 [Here](examples/json-middleware.ts)'s an example using the standard `express.json` middleware
