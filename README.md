@@ -244,3 +244,8 @@ export const middleware = M.decodeBody(t.string.decode)
 # Documentation
 
 - [API Reference](https://gcanti.github.io/hyper-ts/)
+
+# Ecosystem
+
+- [hyper-ts-connect](https://github.com/DenisFrezzato/hyper-ts-connect) - adapter for [connect](https://github.com/senchalabs/connect)
+- [hyper-ts-fastify](https://github.com/DenisFrezzato/hyper-ts-fastify) - adapter for [fastify](https://github.com/fastify/fastify)
