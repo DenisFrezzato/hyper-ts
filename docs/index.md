@@ -246,10 +246,6 @@ export const middleware = M.decodeBody(t.string.decode)
 
 [Here](examples/json-middleware.ts)'s an example using the standard `express.json` middleware
 
-# Documentation
-
-- [API Reference](https://gcanti.github.io/hyper-ts/)
-
 # Ecosystem
 
 - [hyper-ts-connect](https://github.com/DenisFrezzato/hyper-ts-connect) - adapter for [connect](https://github.com/senchalabs/connect)
