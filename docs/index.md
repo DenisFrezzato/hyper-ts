@@ -3,7 +3,7 @@ title: Home
 nav_order: 1
 ---
 
-A partial porting of https://github.com/owickstrom/hyper to TypeScript
+A partial porting of [hyper](https://github.com/owickstrom/hyper) to TypeScript
 
 `hyper-ts` is an experimental middleware architecture for HTTP servers written in TypeScript.
 
@@ -244,7 +244,7 @@ import * as t from 'io-ts'
 export const middleware = M.decodeBody(t.string.decode)
 ```
 
-[Here](examples/json-middleware.ts)'s an example using the standard `express.json` middleware
+[Here](https://github.com/DenisFrezzato/hyper-ts/blob/master/examples/json-middleware.ts)'s an example using the standard `express.json` middleware
 
 # Ecosystem
 
