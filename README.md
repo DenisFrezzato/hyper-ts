@@ -243,7 +243,7 @@ export const middleware = M.decodeBody(t.string.decode)
 
 # Documentation
 
-- [API Reference](https://gcanti.github.io/hyper-ts/)
+- [API Reference](https://denisfrezzato.github.io/hyper-ts/)
 
 # Ecosystem
 
