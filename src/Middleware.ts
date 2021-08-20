@@ -738,10 +738,30 @@ export const MonadTask: MonadTask3<URI> = {
 export const apFirst = apFirst_(ApplyPar)
 
 /**
+ * Less strict version of [`apFirst`](#apfirst).
+ *
+ * @category combinators
+ * @since 0.7.1
+ */
+export const apFirstW: <I, E2, B>(
+  second: Middleware<I, I, E2, B>
+) => <E1, A>(first: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A> = apFirst as any
+
+/**
  * @category combinators
  * @since 0.7.0
  */
 export const apSecond = apSecond_(ApplyPar)
+
+/**
+ * Less strict version of [`apSecond`](#apsecond).
+ *
+ * @category combinators
+ * @since 0.7.1
+ */
+export const apSecondW: <I, E2, B>(
+  second: Middleware<I, I, E2, B>
+) => <E1, A>(first: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = apSecond as any
 
 /**
  * Composes computations in sequence, using the return value of one computation to determine the next computation and

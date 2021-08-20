@@ -54,6 +54,38 @@ describe('Middleware', () => {
     ])
   })
 
+  it('apFirst', async () => {
+    const fa = _.right(4)
+    const fb = _.right(true)
+    const m = pipe(fa, _.apFirst(fb))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, 4, [])
+  })
+
+  it('apFirstW', async () => {
+    const fa = _.right<H.StatusOpen, 'Foo', number>(4)
+    const fb = _.right<H.StatusOpen, 'Bar', boolean>(true)
+    const m = pipe(fa, _.apFirstW(fb))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, 4, [])
+  })
+
+  it('apSecond', async () => {
+    const fa = _.right(4)
+    const fb = _.right(true)
+    const m = pipe(fa, _.apSecond(fb))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, true, [])
+  })
+
+  it('apSecondW', async () => {
+    const fa = _.right<H.StatusOpen, 'Foo', number>(4)
+    const fb = _.right<H.StatusOpen, 'Bar', boolean>(true)
+    const m = pipe(fa, _.apSecondW(fb))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, true, [])
+  })
+
   describe('status', () => {
     it('should write the status code', () => {
       const m = _.status(200)

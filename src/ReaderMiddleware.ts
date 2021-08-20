@@ -767,10 +767,32 @@ export const FromEither: FromEither4<URI> = {
 export const apFirst = apFirst_(ApplyPar)
 
 /**
+ * Less strict version of [`apFirst`](#apfirst).
+ *
+ * @category combinators
+ * @since 0.7.1
+ */
+export const apFirstW: <R2, I, E2, B>(
+  second: ReaderMiddleware<R2, I, I, E2, B>
+) => <R1, E1, A>(first: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> =
+  apFirst as any
+
+/**
  * @category combinators
  * @since 0.7.0
  */
 export const apSecond = apSecond_(ApplyPar)
+
+/**
+ * Less strict version of [`apSecond`](#apsecond).
+ *
+ * @category combinators
+ * @since 0.7.1
+ */
+export const apSecondW: <R2, I, E2, B>(
+  second: ReaderMiddleware<R2, I, I, E2, B>
+) => <R1, E1, A>(first: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> =
+  apSecond as any
 
 /**
  * Composes computations in sequence, using the return value of one computation to determine
