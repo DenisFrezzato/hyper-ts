@@ -39,7 +39,9 @@ Added in v0.7.0
   - [of](#of)
 - [combinators](#combinators)
   - [apFirst](#apfirst)
+  - [apFirstW](#apfirstw)
   - [apSecond](#apsecond)
+  - [apSecondW](#apsecondw)
   - [chainEitherK](#chaineitherk)
   - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
@@ -330,6 +332,20 @@ export declare const apFirst: <R, E, B>(
 
 Added in v0.7.0
 
+## apFirstW
+
+Less strict version of [`apFirst`](#apfirst).
+
+**Signature**
+
+```ts
+export declare const apFirstW: <I, E2, B>(
+  second: Middleware<I, I, E2, B>
+) => <E1, A>(first: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
+```
+
+Added in v0.7.1
+
 ## apSecond
 
 **Signature**
@@ -341,6 +357,20 @@ export declare const apSecond: <R, E, B>(
 ```
 
 Added in v0.7.0
+
+## apSecondW
+
+Less strict version of [`apSecond`](#apsecond).
+
+**Signature**
+
+```ts
+export declare const apSecondW: <I, E2, B>(
+  second: Middleware<I, I, E2, B>
+) => <E1, A>(first: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
+```
+
+Added in v0.7.1
 
 ## chainEitherK
 
