@@ -13,6 +13,119 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.7.1
+
+- **New Feature**
+  - `Middleware`
+    - Add `apFirstW`
+    - Add `apSecondW`
+  - `ReaderMiddleware`
+    - Add `apFirstW`
+    - Add `apSecondW`
+
+# 0.7.0
+
+# 0.7.0-rc.1
+
+* **Breaking change**
+  * Upgrade to `fp-ts@2.10`
+  * Add `fp-ts-contrib` as a peer-dependency
+* **Deprecation**
+  * Deprecate `Middleware` from `index.ts`, use `Middleware` module instead.
+* **New Feature**
+  * `Middleware`
+    * Add `apS`
+    * Add `apSW`
+    * Add `chainEitherK`
+    * Add `chainEitherKW`
+    * Add `FromIO`
+    * Add `fromIO`
+    * Add `fromIOK`
+    * Add `chainIOK`
+    * Add `chainFirstIOK`
+    * Add `FromTask`
+    * Add `fromTask`
+    * Add `fromTaskK`
+    * Add `chainTaskK`
+    * Add `chainFirstTaskK`
+    * Add `chainTaskEitherK`
+    * Add `chainTaskEitherKW`
+    * Add `chainFirstTaskEitherK`
+    * Add `chainFirstTaskEitherKW`
+    * Add `imap`
+    * Add `ibindTo`
+    * Add `ibind`
+    * Add `ibindW`
+    * Add `iapS`
+    * Add `iapSW`
+  * `ReaderMiddleware`
+    * Add `gets`
+    * Add `fromConnection`
+    * Add `modifyConnection`
+    * Add `apFirst`
+    * Add `apSecond`
+    * Add `apS`
+    * Add `apSW`
+    * Add `FromEither`
+    * Add `fromEither`
+    * Add `chainEitherK`
+    * Add `chainEitherKW`
+    * Add `chainFirst`
+    * Add `chainFirstW`
+    * Add `chainFirstIOK`
+    * Add `FromTask`
+    * Add `fromTask`
+    * Add `fromTaskK`
+    * Add `chainTaskK`
+    * Add `chainFirstTaskK`
+    * Add `chainFirstTaskEitherK`
+    * Add `chainFirstTaskEitherKW`
+    * Add `chainFirstReaderTaskEitherK`
+    * Add `chainFirstReaderTaskEitherKW`
+    * Add `fromPredicate`
+    * Add `filterOrElse`
+    * Add `filterOrElseW`
+    * Add `imap`
+    * Add `ibindTo`
+    * Add `ibind`
+    * Add `ibindW`
+    * Add `iapS`
+    * Add `iapSW`
+  * `express`
+    * Improve `fromRequestHandler` #39
+* **Fix**
+  * `ReaderMiddleware`
+    * Add out type variable in `fromMiddleware`
+    * Fix type signature of `apSW` adding widening or `R`
+* **Internal**
+  * Use `List` from `fp-ts-contrib`
+
+# 0.6.5
+
+- **Breaking change**
+  - `ReaderMiddleware`
+    - Rename `ichainMiddlewareW` to `ichainMiddlewareKW` (@DenisFrezzato)
+
+# 0.6.4
+
+- **Bug Fix**
+  - `ReaderMiddleware`
+    - Fix `ichainW` widening (@mlegenhausen)
+- **New Feature**
+  - `ReaderMiddleware`
+    - Add `orElseW` (@mlegenhausen)
+
+# 0.6.3
+
+- **New feature** 
+  - Add `ReaderMiddleware` #41 (@DenisFrezzato)
+
+# 0.6.2
+
+- **New feature** 
+  - pipe stream to response, #38 (@DenisFrezzato)
+
+
 # 0.6.1
 
 - **New Feature**
