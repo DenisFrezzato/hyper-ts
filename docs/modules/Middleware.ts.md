@@ -57,8 +57,11 @@ Added in v0.7.0
   - [filterOrElse](#filterorelse)
   - [filterOrElseW](#filterorelsew)
   - [flatten](#flatten)
+  - [flattenW](#flattenw)
   - [fromIOK](#fromiok)
   - [fromTaskK](#fromtaskk)
+  - [iflatten](#iflatten)
+  - [iflattenW](#iflattenw)
   - [orElse](#orelse)
 - [constructor](#constructor)
   - [fromConnection](#fromconnection)
@@ -577,6 +580,20 @@ export declare const flatten: <I, E, A>(mma: Middleware<I, I, E, Middleware<I, I
 
 Added in v0.7.0
 
+## flattenW
+
+Less strict version of [`flatten`](#flatten).
+
+**Signature**
+
+```ts
+export declare const flattenW: <I, E1, E2, A>(
+  mma: Middleware<I, I, E1, Middleware<I, I, E2, A>>
+) => Middleware<I, I, E1 | E2, A>
+```
+
+Added in v0.7.2
+
 ## fromIOK
 
 **Signature**
@@ -596,6 +613,34 @@ export declare const fromTaskK: <A, B>(f: (...a: A) => Task<B>) => <R, E>(...a: 
 ```
 
 Added in v0.7.0
+
+## iflatten
+
+Derivable from indexed version of `Chain`.
+
+**Signature**
+
+```ts
+export declare const iflatten: <I, O, Z, E, A>(
+  mma: Middleware<I, O, E, Middleware<O, Z, E, A>>
+) => Middleware<I, Z, E, A>
+```
+
+Added in v0.7.2
+
+## iflattenW
+
+Less strict version of [`iflatten`](#iflatten).
+
+**Signature**
+
+```ts
+export declare const iflattenW: <I, O, Z, E1, E2, A>(
+  mma: Middleware<I, O, E1, Middleware<O, Z, E2, A>>
+) => Middleware<I, Z, E1 | E2, A>
+```
+
+Added in v0.7.2
 
 ## orElse
 

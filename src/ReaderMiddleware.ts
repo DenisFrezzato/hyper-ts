@@ -1,7 +1,7 @@
 /**
  * @since 0.6.3
  */
-import { flow, pipe, Predicate, Refinement } from 'fp-ts/function'
+import { flow, identity, pipe, Predicate, Refinement } from 'fp-ts/function'
 import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { Task } from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
@@ -529,6 +529,26 @@ export const chainW: <R2, I, E2, A, B>(
 ) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> = chain as any
 
 /**
+ * Less strict version of [`flatten`](#flatten).
+ *
+ * @category combinators
+ * @since 0.7.2
+ */
+export const flattenW: <R1, I, E1, R2, E2, A>(
+  mma: ReaderMiddleware<R1, I, I, E1, ReaderMiddleware<R2, I, I, E2, A>>
+) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> = chainW(identity)
+
+/**
+ * Derivable from `Chain`.
+ *
+ * @category combinators
+ * @since 0.7.2
+ */
+export const flatten: <R, I, E, A>(
+  mma: ReaderMiddleware<R, I, I, E, ReaderMiddleware<R, I, I, E, A>>
+) => ReaderMiddleware<R, I, I, E, A> = flattenW
+
+/**
  * Indexed version of [`chain`](#chain).
  *
  * @category IxMonad
@@ -553,6 +573,26 @@ export function ichainW<R2, A, O, Z, E2, B>(
       TE.chainW(([a, co]) => f(a)(r)(co))
     )
 }
+
+/**
+ * Less strict version of [`iflatten`](#iflatten).
+ *
+ * @category combinators
+ * @since 0.7.2
+ */
+export const iflattenW: <R1, I, O, Z, E1, R2, E2, A>(
+  mma: ReaderMiddleware<R1, I, O, E1, ReaderMiddleware<R2, O, Z, E2, A>>
+) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A> = ichainW(identity)
+
+/**
+ * Derivable from indexed version of `Chain`.
+ *
+ * @category combinators
+ * @since 0.7.2
+ */
+export const iflatten: <R, I, O, Z, E, A>(
+  mma: ReaderMiddleware<R, I, O, E, ReaderMiddleware<R, O, Z, E, A>>
+) => ReaderMiddleware<R, I, Z, E, A> = iflattenW
 
 /**
  * @category combinators

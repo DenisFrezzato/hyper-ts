@@ -237,13 +237,22 @@ export const chainW: <I, E2, A, B>(
 ) => <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = chain as any
 
 /**
+ * Less strict version of [`flatten`](#flatten).
+ *
+ * @category combinators
+ * @since 0.7.2
+ */
+export const flattenW: <I, E1, E2, A>(
+  mma: Middleware<I, I, E1, Middleware<I, I, E2, A>>
+) => Middleware<I, I, E1 | E2, A> = chainW(identity)
+
+/**
  * Derivable from `Chain`.
  *
  * @category combinators
  * @since 0.7.0
  */
-export const flatten: <I, E, A>(mma: Middleware<I, I, E, Middleware<I, I, E, A>>) => Middleware<I, I, E, A> =
-  chain(identity)
+export const flatten: <I, E, A>(mma: Middleware<I, I, E, Middleware<I, I, E, A>>) => Middleware<I, I, E, A> = flattenW
 
 /**
  * Less strict version of [`ichain`](#ichain).
@@ -270,6 +279,25 @@ export function ichainW<A, O, Z, E, B>(
 export const ichain: <A, O, Z, E, B>(
   f: (a: A) => Middleware<O, Z, E, B>
 ) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> = ichainW
+
+/**
+ * Less strict version of [`iflatten`](#iflatten).
+ *
+ * @category combinators
+ * @since 0.7.2
+ */
+export const iflattenW: <I, O, Z, E1, E2, A>(
+  mma: Middleware<I, O, E1, Middleware<O, Z, E2, A>>
+) => Middleware<I, Z, E1 | E2, A> = ichainW(identity)
+
+/**
+ * Derivable from indexed version of `Chain`.
+ *
+ * @category combinators
+ * @since 0.7.2
+ */
+export const iflatten: <I, O, Z, E, A>(mma: Middleware<I, O, E, Middleware<O, Z, E, A>>) => Middleware<I, Z, E, A> =
+  iflattenW
 
 /**
  * @category Alt
