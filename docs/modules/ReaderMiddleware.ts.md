@@ -55,10 +55,14 @@ Added in v0.6.3
   - [chainTaskK](#chaintaskk)
   - [filterOrElse](#filterorelse)
   - [filterOrElseW](#filterorelsew)
+  - [flatten](#flatten)
+  - [flattenW](#flattenw)
   - [fromIOK](#fromiok)
   - [fromTaskK](#fromtaskk)
   - [ichainMiddlewareK](#ichainmiddlewarek)
   - [ichainMiddlewareKW](#ichainmiddlewarekw)
+  - [iflatten](#iflatten)
+  - [iflattenW](#iflattenw)
   - [orElse](#orelse)
   - [orElseW](#orelsew)
 - [constructor](#constructor)
@@ -622,6 +626,34 @@ export declare const filterOrElseW: {
 
 Added in v0.7.0
 
+## flatten
+
+Derivable from `Chain`.
+
+**Signature**
+
+```ts
+export declare const flatten: <R, I, E, A>(
+  mma: ReaderMiddleware<R, I, I, E, ReaderMiddleware<R, I, I, E, A>>
+) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.2
+
+## flattenW
+
+Less strict version of [`flatten`](#flatten).
+
+**Signature**
+
+```ts
+export declare const flattenW: <R1, I, E1, R2, E2, A>(
+  mma: ReaderMiddleware<R1, I, I, E1, ReaderMiddleware<R2, I, I, E2, A>>
+) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+```
+
+Added in v0.7.2
+
 ## fromIOK
 
 **Signature**
@@ -665,6 +697,34 @@ export declare const ichainMiddlewareKW: <R, A, O, Z, E, B>(
 ```
 
 Added in v0.6.5
+
+## iflatten
+
+Derivable from indexed version of `Chain`.
+
+**Signature**
+
+```ts
+export declare const iflatten: <R, I, O, Z, E, A>(
+  mma: ReaderMiddleware<R, I, O, E, ReaderMiddleware<R, O, Z, E, A>>
+) => ReaderMiddleware<R, I, Z, E, A>
+```
+
+Added in v0.7.2
+
+## iflattenW
+
+Less strict version of [`iflatten`](#iflatten).
+
+**Signature**
+
+```ts
+export declare const iflattenW: <R1, I, O, Z, E1, R2, E2, A>(
+  mma: ReaderMiddleware<R1, I, O, E1, ReaderMiddleware<R2, O, Z, E2, A>>
+) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A>
+```
+
+Added in v0.7.2
 
 ## orElse
 
