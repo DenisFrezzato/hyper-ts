@@ -13,6 +13,17 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.7.2
+
+- **New Feature**
+  - `Middleware`
+    - Add `flattenW`, `iflatten`, `iflattenW` (@mlegenhausen)
+  - `ReaderMiddleware`
+    - Add `flatten`, `flattenW`, `iflatten`, `iflattenW` (@mlegenhausen)
+- **Deprecation**
+  - `Middleware`/`ReaderMiddleware`
+    - Deprecate `Do`, use `bindTo` instead (@DenisFrezzato)
+
 # 0.7.1
 
 - **New Feature**
