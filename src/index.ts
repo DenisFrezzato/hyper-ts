@@ -612,6 +612,7 @@ export const decodeHeader = M.decodeHeader
  * @since 0.6.1
  * @deprecated
  */
+// tslint:disable-next-line: deprecation
 export const Do = M.Do
 
 /**

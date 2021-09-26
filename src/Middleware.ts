@@ -978,7 +978,10 @@ export const chainFirstTaskEitherK: <E, A, B>(
 ) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A> = chainFirstTaskEitherKW
 
 /**
+ * Phantom type can't be infered properly, use [`bindTo`](#bindto) instead.
+ *
  * @since 0.7.0
+ * @deprecated
  */
 export const Do = iof<unknown, unknown, never, {}>({})
 

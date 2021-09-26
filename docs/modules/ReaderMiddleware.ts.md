@@ -125,7 +125,6 @@ Added in v0.6.3
 - [model](#model)
   - [ReaderMiddleware (interface)](#readermiddleware-interface)
 - [utils](#utils)
-  - [Do](#do)
   - [apS](#aps)
   - [apSW](#apsw)
   - [bind](#bind)
@@ -136,6 +135,7 @@ Added in v0.6.3
   - [ibind](#ibind)
   - [ibindTo](#ibindto)
   - [ibindW](#ibindw)
+  - [~~Do~~](#do)
 
 ---
 
@@ -1378,16 +1378,6 @@ Added in v0.6.3
 
 # utils
 
-## Do
-
-**Signature**
-
-```ts
-export declare const Do: ReaderMiddleware<unknown, unknown, unknown, never, {}>
-```
-
-Added in v0.6.3
-
 ## apS
 
 **Signature**
@@ -1539,3 +1529,15 @@ export declare const ibindW: <N extends string, A, R2, O, Z, E2, B>(
 ```
 
 Added in v0.7.0
+
+## ~~Do~~
+
+Phantom type can't be infered properly, use [`bindTo`](#bindto) instead.
+
+**Signature**
+
+```ts
+export declare const Do: ReaderMiddleware<unknown, unknown, unknown, never, {}>
+```
+
+Added in v0.6.3

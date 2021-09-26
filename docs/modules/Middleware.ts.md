@@ -121,7 +121,6 @@ Added in v0.7.0
 - [model](#model)
   - [Middleware (interface)](#middleware-interface)
 - [utils](#utils)
-  - [Do](#do)
   - [apS](#aps)
   - [apSW](#apsw)
   - [bind](#bind)
@@ -134,6 +133,7 @@ Added in v0.7.0
   - [ibind](#ibind)
   - [ibindTo](#ibindto)
   - [ibindW](#ibindw)
+  - [~~Do~~](#do)
 
 ---
 
@@ -1260,16 +1260,6 @@ Added in v0.7.0
 
 # utils
 
-## Do
-
-**Signature**
-
-```ts
-export declare const Do: Middleware<unknown, unknown, never, {}>
-```
-
-Added in v0.7.0
-
 ## apS
 
 **Signature**
@@ -1435,6 +1425,18 @@ export declare const ibindW: <N extends string, A, O, Z, E2, B>(
 ) => <I, E1>(
   ma: Middleware<I, O, E1, A>
 ) => Middleware<I, Z, E2 | E1, { readonly [K in N | keyof A]: K extends keyof A ? A[K] : B }>
+```
+
+Added in v0.7.0
+
+## ~~Do~~
+
+Phantom type can't be infered properly, use [`bindTo`](#bindto) instead.
+
+**Signature**
+
+```ts
+export declare const Do: Middleware<unknown, unknown, never, {}>
 ```
 
 Added in v0.7.0
