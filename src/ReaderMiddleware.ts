@@ -337,6 +337,18 @@ export function redirect<R, E = never>(uri: string): ReaderMiddleware<R, H.Statu
 }
 
 /**
+ * Returns a `ReaderMiddleware` that pipes a stream to the response object.
+ *
+ * @category constructors
+ * @since 0.7.3
+ */
+export function pipeStream<R, E>(
+  stream: NodeJS.ReadableStream
+): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
+  return modifyConnection((c) => c.pipeStream(stream))
+}
+
+/**
  * @category constructors
  * @since 0.6.3
  */

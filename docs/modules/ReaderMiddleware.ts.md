@@ -97,6 +97,7 @@ Added in v0.6.3
   - [leftIO](#leftio)
   - [leftReader](#leftreader)
   - [leftTask](#lefttask)
+  - [pipeStream](#pipestream)
   - [redirect](#redirect)
   - [right](#right)
   - [rightIO](#rightio)
@@ -1109,6 +1110,20 @@ export declare function leftTask<R, I = H.StatusOpen, E = never, A = never>(
 ```
 
 Added in v0.6.3
+
+## pipeStream
+
+Returns a `ReaderMiddleware` that pipes a stream to the response object.
+
+**Signature**
+
+```ts
+export declare function pipeStream<R, E>(
+  stream: NodeJS.ReadableStream
+): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void>
+```
+
+Added in v0.7.3
 
 ## redirect
 

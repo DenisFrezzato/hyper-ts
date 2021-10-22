@@ -17,7 +17,6 @@ import { BodyOpen, Connection, CookieOptions, HeadersOpen, MediaType, ResponseEn
 import { Task } from 'fp-ts/Task'
 import { IO } from 'fp-ts/IO'
 import { IOEither } from 'fp-ts/IOEither'
-import { Readable } from 'stream'
 import { Applicative3 } from 'fp-ts/Applicative'
 import { MonadThrow3 } from 'fp-ts/MonadThrow'
 import { MonadTask3 } from 'fp-ts/MonadTask'
@@ -564,7 +563,7 @@ export function redirect<E = never>(uri: string): Middleware<StatusOpen, Headers
  * @category constructors
  * @since 0.7.0
  */
-export function pipeStream<E>(stream: Readable): Middleware<BodyOpen, ResponseEnded, E, void> {
+export function pipeStream<E>(stream: NodeJS.ReadableStream): Middleware<BodyOpen, ResponseEnded, E, void> {
   return modifyConnection((c) => c.pipeStream(stream))
 }
 
