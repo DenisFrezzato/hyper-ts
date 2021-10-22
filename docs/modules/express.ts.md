@@ -191,7 +191,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-pipeStream(stream: Readable): ExpressConnection<ResponseEnded>
+pipeStream(stream: NodeJS.ReadableStream): ExpressConnection<ResponseEnded>
 ```
 
 Added in v0.6.2

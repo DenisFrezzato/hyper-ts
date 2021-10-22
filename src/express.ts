@@ -7,7 +7,6 @@ import { Connection, CookieOptions, HeadersOpen, ResponseEnded, Status, StatusOp
 import { Middleware, execMiddleware } from './Middleware'
 import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
-import { Readable } from 'stream'
 import * as L from 'fp-ts-contrib/List'
 
 /**
@@ -20,7 +19,7 @@ export type Action =
   | { type: 'setHeader'; name: string; value: string }
   | { type: 'clearCookie'; name: string; options: CookieOptions }
   | { type: 'setCookie'; name: string; value: string; options: CookieOptions }
-  | { type: 'pipeStream'; stream: Readable }
+  | { type: 'pipeStream'; stream: NodeJS.ReadableStream }
 
 const endResponse: Action = { type: 'endResponse' }
 
@@ -120,7 +119,7 @@ export class ExpressConnection<S> implements Connection<S> {
   /**
    * @since 0.6.2
    */
-  pipeStream(stream: Readable): ExpressConnection<ResponseEnded> {
+  pipeStream(stream: NodeJS.ReadableStream): ExpressConnection<ResponseEnded> {
     return this.chain({ type: 'pipeStream', stream }, true)
   }
   /**
