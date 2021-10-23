@@ -13,6 +13,14 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.7.3
+
+- **Bug Fix**
+  - `Middleware`
+    - Fix `pipeStream` stream type (@DenisFrezzato)
+  - `ReaderMiddleware`
+    - Add `pipeStream` (@DenisFrezzato)
+    
 # 0.7.2
 
 - **New Feature**
@@ -104,7 +112,7 @@ high state of flux, you're at risk of it changing without notice.
     * Add `iapSW`
   * `express`
     * Improve `fromRequestHandler` #39
-* **Fix**
+* **Bug Fix**
   * `ReaderMiddleware`
     * Add out type variable in `fromMiddleware`
     * Fix type signature of `apSW` adding widening or `R`
