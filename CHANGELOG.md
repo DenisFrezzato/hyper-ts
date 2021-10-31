@@ -13,6 +13,16 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.7.4
+
+- **Bug Fix**
+  - `Connection`
+    - Fix `setBody` to accept `string | Buffer` (@DenisFrezzato)
+  - `Middleware`
+    - Fix `send` to accept `string | Buffer` (@DenisFrezzato)
+  - `ReaderMiddleware`
+    - Fix `send` to accept `string | Buffer` (@DenisFrezzato)
+
 # 0.7.3
 
 - **Bug Fix**
