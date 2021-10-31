@@ -181,7 +181,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-setBody(body: unknown): ExpressConnection<ResponseEnded>
+setBody(body: string | Buffer): ExpressConnection<ResponseEnded>
 ```
 
 Added in v0.5.0

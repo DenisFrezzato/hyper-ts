@@ -305,7 +305,7 @@ export function closeHeaders<R, E = never>(): ReaderMiddleware<R, H.HeadersOpen,
  * @category constructors
  * @since 0.6.3
  */
-export function send<R, E = never>(body: string): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
+export function send<R, E = never>(body: string | Buffer): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
   return () => M.send(body)
 }
 

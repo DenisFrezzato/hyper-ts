@@ -113,7 +113,7 @@ export class ExpressConnection<S> implements Connection<S> {
   /**
    * @since 0.5.0
    */
-  setBody(body: unknown): ExpressConnection<ResponseEnded> {
+  setBody(body: string | Buffer): ExpressConnection<ResponseEnded> {
     return this.chain({ type: 'setBody', body }, true)
   }
   /**
