@@ -1036,7 +1036,7 @@ Returns a middleware that sends `body` as response body
 **Signature**
 
 ```ts
-export declare function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnded, E, void>
+export declare function send<E = never>(body: string | Buffer): Middleware<BodyOpen, ResponseEnded, E, void>
 ```
 
 Added in v0.7.0

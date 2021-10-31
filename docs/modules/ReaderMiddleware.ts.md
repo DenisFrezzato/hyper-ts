@@ -1184,7 +1184,9 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare function send<R, E = never>(body: string): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void>
+export declare function send<R, E = never>(
+  body: string | Buffer
+): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void>
 ```
 
 Added in v0.6.3

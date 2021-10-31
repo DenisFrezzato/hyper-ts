@@ -682,7 +682,7 @@ export interface Connection<S> {
   readonly clearCookie: (this: Connection<HeadersOpen>, name: string, options: CookieOptions) => Connection<HeadersOpen>
   readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
   readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
-  readonly setBody: (this: Connection<BodyOpen>, body: unknown) => Connection<ResponseEnded>
+  readonly setBody: (this: Connection<BodyOpen>, body: string | Buffer) => Connection<ResponseEnded>
   readonly pipeStream: (this: Connection<BodyOpen>, stream: NodeJS.ReadableStream) => Connection<ResponseEnded>
   readonly endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
 }

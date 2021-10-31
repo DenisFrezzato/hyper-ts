@@ -505,7 +505,7 @@ export function closeHeaders<E = never>(): Middleware<HeadersOpen, BodyOpen, E, 
  * @category constructors
  * @since 0.7.0
  */
-export function send<E = never>(body: string): Middleware<BodyOpen, ResponseEnded, E, void> {
+export function send<E = never>(body: string | Buffer): Middleware<BodyOpen, ResponseEnded, E, void> {
   return modifyConnection((c) => c.setBody(body))
 }
 
