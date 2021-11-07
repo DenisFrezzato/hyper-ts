@@ -12,6 +12,9 @@ Added in v0.6.3
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Alt](#alt)
+  - [alt](#alt)
+  - [altW](#altw)
 - [Apply](#apply)
   - [ap](#ap)
   - [apW](#apw)
@@ -106,7 +109,7 @@ Added in v0.6.3
   - [send](#send)
   - [status](#status)
 - [instances](#instances)
-  - [Alt](#alt)
+  - [Alt](#alt-1)
   - [ApplicativePar](#applicativepar)
   - [ApplicativeSeq](#applicativeseq)
   - [ApplyPar](#applypar)
@@ -139,6 +142,34 @@ Added in v0.6.3
   - [~~Do~~](#do)
 
 ---
+
+# Alt
+
+## alt
+
+**Signature**
+
+```ts
+export declare const alt: <R, I, E, A>(
+  that: Lazy<ReaderMiddleware<R, I, I, E, A>>
+) => (fa: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.5
+
+## altW
+
+Less strict version of [`alt`](#alt).
+
+**Signature**
+
+```ts
+export declare const altW: <R2, I, E2, A>(
+  that: Lazy<ReaderMiddleware<R2, I, I, E2, A>>
+) => <R1, E1>(fa: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
+```
+
+Added in v0.7.5
 
 # Apply
 
@@ -732,21 +763,23 @@ Added in v0.7.2
 **Signature**
 
 ```ts
-export declare function orElse<R, E, I, O, M, A>(
+export declare const orElse: <R, E, I, O, M, A>(
   f: (e: E) => ReaderMiddleware<R, I, O, M, A>
-): (ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A>
+) => (ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A>
 ```
 
 Added in v0.6.3
 
 ## orElseW
 
+Less strict version of [`orElse`](#orelse).
+
 **Signature**
 
 ```ts
-export declare const orElseW: <R2, E, I, O, M, A>(
-  f: (e: E) => ReaderMiddleware<R2, I, O, M, A>
-) => <R1, B>(ma: ReaderMiddleware<R1, I, O, E, B>) => ReaderMiddleware<R2 & R1, I, O, M, A | B>
+export declare const orElseW: <R2, E, I, O, M, B>(
+  f: (e: E) => ReaderMiddleware<R2, I, O, M, B>
+) => <R1, A>(ma: ReaderMiddleware<R1, I, O, E, A>) => ReaderMiddleware<R2 & R1, I, O, M, B | A>
 ```
 
 Added in v0.6.4

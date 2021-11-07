@@ -308,6 +308,16 @@ export const alt =
     _alt(fa, that)
 
 /**
+ * Less strict version of [`alt`](#alt).
+ *
+ * @category Alt
+ * @since 0.7.5
+ */
+export const altW: <I, E2, A>(
+  that: Lazy<Middleware<I, I, E2, A>>
+) => <E1>(fa: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A> = alt as any
+
+/**
  * @since 0.7.0
  */
 export function evalMiddleware<I, O, E, A>(ma: Middleware<I, O, E, A>, c: Connection<I>): TE.TaskEither<E, A> {
@@ -331,18 +341,27 @@ export function execMiddleware<I, O, E, A>(
 }
 
 /**
+ * Less strict version of [`orElse`](#orelse).
+ *
+ * @category combinators
+ * @since 0.7.5
+ */
+export const orElseW =
+  <E, I, O, M, B>(f: (e: E) => Middleware<I, O, M, B>) =>
+  <A>(ma: Middleware<I, O, E, A>): Middleware<I, O, M, A | B> =>
+  (c) =>
+    pipe(
+      ma(c),
+      TE.orElseW((e) => f(e)(c))
+    )
+
+/**
  * @category combinators
  * @since 0.7.0
  */
-export function orElse<E, I, O, M, A>(
+export const orElse: <E, I, O, M, A>(
   f: (e: E) => Middleware<I, O, M, A>
-): (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A> {
-  return (ma) => (c) =>
-    pipe(
-      ma(c),
-      TE.orElse((e) => f(e)(c))
-    )
-}
+) => (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A> = orElseW
 
 /**
  * @category interop

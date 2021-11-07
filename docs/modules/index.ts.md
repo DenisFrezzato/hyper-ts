@@ -251,7 +251,9 @@ Use [`orElse`](./Middleware.ts.html#orelse) instead.
 **Signature**
 
 ```ts
-export declare const orElse: typeof M.orElse
+export declare const orElse: <E, I, O, M, A>(
+  f: (e: E) => M.Middleware<I, O, M, A>
+) => (ma: M.Middleware<I, O, E, A>) => M.Middleware<I, O, M, A>
 ```
 
 Added in v0.5.0
