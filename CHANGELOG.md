@@ -13,6 +13,14 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.7.5
+
+- **New Feature**
+  - `Middleware`
+    - Add `altW`, `orElseW` (@DenisFrezzato)
+  - `ReaderMiddleware`
+    - Add `alt`, `altW` (@DenisFrezzato)
+
 # 0.7.4
 
 - **Bug Fix**
