@@ -1,7 +1,7 @@
 /**
  * @since 0.6.3
  */
-import { flow, identity, pipe, Predicate, Refinement } from 'fp-ts/function'
+import { flow, identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
 import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { Task } from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
@@ -217,27 +217,28 @@ export const asks = <R, E = never, A = never>(f: (r: R) => A): ReaderMiddleware<
   flow(f, M.right)
 
 /**
- * @category combinators
- * @since 0.6.3
- */
-export function orElse<R, E, I, O, M, A>(
-  f: (e: E) => ReaderMiddleware<R, I, O, M, A>
-): (ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A> {
-  return (ma) => (r) => (c) =>
-    pipe(
-      ma(r)(c),
-      TE.orElse((e) => f(e)(r)(c))
-    )
-}
-
-/**
+ * Less strict version of [`orElse`](#orelse).
+ *
  * @category combinators
  * @since 0.6.4
  */
 export const orElseW =
-  <R2, E, I, O, M, A>(f: (e: E) => ReaderMiddleware<R2, I, O, M, A>) =>
-  <R1, B>(ma: ReaderMiddleware<R1, I, O, E, B>): ReaderMiddleware<R2 & R1, I, O, M, A | B> =>
-    pipe(ma, orElse<R1 & R2, E, I, O, M, A | B>(f))
+  <R2, E, I, O, M, B>(f: (e: E) => ReaderMiddleware<R2, I, O, M, B>) =>
+  <R1, A>(ma: ReaderMiddleware<R1, I, O, E, A>): ReaderMiddleware<R2 & R1, I, O, M, A | B> =>
+  (r) =>
+  (c) =>
+    pipe(
+      ma(r)(c),
+      TE.orElseW((e) => f(e)(r)(c))
+    )
+
+/**
+ * @category combinators
+ * @since 0.6.3
+ */
+export const orElse: <R, E, I, O, M, A>(
+  f: (e: E) => ReaderMiddleware<R, I, O, M, A>
+) => (ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A> = orElseW
 
 /**
  * @category constructors
@@ -605,6 +606,25 @@ export const iflattenW: <R1, I, O, Z, E1, R2, E2, A>(
 export const iflatten: <R, I, O, Z, E, A>(
   mma: ReaderMiddleware<R, I, O, E, ReaderMiddleware<R, O, Z, E, A>>
 ) => ReaderMiddleware<R, I, Z, E, A> = iflattenW
+
+/**
+ * @category Alt
+ * @since 0.7.5
+ */
+export const alt =
+  <R, I, E, A>(that: Lazy<ReaderMiddleware<R, I, I, E, A>>) =>
+  (fa: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, A> =>
+    _alt(fa, that)
+
+/**
+ * Less strict version of [`alt`](#alt).
+ *
+ * @category Alt
+ * @since 0.7.5
+ */
+export const altW: <R2, I, E2, A>(
+  that: Lazy<ReaderMiddleware<R2, I, I, E2, A>>
+) => <R1, E1>(fa: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> = alt as any
 
 /**
  * @category combinators

@@ -18,6 +18,7 @@ Added in v0.7.0
 
 - [Alt](#alt)
   - [alt](#alt)
+  - [altW](#altw)
 - [Apply](#apply)
   - [ap](#ap)
   - [apW](#apw)
@@ -63,6 +64,7 @@ Added in v0.7.0
   - [iflatten](#iflatten)
   - [iflattenW](#iflattenw)
   - [orElse](#orelse)
+  - [orElseW](#orelsew)
 - [constructor](#constructor)
   - [fromConnection](#fromconnection)
   - [gets](#gets)
@@ -150,6 +152,20 @@ export declare const alt: <I, E, A>(
 ```
 
 Added in v0.7.0
+
+## altW
+
+Less strict version of [`alt`](#alt).
+
+**Signature**
+
+```ts
+export declare const altW: <I, E2, A>(
+  that: Lazy<Middleware<I, I, E2, A>>
+) => <E1>(fa: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
+```
+
+Added in v0.7.5
 
 # Apply
 
@@ -647,12 +663,26 @@ Added in v0.7.2
 **Signature**
 
 ```ts
-export declare function orElse<E, I, O, M, A>(
+export declare const orElse: <E, I, O, M, A>(
   f: (e: E) => Middleware<I, O, M, A>
-): (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A>
+) => (ma: Middleware<I, O, E, A>) => Middleware<I, O, M, A>
 ```
 
 Added in v0.7.0
+
+## orElseW
+
+Less strict version of [`orElse`](#orelse).
+
+**Signature**
+
+```ts
+export declare const orElseW: <E, I, O, M, B>(
+  f: (e: E) => Middleware<I, O, M, B>
+) => <A>(ma: Middleware<I, O, E, A>) => Middleware<I, O, M, B | A>
+```
+
+Added in v0.7.5
 
 # constructor
 
