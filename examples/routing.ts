@@ -4,6 +4,7 @@ import * as M from '../src/Middleware'
 import { toRequestHandler } from '../src/express'
 import { str, lit, end, Parser, Route } from 'fp-ts-routing'
 import { right, left } from 'fp-ts/Either'
+import { match } from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
 
 const home = lit('home').then(end)
@@ -22,10 +23,14 @@ const router: Parser<Location> = home.parser
 
 function fromParser<E, A extends object>(parser: Parser<A>, error: E): M.Middleware<H.StatusOpen, H.StatusOpen, E, A> {
   return M.fromConnection((c) =>
-    parser
-      .run(Route.parse(c.getOriginalUrl()))
-      .map(([a]) => right<E, A>(a))
-      .getOrElse(left(error))
+    pipe(
+      Route.parse(c.getOriginalUrl()),
+      parser.run,
+      match(
+        () => left(error),
+        ([a]) => right(a)
+      )
+    )
   )
 }
 

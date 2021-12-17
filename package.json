@@ -45,7 +45,7 @@
     "express": "^4.17.1",
     "fp-ts": "^2.10.0",
     "fp-ts-contrib": "^0.1.26",
-    "fp-ts-routing": "^0.4.1",
+    "fp-ts-routing": "^0.5.4",
     "husky": "^4.3.8",
     "import-path-rewrite": "github:gcanti/import-path-rewrite",
     "io-ts": "^2.0.1",
