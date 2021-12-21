@@ -31,6 +31,8 @@ Added in v0.7.0
   - [imap](#imap)
 - [IxMonad](#ixmonad)
   - [ichain](#ichain)
+  - [ichainFirst](#ichainfirst)
+  - [ichainFirstW](#ichainfirstw)
   - [ichainW](#ichainw)
 - [Monad](#monad)
   - [chain](#chain)
@@ -270,6 +272,34 @@ export declare const ichain: <A, O, Z, E, B>(
 ```
 
 Added in v0.7.0
+
+## ichainFirst
+
+Indexed version of [`chainFirst`](#chainFirst).
+
+**Signature**
+
+```ts
+export declare const ichainFirst: <A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, A>
+```
+
+Added in v0.7.6
+
+## ichainFirstW
+
+Less strict version of [`ichainFirst`](#ichainFirst).
+
+**Signature**
+
+```ts
+export declare function ichainFirstW<A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, A>
+```
+
+Added in v0.7.6
 
 ## ichainW
 

@@ -121,6 +121,28 @@ describe('ReaderMiddleware', () => {
     return assertSuccess(m, 4, c, true, [])
   })
 
+  it('ichainFirst', async () => {
+    const fa = _.right(4)
+    const fb = _.right(true)
+    const m = pipe(
+      fa,
+      _.ichainFirst(() => fb)
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, 4, c, 4, [])
+  })
+
+  it('ichainFirstW', async () => {
+    const fa = _.right<number, H.StatusOpen, 'Foo', number>(4)
+    const fb = _.right<number, H.StatusOpen, 'Bar', boolean>(true)
+    const m = pipe(
+      fa,
+      _.ichainFirstW(() => fb)
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, 4, c, 4, [])
+  })
+
   it('ask', () => {
     const m = _.ask<string>()
     const c = new MockConnection<H.StatusOpen>(new MockRequest())

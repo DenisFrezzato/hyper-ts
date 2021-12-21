@@ -27,6 +27,8 @@ Added in v0.6.3
   - [imap](#imap)
 - [IxMonad](#ixmonad)
   - [ichain](#ichain)
+  - [ichainFirst](#ichainfirst)
+  - [ichainFirstW](#ichainfirstw)
   - [ichainW](#ichainw)
 - [Monad](#monad)
   - [chain](#chain)
@@ -277,6 +279,34 @@ Indexed version of [`chain`](#chain).
 export declare const ichain: <R, A, O, Z, E, B>(
   f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
 ) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B>
+```
+
+Added in v0.6.3
+
+## ichainFirst
+
+Indexed version of [`chainFirst`](#chainFirst).
+
+**Signature**
+
+```ts
+export declare const ichainFirst: <R, A, O, Z, E, B>(
+  f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
+) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, A>
+```
+
+Added in v0.7.6
+
+## ichainFirstW
+
+Less strict version of [`ichainFirst`](#ichainFirst).
+
+**Signature**
+
+```ts
+export declare function ichainFirstW<R2, A, O, Z, E2, B>(
+  f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+): <R1, I, E1>(ma: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A>
 ```
 
 Added in v0.6.3
