@@ -309,7 +309,7 @@ export declare function ichainFirstW<R2, A, O, Z, E2, B>(
 ): <R1, I, E1>(ma: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A>
 ```
 
-Added in v0.6.3
+Added in v0.7.6
 
 ## ichainW
 

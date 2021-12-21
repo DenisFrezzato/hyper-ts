@@ -601,7 +601,7 @@ export const ichainFirst: <R, A, O, Z, E, B>(
  * Less strict version of [`ichainFirst`](#ichainFirst).
  *
  * @category IxMonad
- * @since 0.6.3
+ * @since 0.7.6
  */
 export function ichainFirstW<R2, A, O, Z, E2, B>(
   f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
