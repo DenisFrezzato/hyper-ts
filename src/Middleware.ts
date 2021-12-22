@@ -280,7 +280,7 @@ export const ichain: <A, O, Z, E, B>(
 ) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> = ichainW
 
 /**
- * Less strict version of [`ichainFirst`](#ichainFirst).
+ * Less strict version of [`ichainFirst`](#ichainfirst).
  *
  * @category IxMonad
  * @since 0.7.6
@@ -301,7 +301,7 @@ export function ichainFirstW<A, O, Z, E, B>(
 }
 
 /**
- * Indexed version of [`chainFirst`](#chainFirst).
+ * Indexed version of [`chainFirst`](#chainfirst).
  *
  * @category IxMonad
  * @since 0.7.6

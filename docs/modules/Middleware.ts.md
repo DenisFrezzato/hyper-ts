@@ -275,7 +275,7 @@ Added in v0.7.0
 
 ## ichainFirst
 
-Indexed version of [`chainFirst`](#chainFirst).
+Indexed version of [`chainFirst`](#chainfirst).
 
 **Signature**
 
@@ -289,7 +289,7 @@ Added in v0.7.6
 
 ## ichainFirstW
 
-Less strict version of [`ichainFirst`](#ichainFirst).
+Less strict version of [`ichainFirst`](#ichainfirst).
 
 **Signature**
 

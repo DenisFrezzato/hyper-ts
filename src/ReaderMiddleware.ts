@@ -588,7 +588,7 @@ export function ichainW<R2, A, O, Z, E2, B>(
 }
 
 /**
- * Indexed version of [`chainFirst`](#chainFirst).
+ * Indexed version of [`chainFirst`](#chainfirst).
  *
  * @category IxMonad
  * @since 0.7.6
@@ -598,7 +598,7 @@ export const ichainFirst: <R, A, O, Z, E, B>(
 ) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, A> = ichainFirstW
 
 /**
- * Less strict version of [`ichainFirst`](#ichainFirst).
+ * Less strict version of [`ichainFirst`](#ichainfirst).
  *
  * @category IxMonad
  * @since 0.7.6
