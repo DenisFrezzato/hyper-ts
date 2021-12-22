@@ -588,6 +588,32 @@ export function ichainW<R2, A, O, Z, E2, B>(
 }
 
 /**
+ * Indexed version of [`chainFirst`](#chainfirst).
+ *
+ * @category IxMonad
+ * @since 0.7.6
+ */
+export const ichainFirst: <R, A, O, Z, E, B>(
+  f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
+) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, A> = ichainFirstW
+
+/**
+ * Less strict version of [`ichainFirst`](#ichainfirst).
+ *
+ * @category IxMonad
+ * @since 0.7.6
+ */
+export function ichainFirstW<R2, A, O, Z, E2, B>(
+  f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+): <R1, I, E1>(ma: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A> {
+  return (ma) => (r) =>
+    pipe(
+      ma(r),
+      M.ichainFirstW((a) => f(a)(r))
+    )
+}
+
+/**
  * Less strict version of [`iflatten`](#iflatten).
  *
  * @category combinators

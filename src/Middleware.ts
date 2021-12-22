@@ -280,6 +280,37 @@ export const ichain: <A, O, Z, E, B>(
 ) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> = ichainW
 
 /**
+ * Less strict version of [`ichainFirst`](#ichainfirst).
+ *
+ * @category IxMonad
+ * @since 0.7.6
+ */
+export function ichainFirstW<A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, A> {
+  return (ma) => (ci) =>
+    pipe(
+      ma(ci),
+      TE.chainW(([a, co]) =>
+        pipe(
+          f(a)(co),
+          TE.map(([_, co]) => [a, co])
+        )
+      )
+    )
+}
+
+/**
+ * Indexed version of [`chainFirst`](#chainfirst).
+ *
+ * @category IxMonad
+ * @since 0.7.6
+ */
+export const ichainFirst: <A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, A> = ichainFirstW
+
+/**
  * Less strict version of [`iflatten`](#iflatten).
  *
  * @category combinators
