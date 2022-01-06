@@ -101,12 +101,14 @@ Added in v0.6.3
   - [left](#left)
   - [leftIO](#leftio)
   - [leftReader](#leftreader)
+  - [leftReaderTask](#leftreadertask)
   - [leftTask](#lefttask)
   - [pipeStream](#pipestream)
   - [redirect](#redirect)
   - [right](#right)
   - [rightIO](#rightio)
   - [rightReader](#rightreader)
+  - [rightReaderTask](#rightreadertask)
   - [rightTask](#righttask)
   - [send](#send)
   - [status](#status)
@@ -1162,6 +1164,18 @@ export declare function leftReader<R, I = H.StatusOpen, E = never, A = never>(
 
 Added in v0.6.3
 
+## leftReaderTask
+
+**Signature**
+
+```ts
+export declare const leftReaderTask: <R, I = H.StatusOpen, E = never, A = never>(
+  me: ReaderTask<R, E>
+) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.7
+
 ## leftTask
 
 **Signature**
@@ -1229,6 +1243,18 @@ export declare const rightReader: <R, I = H.StatusOpen, E = never, A = never>(
 ```
 
 Added in v0.6.3
+
+## rightReaderTask
+
+**Signature**
+
+```ts
+export declare const rightReaderTask: <R, I = H.StatusOpen, E = never, A = never>(
+  ma: ReaderTask<R, A>
+) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.7
 
 ## rightTask
 

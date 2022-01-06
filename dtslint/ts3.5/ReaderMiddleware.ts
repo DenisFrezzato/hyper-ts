@@ -1,4 +1,5 @@
 import { pipe } from 'fp-ts/function'
+import { ReaderTask } from 'fp-ts/ReaderTask'
 import * as _ from '../../src/ReaderMiddleware'
 
 interface R1 {
@@ -13,6 +14,8 @@ declare const middleware1: _.ReaderMiddleware<R1, 'one', 'one', number, boolean>
 declare const middleware2a: _.ReaderMiddleware<R1, 'one', 'two', number, string>
 declare const middleware2b: _.ReaderMiddleware<R2, 'one', 'two', Error, string>
 declare const middleware3: _.ReaderMiddleware<R1, 'two', 'three', number, string>
+
+declare const readerTask1: ReaderTask<R1, string>
 
 //
 // ichainFirst
@@ -54,3 +57,17 @@ pipe(
   middleware1,
   _.ichainFirstW(() => middleware3) // $ExpectError
 )
+
+//
+// rightReaderTask
+//
+
+// $ExpectType ReaderMiddleware<R1, StatusOpen, StatusOpen, never, string>
+pipe(readerTask1, _.rightReaderTask)
+
+//
+// leftReaderTask
+//
+
+// $ExpectType ReaderMiddleware<R1, StatusOpen, StatusOpen, string, never>
+pipe(readerTask1, _.leftReaderTask)

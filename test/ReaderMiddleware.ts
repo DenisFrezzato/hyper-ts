@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as E from 'fp-ts/Either'
 import * as TE from 'fp-ts/TaskEither'
+import * as RT from 'fp-ts/ReaderTask'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as t from 'io-ts'
 import * as _ from '../src/ReaderMiddleware'
@@ -46,6 +47,12 @@ function assertSuccess<R, I, O, A>(
       ),
       E.right([a, actions])
     )
+  })
+}
+
+function assertFailure<R, I, O, E>(m: _.ReaderMiddleware<R, I, O, E, any>, r: R, cin: MockConnection<I>, e: E) {
+  return m(r)(cin)().then((a) => {
+    assert.deepStrictEqual(a, E.left(e))
   })
 }
 
@@ -141,6 +148,18 @@ describe('ReaderMiddleware', () => {
     )
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertSuccess(m, 4, c, 4, [])
+  })
+
+  it('rightReaderTask', async () => {
+    const m = pipe(RT.of('foo'), _.rightReaderTask)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, 4, c, 'foo', [])
+  })
+
+  it('leftReaderTask', async () => {
+    const m = pipe(RT.of('foo'), _.leftReaderTask)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertFailure(m, 4, c, 'foo')
   })
 
   it('ask', () => {
