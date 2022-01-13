@@ -249,12 +249,7 @@ export const orElse: <R, E, I, O, M, A>(
 export const orElseMiddlewareKW =
   <E, I, O, M, B>(f: (e: E) => M.Middleware<I, O, M, B>) =>
   <R, A>(ma: ReaderMiddleware<R, I, O, E, A>): ReaderMiddleware<R, I, O, M, A | B> =>
-  (r) =>
-  (c) =>
-    pipe(
-      ma(r)(c),
-      TE.orElseW((e) => f(e)(c))
-    )
+    flow(ma, M.orElseW(f))
 
 /**
  * @category combinators
