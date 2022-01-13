@@ -164,11 +164,11 @@ describe('ReaderMiddleware', () => {
   })
 
   it('orElseMiddlewareKW', () => {
-    const fa = _.left<unknown, H.StatusOpen, number, string>(42)
+    const fa = _.left<unknown, H.StatusOpen, number, number>(42)
     const fb = M.right('foo')
     const m = pipe(
       fa,
-      _.orElseMiddlewareK(() => fb)
+      _.orElseMiddlewareKW(() => fb)
     )
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertSuccess(m, 'yee', c, 'foo', [])
