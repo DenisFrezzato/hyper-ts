@@ -241,6 +241,8 @@ export const orElse: <R, E, I, O, M, A>(
 ) => (ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A> = orElseW
 
 /**
+ * Less strict version of [`orElseMiddlewareK`](#orelsemiddlewarek).
+ *
  * @category combinators
  * @since 0.7.7
  */

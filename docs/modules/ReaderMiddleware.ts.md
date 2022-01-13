@@ -816,6 +816,8 @@ Added in v0.7.7
 
 ## orElseMiddlewareKW
 
+Less strict version of [`orElseMiddlewareK`](#orelsemiddlewarek).
+
 **Signature**
 
 ```ts
