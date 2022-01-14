@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "noEmit": true,
-    "outDir": "./lib",
+    "outDir": "dist/lib",
     "target": "es5",
+    "esModuleInterop": true,
     "module": "commonjs",
     "moduleResolution": "node",
     "lib": ["es6"],

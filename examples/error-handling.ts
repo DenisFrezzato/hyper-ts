@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { NonEmptyString } from 'io-ts-types/lib/NonEmptyString'
+import { NonEmptyString } from 'io-ts-types/NonEmptyString'
 import * as H from '../src'
 import * as M from '../src/Middleware'
 import { toRequestHandler } from '../src/express'
