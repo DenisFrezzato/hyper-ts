@@ -241,6 +241,25 @@ export const orElse: <R, E, I, O, M, A>(
 ) => (ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A> = orElseW
 
 /**
+ * Less strict version of [`orElseMiddlewareK`](#orelsemiddlewarek).
+ *
+ * @category combinators
+ * @since 0.7.7
+ */
+export const orElseMiddlewareKW =
+  <E, I, O, M, B>(f: (e: E) => M.Middleware<I, O, M, B>) =>
+  <R, A>(ma: ReaderMiddleware<R, I, O, E, A>): ReaderMiddleware<R, I, O, M, A | B> =>
+    flow(ma, M.orElseW(f))
+
+/**
+ * @category combinators
+ * @since 0.7.7
+ */
+export const orElseMiddlewareK: <E, I, O, M, A>(
+  f: (e: E) => M.Middleware<I, O, M, A>
+) => <R>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A> = orElseMiddlewareKW
+
+/**
  * @category constructors
  * @since 0.6.3
  */

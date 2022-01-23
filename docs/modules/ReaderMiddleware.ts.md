@@ -69,6 +69,8 @@ Added in v0.6.3
   - [iflatten](#iflatten)
   - [iflattenW](#iflattenw)
   - [orElse](#orelse)
+  - [orElseMiddlewareK](#orelsemiddlewarek)
+  - [orElseMiddlewareKW](#orelsemiddlewarekw)
   - [orElseW](#orelsew)
 - [constructor](#constructor)
   - [fromConnection](#fromconnection)
@@ -799,6 +801,32 @@ export declare const orElse: <R, E, I, O, M, A>(
 ```
 
 Added in v0.6.3
+
+## orElseMiddlewareK
+
+**Signature**
+
+```ts
+export declare const orElseMiddlewareK: <E, I, O, M, A>(
+  f: (e: E) => M.Middleware<I, O, M, A>
+) => <R>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, A>
+```
+
+Added in v0.7.7
+
+## orElseMiddlewareKW
+
+Less strict version of [`orElseMiddlewareK`](#orelsemiddlewarek).
+
+**Signature**
+
+```ts
+export declare const orElseMiddlewareKW: <E, I, O, M, B>(
+  f: (e: E) => M.Middleware<I, O, M, B>
+) => <R, A>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, O, M, B | A>
+```
+
+Added in v0.7.7
 
 ## orElseW
 
