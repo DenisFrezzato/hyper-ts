@@ -174,6 +174,25 @@ describe('ReaderMiddleware', () => {
     return assertSuccess(m, 'yee', c, 3, [])
   })
 
+  it('orElseMiddlewareK', () => {
+    const fa = _.left<unknown, H.StatusOpen, number, number>(42)
+    const fb = M.right
+    const m = pipe(fa, _.orElseMiddlewareK(fb))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, 'yee', c, 42, [])
+  })
+
+  it('orElseMiddlewareKW', () => {
+    const fa = _.left<unknown, H.StatusOpen, number, number>(42)
+    const fb = M.right('foo')
+    const m = pipe(
+      fa,
+      _.orElseMiddlewareKW(() => fb)
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, 'yee', c, 'foo', [])
+  })
+
   describe('status', () => {
     it('should write the status code', () => {
       const m1 = _.status(200)
