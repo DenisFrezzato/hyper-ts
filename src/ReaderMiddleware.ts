@@ -3,6 +3,7 @@
  */
 import { flow, identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
 import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
+import { ReaderTask } from 'fp-ts/ReaderTask'
 import { Task } from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
 import * as H from '.'
@@ -202,6 +203,24 @@ export function leftReader<R, I = H.StatusOpen, E = never, A = never>(
 ): ReaderMiddleware<R, I, I, E, A> {
   return (r) => M.left(me(r))
 }
+
+/**
+ * @category constructors
+ * @since 0.7.7
+ */
+export const rightReaderTask =
+  <R, I = H.StatusOpen, E = never, A = never>(ma: ReaderTask<R, A>): ReaderMiddleware<R, I, I, E, A> =>
+  (r) =>
+    M.rightTask(ma(r))
+
+/**
+ * @category constructors
+ * @since 0.7.7
+ */
+export const leftReaderTask =
+  <R, I = H.StatusOpen, E = never, A = never>(me: ReaderTask<R, E>): ReaderMiddleware<R, I, I, E, A> =>
+  (r) =>
+    M.leftTask(me(r))
 
 /**
  * @category constructors
