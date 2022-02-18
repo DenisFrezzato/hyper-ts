@@ -960,9 +960,9 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare function decodeBody<R, E, A>(
+export declare function decodeBody<R, I = H.StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+): ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.6.3
@@ -972,10 +972,10 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare function decodeHeader<R, E, A>(
+export declare function decodeHeader<R, I = H.StatusOpen, E = never, A = never>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+): ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.6.3
@@ -985,9 +985,9 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare function decodeMethod<R, E, A>(
+export declare function decodeMethod<R, I = H.StatusOpen, E = never, A = never>(
   f: (method: string) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+): ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.6.3
@@ -997,10 +997,10 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare function decodeParam<R, E, A>(
+export declare function decodeParam<R, I = H.StatusOpen, E = never, A = never>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+): ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.6.3
@@ -1010,9 +1010,9 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare function decodeParams<R, E, A>(
+export declare function decodeParams<R, I = H.StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+): ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.6.3
@@ -1022,9 +1022,9 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare function decodeQuery<R, E, A>(
+export declare function decodeQuery<R, I = H.StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+): ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.6.3

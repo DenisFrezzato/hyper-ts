@@ -625,10 +625,10 @@ const isUnknownRecord = (u: unknown): u is Record<string, unknown> => u !== null
  * @category constructors
  * @since 0.7.0
  */
-export function decodeParam<E, A>(
+export function decodeParam<I = StatusOpen, E = never, A = never>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A> {
+): Middleware<I, I, E, A> {
   return fromConnection((c) => {
     const params = c.getParams()
     return f(isUnknownRecord(params) ? params[name] : undefined)
@@ -641,7 +641,9 @@ export function decodeParam<E, A>(
  * @category constructors
  * @since 0.7.0
  */
-export function decodeParams<E, A>(f: (input: unknown) => E.Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
+export function decodeParams<I = StatusOpen, E = never, A = never>(
+  f: (input: unknown) => E.Either<E, A>
+): Middleware<I, I, E, A> {
   return fromConnection((c) => f(c.getParams()))
 }
 
@@ -651,7 +653,9 @@ export function decodeParams<E, A>(f: (input: unknown) => E.Either<E, A>): Middl
  * @category constructors
  * @since 0.7.0
  */
-export function decodeQuery<E, A>(f: (input: unknown) => E.Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
+export function decodeQuery<I = StatusOpen, E = never, A = never>(
+  f: (input: unknown) => E.Either<E, A>
+): Middleware<I, I, E, A> {
   return fromConnection((c) => f(c.getQuery()))
 }
 
@@ -661,7 +665,9 @@ export function decodeQuery<E, A>(f: (input: unknown) => E.Either<E, A>): Middle
  * @category constructors
  * @since 0.7.0
  */
-export function decodeBody<E, A>(f: (input: unknown) => E.Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
+export function decodeBody<I = StatusOpen, E = never, A = never>(
+  f: (input: unknown) => E.Either<E, A>
+): Middleware<I, I, E, A> {
   return fromConnection((c) => f(c.getBody()))
 }
 
@@ -671,7 +677,9 @@ export function decodeBody<E, A>(f: (input: unknown) => E.Either<E, A>): Middlew
  * @category constructors
  * @since 0.7.0
  */
-export function decodeMethod<E, A>(f: (method: string) => E.Either<E, A>): Middleware<StatusOpen, StatusOpen, E, A> {
+export function decodeMethod<I = StatusOpen, E = never, A = never>(
+  f: (method: string) => E.Either<E, A>
+): Middleware<I, I, E, A> {
   return fromConnection((c) => f(c.getMethod()))
 }
 
@@ -681,10 +689,10 @@ export function decodeMethod<E, A>(f: (method: string) => E.Either<E, A>): Middl
  * @category constructors
  * @since 0.7.0
  */
-export function decodeHeader<E, A>(
+export function decodeHeader<I = StatusOpen, E = never, A = never>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A> {
+): Middleware<I, I, E, A> {
   return fromConnection((c) => f(c.getHeader(name)))
 }
 
