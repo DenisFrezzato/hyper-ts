@@ -63,6 +63,7 @@ Added in v0.6.3
   - [flatten](#flatten)
   - [flattenW](#flattenw)
   - [fromIOK](#fromiok)
+  - [fromReaderTaskEitherK](#fromreadertaskeitherk)
   - [fromTaskK](#fromtaskk)
   - [ichainMiddlewareK](#ichainmiddlewarek)
   - [ichainMiddlewareKW](#ichainmiddlewarekw)
@@ -498,7 +499,7 @@ Added in v0.7.0
 
 ```ts
 export declare const chainFirstReaderTaskEitherK: <R, E, A, B>(
-  f: (a: A) => RTE.ReaderTaskEither<R, E, B>
+  f: (a: A) => ReaderTaskEither<R, E, B>
 ) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
 ```
 
@@ -512,7 +513,7 @@ Less strict version of [`chainFirstReaderTaskEitherK`](#chainfirstreadertaskeith
 
 ```ts
 export declare const chainFirstReaderTaskEitherKW: <R2, E2, A, B>(
-  f: (a: A) => RTE.ReaderTaskEither<R2, E2, B>
+  f: (a: A) => ReaderTaskEither<R2, E2, B>
 ) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
 ```
 
@@ -602,7 +603,7 @@ Added in v0.6.3
 
 ```ts
 export declare const chainReaderTaskEitherK: <R, E, A, B>(
-  f: (a: A) => RTE.ReaderTaskEither<R, E, B>
+  f: (a: A) => ReaderTaskEither<R, E, B>
 ) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
 ```
 
@@ -614,7 +615,7 @@ Added in v0.6.3
 
 ```ts
 export declare const chainReaderTaskEitherKW: <R2, E2, A, B>(
-  f: (a: A) => RTE.ReaderTaskEither<R2, E2, B>
+  f: (a: A) => ReaderTaskEither<R2, E2, B>
 ) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, B>
 ```
 
@@ -729,6 +730,18 @@ export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <S, R, E>(...a: A
 ```
 
 Added in v0.7.0
+
+## fromReaderTaskEitherK
+
+**Signature**
+
+```ts
+export declare const fromReaderTaskEitherK: <R, A extends readonly unknown[], B, I = H.StatusOpen, E = never>(
+  f: (...a: A) => ReaderTaskEither<R, E, B>
+) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.7
 
 ## fromTaskK
 
@@ -1106,7 +1119,7 @@ Added in v0.7.0
 
 ```ts
 export declare function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
-  fa: RTE.ReaderTaskEither<R, E, A>
+  fa: ReaderTaskEither<R, E, A>
 ): ReaderMiddleware<R, I, I, E, A>
 ```
 

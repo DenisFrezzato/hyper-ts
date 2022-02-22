@@ -64,6 +64,22 @@ describe('ReaderMiddleware', () => {
     return assertProperty(m1, undefined, m2, c)
   })
 
+  describe('fromReaderTaskEitherK', () => {
+    test('with a left', () => {
+      const m2 = (value: string) => RTE.left(value.length)
+      const m1 = _.fromReaderTaskEitherK(m2)
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m1('foo'), undefined, c, 3)
+    })
+
+    test('with a right', () => {
+      const m2 = (value: string) => RTE.right(value.length)
+      const m1 = _.fromReaderTaskEitherK(m2)
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m1('foo'), undefined, c, 3, [])
+    })
+  })
+
   it('ap', () => {
     const fab = pipe(
       _.header('a', 'a'),
@@ -415,14 +431,92 @@ describe('ReaderMiddleware', () => {
     return assertSuccess(m1, r, c, 3, [])
   })
 
-  it('chainReaderTaskEitherK', () => {
-    const m1 = pipe(
-      _.right('foo'),
-      _.chainReaderTaskEitherK((s) => RTE.right(s.length))
-    )
-    const r = 'foo'
-    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
-    return assertSuccess(m1, r, c, 3, [])
+  describe('chainReaderTaskEitherKW', () => {
+    test('with a left', () => {
+      const m1 = pipe(
+        _.right('foo'),
+        _.chainReaderTaskEitherKW((s) => RTE.left(s.length))
+      )
+      const r = 'foo'
+      const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      return assertFailure(m1, r, c, 3)
+    })
+
+    test('with a right', () => {
+      const m1 = pipe(
+        _.right('foo'),
+        _.chainReaderTaskEitherKW((s) => RTE.right(s.length))
+      )
+      const r = 'foo'
+      const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      return assertSuccess(m1, r, c, 3, [])
+    })
+  })
+
+  describe('chainReaderTaskEitherK', () => {
+    test('with a left', () => {
+      const m1 = pipe(
+        _.right('foo'),
+        _.chainReaderTaskEitherK((s) => RTE.left(s.length))
+      )
+      const r = 'foo'
+      const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      return assertFailure(m1, r, c, 3)
+    })
+
+    test('with a right', () => {
+      const m1 = pipe(
+        _.right('foo'),
+        _.chainReaderTaskEitherK((s) => RTE.right(s.length))
+      )
+      const r = 'foo'
+      const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      return assertSuccess(m1, r, c, 3, [])
+    })
+  })
+
+  describe('chainReaderTaskEitherKW', () => {
+    test('with a left', () => {
+      const m1 = pipe(
+        _.right('foo'),
+        _.chainFirstReaderTaskEitherKW((s) => RTE.left(s.length))
+      )
+      const r = 'foo'
+      const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      return assertFailure(m1, r, c, 3)
+    })
+
+    test('with a right', () => {
+      const m1 = pipe(
+        _.right('foo'),
+        _.chainFirstReaderTaskEitherKW((s) => RTE.right(s.length))
+      )
+      const r = 'foo'
+      const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      return assertSuccess(m1, r, c, 'foo', [])
+    })
+  })
+
+  describe('chainReaderTaskEitherK', () => {
+    test('with a left', () => {
+      const m1 = pipe(
+        _.right('foo'),
+        _.chainFirstReaderTaskEitherK((s) => RTE.left(s.length))
+      )
+      const r = 'foo'
+      const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      return assertFailure(m1, r, c, 3)
+    })
+
+    test('with a right', () => {
+      const m1 = pipe(
+        _.right('foo'),
+        _.chainFirstReaderTaskEitherK((s) => RTE.right(s.length))
+      )
+      const r = 'foo'
+      const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+      return assertSuccess(m1, r, c, 'foo', [])
+    })
   })
 
   it('do notation', () => {

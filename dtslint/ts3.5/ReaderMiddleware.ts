@@ -1,5 +1,6 @@
 import { pipe } from 'fp-ts/function'
 import { ReaderTask } from 'fp-ts/ReaderTask'
+import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
 import * as M from '../../src/Middleware'
 import * as _ from '../../src/ReaderMiddleware'
 
@@ -20,6 +21,16 @@ declare const middleware4b: M.Middleware<'one', 'one', Error, string>
 declare const middleware5: M.Middleware<'one', 'two', number, string>
 
 declare const readerTask1: ReaderTask<R1, string>
+
+declare const readerTaskEither1: ReaderTaskEither<R1, number, string>
+declare const readerTaskEither2: ReaderTaskEither<R2, Error, string>
+
+//
+// fromReaderTaskEitherK
+//
+
+// $ExpectType (a: boolean, b: number) => ReaderMiddleware<R1, StatusOpen, StatusOpen, number, string>
+_.fromReaderTaskEitherK((a: boolean, b: number) => readerTaskEither1)
 
 //
 // ichainFirst
@@ -115,4 +126,66 @@ pipe(
 pipe(
   middleware1,
   _.orElseMiddlewareKW(() => middleware5) // $ExpectError
+)
+
+//
+// chainReaderTaskEitherKW
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, string>
+pipe(
+  middleware1,
+  _.chainReaderTaskEitherKW(() => readerTaskEither1)
+)
+
+// $ExpectType ReaderMiddleware<R1 & R2, "one", "one", number | Error, string>
+pipe(
+  middleware1,
+  _.chainReaderTaskEitherKW(() => readerTaskEither2)
+)
+
+//
+// chainReaderTaskEitherK
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, string>
+pipe(
+  middleware1,
+  _.chainReaderTaskEitherK(() => readerTaskEither1)
+)
+
+pipe(
+  middleware1,
+  _.chainReaderTaskEitherK(() => readerTaskEither2) // $ExpectError
+)
+
+//
+// chainFirstReaderTaskEitherKW
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+pipe(
+  middleware1,
+  _.chainFirstReaderTaskEitherKW(() => readerTaskEither1)
+)
+
+// $ExpectType ReaderMiddleware<R1 & R2, "one", "one", number | Error, boolean>
+pipe(
+  middleware1,
+  _.chainFirstReaderTaskEitherKW(() => readerTaskEither2)
+)
+
+//
+// chainFirstReaderTaskEitherK
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+pipe(
+  middleware1,
+  _.chainFirstReaderTaskEitherK(() => readerTaskEither1)
+)
+
+pipe(
+  middleware1,
+  _.chainFirstReaderTaskEitherK(() => readerTaskEither2) // $ExpectError
 )

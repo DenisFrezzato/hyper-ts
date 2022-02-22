@@ -18,7 +18,7 @@ import { MonadThrow4 } from 'fp-ts/MonadThrow'
 import { Functor4, bindTo as bindTo_ } from 'fp-ts/Functor'
 import { Apply4, apS as apS_, apFirst as apFirst_, apSecond as apSecond_ } from 'fp-ts/Apply'
 import { Applicative4 } from 'fp-ts/Applicative'
-import * as RTE from 'fp-ts/ReaderTaskEither'
+import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
 import {
   chainEitherK as chainEitherK_,
@@ -75,7 +75,7 @@ export function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
  * @since 0.6.3
  */
 export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
-  fa: RTE.ReaderTaskEither<R, E, A>
+  fa: ReaderTaskEither<R, E, A>
 ): ReaderMiddleware<R, I, I, E, A> {
   return (r) => M.fromTaskEither(fa(r))
 }
@@ -234,6 +234,17 @@ export const ask = <R, I = H.StatusOpen, E = never>(): ReaderMiddleware<R, I, I,
  */
 export const asks = <R, E = never, A = never>(f: (r: R) => A): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> =>
   flow(f, M.right)
+
+/**
+ * @category combinators
+ * @since 0.7.7
+ */
+export const fromReaderTaskEitherK =
+  <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
+    f: (...a: A) => ReaderTaskEither<R, E, B>
+  ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
+  (...a) =>
+    fromReaderTaskEither(f(...a))
 
 /**
  * Less strict version of [`orElse`](#orelse).
@@ -742,22 +753,18 @@ export const chainTaskEitherKW: <E2, A, B>(
  * @category combinators
  * @since 0.6.3
  */
-export const chainReaderTaskEitherK: <R, E, A, B>(
-  f: (a: A) => RTE.ReaderTaskEither<R, E, B>
-) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = (f) => (ma) => (r) =>
-  pipe(
-    ma(r),
-    M.chain((a) => M.fromTaskEither(f(a)(r)))
-  )
+export const chainReaderTaskEitherKW: <R2, E2, A, B>(
+  f: (a: A) => ReaderTaskEither<R2, E2, B>
+) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> = (f) =>
+  chainW(fromReaderTaskEitherK(f))
 
 /**
  * @category combinators
  * @since 0.6.3
  */
-export const chainReaderTaskEitherKW: <R2, E2, A, B>(
-  f: (a: A) => RTE.ReaderTaskEither<R2, E2, B>
-) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> =
-  chainReaderTaskEitherK as any
+export const chainReaderTaskEitherK: <R, E, A, B>(
+  f: (a: A) => ReaderTaskEither<R, E, B>
+) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainReaderTaskEitherKW
 
 /**
  * Less strict version of [`chainFirstReaderTaskEitherK`](#chainfirstreadertaskeitherk).
@@ -766,16 +773,16 @@ export const chainReaderTaskEitherKW: <R2, E2, A, B>(
  * @since 0.7.0
  */
 export const chainFirstReaderTaskEitherKW: <R2, E2, A, B>(
-  f: (a: A) => RTE.ReaderTaskEither<R2, E2, B>
+  f: (a: A) => ReaderTaskEither<R2, E2, B>
 ) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> = (f) =>
-  chainFirstW((a) => fromReaderTaskEither(f(a)))
+  chainFirstW(fromReaderTaskEitherK(f))
 
 /**
  * @category combinators
  * @since 0.7.0
  */
 export const chainFirstReaderTaskEitherK: <R, E, A, B>(
-  f: (a: A) => RTE.ReaderTaskEither<R, E, B>
+  f: (a: A) => ReaderTaskEither<R, E, B>
 ) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A> = chainFirstReaderTaskEitherKW
 
 /**
