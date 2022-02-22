@@ -270,10 +270,13 @@ describe('ReaderMiddleware', () => {
   })
 
   describe('redirect', () => {
-    it('should add the correct status / header', () => {
-      const m1 = _.redirect('/users')
+    it.each([
+      ['string', '/users', '/users'],
+      ['URL', new URL('http://example.com/users'), 'http://example.com/users'],
+    ])('should add the correct status / header for a %s', (_type, actual, expected) => {
+      const m1 = _.redirect(actual)
       const r = 'yee'
-      const m2 = M.redirect('/users')
+      const m2 = M.redirect(expected)
       const c = new MockConnection<H.StatusOpen>(new MockRequest())
       return assertProperty(m1, r, m2, c)
     })

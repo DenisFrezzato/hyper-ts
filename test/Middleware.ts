@@ -174,12 +174,15 @@ describe('Middleware', () => {
   })
 
   describe('redirect', () => {
-    it('should add the correct status / header', () => {
-      const m = _.redirect('/users')
+    it.each([
+      ['string', '/users', '/users'],
+      ['URL', new URL('http://example.com/users'), 'http://example.com/users'],
+    ])('should add the correct status / header for a %s', (_type, actual, expected) => {
+      const m = _.redirect(actual)
       const c = new MockConnection<H.StatusOpen>(new MockRequest())
       return assertSuccess(m, c, undefined, [
         { type: 'setStatus', status: 302 },
-        { type: 'setHeader', name: 'Location', value: '/users' },
+        { type: 'setHeader', name: 'Location', value: expected },
       ])
     })
   })

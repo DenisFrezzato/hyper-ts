@@ -371,7 +371,9 @@ export function json<R, E>(
  * @category constructors
  * @since 0.6.3
  */
-export function redirect<R, E = never>(uri: string): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void> {
+export function redirect<R, E = never>(
+  uri: string | { href: string }
+): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void> {
   return () => M.redirect(uri)
 }
 

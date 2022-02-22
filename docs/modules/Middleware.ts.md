@@ -1054,7 +1054,9 @@ Returns a middleware that sends a redirect to `uri`
 **Signature**
 
 ```ts
-export declare function redirect<E = never>(uri: string): Middleware<StatusOpen, HeadersOpen, E, void>
+export declare function redirect<E = never>(
+  uri: string | { href: string }
+): Middleware<StatusOpen, HeadersOpen, E, void>
 ```
 
 Added in v0.7.0
