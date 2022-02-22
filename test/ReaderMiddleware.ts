@@ -64,6 +64,13 @@ describe('ReaderMiddleware', () => {
     return assertProperty(m1, undefined, m2, c)
   })
 
+  it('fromReaderTaskK', () => {
+    const m2 = (value: string) => RT.of(value.length)
+    const m1 = _.fromReaderTaskK(m2)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m1('foo'), undefined, c, 3, [])
+  })
+
   it('ap', () => {
     const fab = pipe(
       _.header('a', 'a'),
@@ -415,6 +422,26 @@ describe('ReaderMiddleware', () => {
     return assertSuccess(m1, r, c, 3, [])
   })
 
+  it('chainReaderTaskKW', () => {
+    const m1 = pipe(
+      _.right('foo'),
+      _.chainReaderTaskKW((s) => RT.of(s.length))
+    )
+    const r = 'foo'
+    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+    return assertSuccess(m1, r, c, 3, [])
+  })
+
+  it('chainReaderTaskK', () => {
+    const m1 = pipe(
+      _.right('foo'),
+      _.chainReaderTaskK((s) => RT.of(s.length))
+    )
+    const r = 'foo'
+    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+    return assertSuccess(m1, r, c, 3, [])
+  })
+
   it('chainReaderTaskEitherK', () => {
     const m1 = pipe(
       _.right('foo'),
@@ -423,6 +450,26 @@ describe('ReaderMiddleware', () => {
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
     return assertSuccess(m1, r, c, 3, [])
+  })
+
+  it('chainFirstReaderTaskKW', () => {
+    const m1 = pipe(
+      _.right('foo'),
+      _.chainFirstReaderTaskKW((s) => RT.of(s.length))
+    )
+    const r = 'foo'
+    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+    return assertSuccess(m1, r, c, 'foo', [])
+  })
+
+  it('chainFirstReaderTaskK', () => {
+    const m1 = pipe(
+      _.right('foo'),
+      _.chainFirstReaderTaskK((s) => RT.of(s.length))
+    )
+    const r = 'foo'
+    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+    return assertSuccess(m1, r, c, 'foo', [])
   })
 
   it('do notation', () => {
