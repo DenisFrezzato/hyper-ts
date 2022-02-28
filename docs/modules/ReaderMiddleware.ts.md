@@ -1304,7 +1304,9 @@ Added in v0.7.3
 **Signature**
 
 ```ts
-export declare function redirect<R, E = never>(uri: string): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void>
+export declare function redirect<R, E = never>(
+  uri: string | { href: string }
+): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void>
 ```
 
 Added in v0.6.3

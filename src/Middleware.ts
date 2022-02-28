@@ -600,10 +600,10 @@ export function json<E>(
  * @category constructors
  * @since 0.7.0
  */
-export function redirect<E = never>(uri: string): Middleware<StatusOpen, HeadersOpen, E, void> {
+export function redirect<E = never>(uri: string | { href: string }): Middleware<StatusOpen, HeadersOpen, E, void> {
   return pipe(
     status(Status.Found),
-    ichain(() => header('Location', uri))
+    ichain(() => header('Location', typeof uri === 'string' ? uri : uri.href))
   )
 }
 
