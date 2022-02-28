@@ -21,8 +21,17 @@ declare const middleware4b: M.Middleware<'one', 'one', Error, string>
 declare const middleware5: M.Middleware<'one', 'two', number, string>
 
 declare const readerTask1: ReaderTask<R1, string>
+declare const readerTask2: ReaderTask<R2, string>
+
 declare const decoderU: (value: unknown) => E.Either<number, boolean>
 declare const decoderS: (value: string) => E.Either<number, boolean>
+
+//
+// fromReaderTaskK
+//
+
+// $ExpectType (a: boolean, b: number) => ReaderMiddleware<R1, StatusOpen, StatusOpen, never, string>
+_.fromReaderTaskK((a: boolean, b: number) => readerTask1)
 
 //
 // decodeParam
@@ -172,4 +181,66 @@ pipe(
 pipe(
   middleware1,
   _.orElseMiddlewareKW(() => middleware5) // $ExpectError
+)
+
+//
+// chainReaderTaskKW
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, string>
+pipe(
+  middleware1,
+  _.chainReaderTaskKW(() => readerTask1)
+)
+
+// $ExpectType ReaderMiddleware<R1 & R2, "one", "one", number, string>
+pipe(
+  middleware1,
+  _.chainReaderTaskKW(() => readerTask2)
+)
+
+//
+// chainReaderTaskK
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, string>
+pipe(
+  middleware1,
+  _.chainReaderTaskK(() => readerTask1)
+)
+
+pipe(
+  middleware1,
+  _.chainReaderTaskK(() => readerTask2) // $ExpectError
+)
+
+//
+// chainFirstReaderTaskKW
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+pipe(
+  middleware1,
+  _.chainFirstReaderTaskKW(() => readerTask1)
+)
+
+// $ExpectType ReaderMiddleware<R1 & R2, "one", "one", number, boolean>
+pipe(
+  middleware1,
+  _.chainFirstReaderTaskKW(() => readerTask2)
+)
+
+//
+// chainFirstReaderTaskK
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+pipe(
+  middleware1,
+  _.chainFirstReaderTaskK(() => readerTask1)
+)
+
+pipe(
+  middleware1,
+  _.chainFirstReaderTaskK(() => readerTask2) // $ExpectError
 )
