@@ -415,10 +415,10 @@ export function pipeStream<R, E>(
  * @category constructors
  * @since 0.6.3
  */
-export function decodeParam<R, E, A>(
+export function decodeParam<R, I = H.StatusOpen, E = never, A = never>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
+): ReaderMiddleware<R, I, I, E, A> {
   return () => M.decodeParam(name, f)
 }
 
@@ -426,9 +426,9 @@ export function decodeParam<R, E, A>(
  * @category constructors
  * @since 0.6.3
  */
-export function decodeParams<R, E, A>(
+export function decodeParams<R, I = H.StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
+): ReaderMiddleware<R, I, I, E, A> {
   return () => M.decodeParams(f)
 }
 
@@ -436,9 +436,9 @@ export function decodeParams<R, E, A>(
  * @category constructors
  * @since 0.6.3
  */
-export function decodeQuery<R, E, A>(
+export function decodeQuery<R, I = H.StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
+): ReaderMiddleware<R, I, I, E, A> {
   return () => M.decodeQuery(f)
 }
 
@@ -446,9 +446,9 @@ export function decodeQuery<R, E, A>(
  * @category constructors
  * @since 0.6.3
  */
-export function decodeBody<R, E, A>(
+export function decodeBody<R, I = H.StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
+): ReaderMiddleware<R, I, I, E, A> {
   return () => M.decodeBody(f)
 }
 
@@ -456,9 +456,9 @@ export function decodeBody<R, E, A>(
  * @category constructors
  * @since 0.6.3
  */
-export function decodeMethod<R, E, A>(
+export function decodeMethod<R, I = H.StatusOpen, E = never, A = never>(
   f: (method: string) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
+): ReaderMiddleware<R, I, I, E, A> {
   return () => M.decodeMethod(f)
 }
 
@@ -466,10 +466,10 @@ export function decodeMethod<R, E, A>(
  * @category constructors
  * @since 0.6.3
  */
-export function decodeHeader<R, E, A>(
+export function decodeHeader<R, I = H.StatusOpen, E = never, A = never>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
-): ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> {
+): ReaderMiddleware<R, I, I, E, A> {
   return () => M.decodeHeader(name, f)
 }
 const _map: Functor4<URI>['map'] = (fa, f) => (r) => pipe(fa(r), M.map(f))

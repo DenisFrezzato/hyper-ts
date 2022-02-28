@@ -812,9 +812,9 @@ Returns a middleware that tries to decode `connection.getBody()`
 **Signature**
 
 ```ts
-export declare function decodeBody<E, A>(
+export declare function decodeBody<I = StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -826,10 +826,10 @@ Returns a middleware that tries to decode `connection.getHeader(name)`
 **Signature**
 
 ```ts
-export declare function decodeHeader<E, A>(
+export declare function decodeHeader<I = StatusOpen, E = never, A = never>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -841,9 +841,9 @@ Returns a middleware that tries to decode `connection.getMethod()`
 **Signature**
 
 ```ts
-export declare function decodeMethod<E, A>(
+export declare function decodeMethod<I = StatusOpen, E = never, A = never>(
   f: (method: string) => E.Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -855,10 +855,10 @@ Returns a middleware that tries to decode `connection.getParams()[name]`
 **Signature**
 
 ```ts
-export declare function decodeParam<E, A>(
+export declare function decodeParam<I = StatusOpen, E = never, A = never>(
   name: string,
   f: (input: unknown) => E.Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -870,9 +870,9 @@ Returns a middleware that tries to decode `connection.getParams()`
 **Signature**
 
 ```ts
-export declare function decodeParams<E, A>(
+export declare function decodeParams<I = StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -884,9 +884,9 @@ Returns a middleware that tries to decode `connection.getQuery()`
 **Signature**
 
 ```ts
-export declare function decodeQuery<E, A>(
+export declare function decodeQuery<I = StatusOpen, E = never, A = never>(
   f: (input: unknown) => E.Either<E, A>
-): Middleware<StatusOpen, StatusOpen, E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0

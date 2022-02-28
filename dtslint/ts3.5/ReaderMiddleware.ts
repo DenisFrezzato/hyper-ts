@@ -1,3 +1,4 @@
+import * as E from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
@@ -26,6 +27,9 @@ declare const readerTask2: ReaderTask<R2, string>
 declare const readerTaskEither1: ReaderTaskEither<R1, number, string>
 declare const readerTaskEither2: ReaderTaskEither<R2, Error, string>
 
+declare const decoderU: (value: unknown) => E.Either<number, boolean>
+declare const decoderS: (value: string) => E.Either<number, boolean>
+
 //
 // fromReaderTaskK
 //
@@ -39,6 +43,60 @@ _.fromReaderTaskK((a: boolean, b: number) => readerTask1)
 
 // $ExpectType (a: boolean, b: number) => ReaderMiddleware<R1, StatusOpen, StatusOpen, number, string>
 _.fromReaderTaskEitherK((a: boolean, b: number) => readerTaskEither1)
+
+//
+// decodeParam
+//
+
+// $ExpectType ReaderMiddleware<unknown, StatusOpen, StatusOpen, number, boolean>
+_.decodeParam('foo', decoderU)
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+_.decodeParam<R1, 'one', number, boolean>('foo', decoderU)
+
+//
+// decodeParams
+//
+
+// $ExpectType ReaderMiddleware<unknown, StatusOpen, StatusOpen, number, boolean>
+_.decodeParams(decoderU)
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+_.decodeParams<R1, 'one', number, boolean>(decoderU)
+
+//
+// decodeQuery
+//
+
+// $ExpectType ReaderMiddleware<unknown, StatusOpen, StatusOpen, number, boolean>
+_.decodeQuery(decoderU)
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+_.decodeQuery<R1, 'one', number, boolean>(decoderU)
+
+//
+// decodeBody
+//
+
+// $ExpectType ReaderMiddleware<unknown, StatusOpen, StatusOpen, number, boolean>
+_.decodeBody(decoderU)
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+_.decodeBody<R1, 'one', number, boolean>(decoderU)
+
+//
+// decodeMethod
+//
+
+// $ExpectType ReaderMiddleware<unknown, StatusOpen, StatusOpen, number, boolean>
+_.decodeMethod(decoderS)
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+_.decodeMethod<R1, 'one', number, boolean>(decoderS)
+
+//
+// decodeHeader
+//
+
+// $ExpectType ReaderMiddleware<unknown, StatusOpen, StatusOpen, number, boolean>
+_.decodeHeader('foo', decoderU)
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+_.decodeHeader<R1, 'one', number, boolean>('foo', decoderU)
 
 //
 // ichainFirst
