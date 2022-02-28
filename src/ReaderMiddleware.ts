@@ -236,6 +236,17 @@ export const asks = <R, E = never, A = never>(f: (r: R) => A): ReaderMiddleware<
   flow(f, M.right)
 
 /**
+ * @category combinators
+ * @since 0.7.7
+ */
+export const fromReaderTaskK =
+  <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
+    f: (...a: A) => ReaderTask<R, B>
+  ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
+  (...a) =>
+    rightReaderTask(f(...a))
+
+/**
  * Less strict version of [`orElse`](#orelse).
  *
  * @category combinators
@@ -739,6 +750,25 @@ export const chainTaskEitherKW: <E2, A, B>(
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = chainTaskEitherK as any
 
 /**
+ * Less strict version of [`chainReaderTaskK`](#chainreadertaskk).
+ *
+ * @category combinators
+ * @since 0.7.7
+ */
+export const chainReaderTaskKW: <R2, A, B>(
+  f: (a: A) => ReaderTask<R2, B>
+) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B> = (f) =>
+  chainW(fromReaderTaskK(f))
+
+/**
+ * @category combinators
+ * @since 0.7.7
+ */
+export const chainReaderTaskK: <R, A, B>(
+  f: (a: A) => ReaderTask<R, B>
+) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainReaderTaskKW
+
+/**
  * @category combinators
  * @since 0.6.3
  */
@@ -758,6 +788,25 @@ export const chainReaderTaskEitherKW: <R2, E2, A, B>(
   f: (a: A) => RTE.ReaderTaskEither<R2, E2, B>
 ) => <R1, I, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> =
   chainReaderTaskEitherK as any
+
+/**
+ * Less strict version of [`chainFirstReaderTaskK`](#chainfirstreadertaskk).
+ *
+ * @category combinators
+ * @since 0.7.7
+ */
+export const chainFirstReaderTaskKW: <R2, E, A, B>(
+  f: (a: A) => ReaderTask<R2, B>
+) => <R1, I>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, A> = (f) =>
+  chainFirstW(fromReaderTaskK(f))
+
+/**
+ * @category combinators
+ * @since 0.7.7
+ */
+export const chainFirstReaderTaskK: <R, E, A, B>(
+  f: (a: A) => ReaderTask<R, B>
+) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A> = chainFirstReaderTaskKW
 
 /**
  * Less strict version of [`chainFirstReaderTaskEitherK`](#chainfirstreadertaskeitherk).

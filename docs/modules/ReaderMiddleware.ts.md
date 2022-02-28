@@ -47,6 +47,8 @@ Added in v0.6.3
   - [chainFirstIOK](#chainfirstiok)
   - [chainFirstReaderTaskEitherK](#chainfirstreadertaskeitherk)
   - [chainFirstReaderTaskEitherKW](#chainfirstreadertaskeitherkw)
+  - [chainFirstReaderTaskK](#chainfirstreadertaskk)
+  - [chainFirstReaderTaskKW](#chainfirstreadertaskkw)
   - [chainFirstTaskEitherK](#chainfirsttaskeitherk)
   - [chainFirstTaskEitherKW](#chainfirsttaskeitherkw)
   - [chainFirstTaskK](#chainfirsttaskk)
@@ -55,6 +57,8 @@ Added in v0.6.3
   - [chainMiddlewareK](#chainmiddlewarek)
   - [chainReaderTaskEitherK](#chainreadertaskeitherk)
   - [chainReaderTaskEitherKW](#chainreadertaskeitherkw)
+  - [chainReaderTaskK](#chainreadertaskk)
+  - [chainReaderTaskKW](#chainreadertaskkw)
   - [chainTaskEitherK](#chaintaskeitherk)
   - [chainTaskEitherKW](#chaintaskeitherkw)
   - [chainTaskK](#chaintaskk)
@@ -63,6 +67,7 @@ Added in v0.6.3
   - [flatten](#flatten)
   - [flattenW](#flattenw)
   - [fromIOK](#fromiok)
+  - [fromReaderTaskK](#fromreadertaskk)
   - [fromTaskK](#fromtaskk)
   - [ichainMiddlewareK](#ichainmiddlewarek)
   - [ichainMiddlewareKW](#ichainmiddlewarekw)
@@ -518,6 +523,32 @@ export declare const chainFirstReaderTaskEitherKW: <R2, E2, A, B>(
 
 Added in v0.7.0
 
+## chainFirstReaderTaskK
+
+**Signature**
+
+```ts
+export declare const chainFirstReaderTaskK: <R, E, A, B>(
+  f: (a: A) => ReaderTask<R, B>
+) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.7
+
+## chainFirstReaderTaskKW
+
+Less strict version of [`chainFirstReaderTaskK`](#chainfirstreadertaskk).
+
+**Signature**
+
+```ts
+export declare const chainFirstReaderTaskKW: <R2, E, A, B>(
+  f: (a: A) => ReaderTask<R2, B>
+) => <R1, I>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, A>
+```
+
+Added in v0.7.7
+
 ## chainFirstTaskEitherK
 
 **Signature**
@@ -619,6 +650,32 @@ export declare const chainReaderTaskEitherKW: <R2, E2, A, B>(
 ```
 
 Added in v0.6.3
+
+## chainReaderTaskK
+
+**Signature**
+
+```ts
+export declare const chainReaderTaskK: <R, A, B>(
+  f: (a: A) => ReaderTask<R, B>
+) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.7
+
+## chainReaderTaskKW
+
+Less strict version of [`chainReaderTaskK`](#chainreadertaskk).
+
+**Signature**
+
+```ts
+export declare const chainReaderTaskKW: <R2, A, B>(
+  f: (a: A) => ReaderTask<R2, B>
+) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B>
+```
+
+Added in v0.7.7
 
 ## chainTaskEitherK
 
@@ -729,6 +786,18 @@ export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <S, R, E>(...a: A
 ```
 
 Added in v0.7.0
+
+## fromReaderTaskK
+
+**Signature**
+
+```ts
+export declare const fromReaderTaskK: <R, A extends readonly unknown[], B, I = H.StatusOpen, E = never>(
+  f: (...a: A) => ReaderTask<R, B>
+) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.7
 
 ## fromTaskK
 
