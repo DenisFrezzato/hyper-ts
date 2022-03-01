@@ -237,7 +237,7 @@ export const asks = <R, E = never, A = never>(f: (r: R) => A): ReaderMiddleware<
 
 /**
  * @category combinators
- * @since 0.7.7
+ * @since 0.7.8
  */
 export const fromReaderTaskK =
   <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
@@ -248,7 +248,7 @@ export const fromReaderTaskK =
 
 /**
  * @category combinators
- * @since 0.7.7
+ * @since 0.7.8
  */
 export const fromReaderTaskEitherK =
   <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
@@ -766,7 +766,7 @@ export const chainTaskEitherKW: <E2, A, B>(
  * Less strict version of [`chainReaderTaskK`](#chainreadertaskk).
  *
  * @category combinators
- * @since 0.7.7
+ * @since 0.7.8
  */
 export const chainReaderTaskKW: <R2, A, B>(
   f: (a: A) => ReaderTask<R2, B>
@@ -775,7 +775,7 @@ export const chainReaderTaskKW: <R2, A, B>(
 
 /**
  * @category combinators
- * @since 0.7.7
+ * @since 0.7.8
  */
 export const chainReaderTaskK: <R, A, B>(
   f: (a: A) => ReaderTask<R, B>
@@ -802,7 +802,7 @@ export const chainReaderTaskEitherK: <R, E, A, B>(
  * Less strict version of [`chainFirstReaderTaskK`](#chainfirstreadertaskk).
  *
  * @category combinators
- * @since 0.7.7
+ * @since 0.7.8
  */
 export const chainFirstReaderTaskKW: <R2, E, A, B>(
   f: (a: A) => ReaderTask<R2, B>
@@ -811,7 +811,7 @@ export const chainFirstReaderTaskKW: <R2, E, A, B>(
 
 /**
  * @category combinators
- * @since 0.7.7
+ * @since 0.7.8
  */
 export const chainFirstReaderTaskK: <R, E, A, B>(
   f: (a: A) => ReaderTask<R, B>

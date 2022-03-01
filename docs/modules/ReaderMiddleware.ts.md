@@ -534,7 +534,7 @@ export declare const chainFirstReaderTaskK: <R, E, A, B>(
 ) => <I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
 ```
 
-Added in v0.7.7
+Added in v0.7.8
 
 ## chainFirstReaderTaskKW
 
@@ -548,7 +548,7 @@ export declare const chainFirstReaderTaskKW: <R2, E, A, B>(
 ) => <R1, I>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, A>
 ```
 
-Added in v0.7.7
+Added in v0.7.8
 
 ## chainFirstTaskEitherK
 
@@ -662,7 +662,7 @@ export declare const chainReaderTaskK: <R, A, B>(
 ) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
 ```
 
-Added in v0.7.7
+Added in v0.7.8
 
 ## chainReaderTaskKW
 
@@ -676,7 +676,7 @@ export declare const chainReaderTaskKW: <R2, A, B>(
 ) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B>
 ```
 
-Added in v0.7.7
+Added in v0.7.8
 
 ## chainTaskEitherK
 
@@ -798,7 +798,7 @@ export declare const fromReaderTaskEitherK: <R, A extends readonly unknown[], B,
 ) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
 ```
 
-Added in v0.7.7
+Added in v0.7.8
 
 ## fromReaderTaskK
 
@@ -810,7 +810,7 @@ export declare const fromReaderTaskK: <R, A extends readonly unknown[], B, I = H
 ) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
 ```
 
-Added in v0.7.7
+Added in v0.7.8
 
 ## fromTaskK
 
