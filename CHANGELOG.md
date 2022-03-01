@@ -13,6 +13,13 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.7.8
+- **New Feature**
+  - `ReaderMiddleware`
+    - Add `fromReaderTaskK`, `chainReaderTaskK{W}`, `chainFirstReaderTaskK{W}`, `fromReaderTaskEitherK` (@thewilkybarkid)
+  - Allow `redirect` to take a `URL` (@thewilkybarkid)
+  - Open the index on decode middlewares (@thewilkybarkid)
+
 # 0.7.7
 
 - **New Feature**
