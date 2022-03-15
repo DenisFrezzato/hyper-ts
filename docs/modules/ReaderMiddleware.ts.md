@@ -41,6 +41,8 @@ Added in v0.6.3
   - [apFirstW](#apfirstw)
   - [apSecond](#apsecond)
   - [apSecondW](#apsecondw)
+  - [asksReaderMiddleware](#asksreadermiddleware)
+  - [asksReaderMiddlewareW](#asksreadermiddlewarew)
   - [chainEitherK](#chaineitherk)
   - [chainEitherKW](#chaineitherkw)
   - [chainFirst](#chainfirst)
@@ -442,6 +444,34 @@ export declare const apSecondW: <R2, I, E2, B>(
 ```
 
 Added in v0.7.1
+
+## asksReaderMiddleware
+
+Effectfully accesses the environment.
+
+**Signature**
+
+```ts
+export declare const asksReaderMiddleware: <R, E = never, A = never>(
+  f: (r: R) => ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+) => ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+```
+
+Added in v0.7.9
+
+## asksReaderMiddlewareW
+
+Less strict version of [`asksReaderMiddleware`](#asksreadermiddleware).
+
+**Signature**
+
+```ts
+export declare const asksReaderMiddlewareW: <R1, R2, E = never, A = never>(
+  f: (r: R1) => ReaderMiddleware<R2, H.StatusOpen, H.StatusOpen, E, A>
+) => ReaderMiddleware<R1 & R2, H.StatusOpen, H.StatusOpen, E, A>
+```
+
+Added in v0.7.9
 
 ## chainEitherK
 

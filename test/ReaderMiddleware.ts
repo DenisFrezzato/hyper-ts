@@ -421,6 +421,20 @@ describe('ReaderMiddleware', () => {
     return assertSuccess(m1, r, c, 3, [])
   })
 
+  it('asksReaderMiddlewareW', () => {
+    const m1 = _.asksReaderMiddlewareW((s: string) => _.of(s.length))
+    const r = 'foo'
+    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+    return assertSuccess(m1, r, c, 3, [])
+  })
+
+  it('asksReaderMiddleware', () => {
+    const m1 = _.asksReaderMiddleware((s: string) => _.of(s.length))
+    const r = 'foo'
+    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+    return assertSuccess(m1, r, c, 3, [])
+  })
+
   it('chainMiddlewareK', () => {
     const m1 = pipe(
       _.right('foo'),

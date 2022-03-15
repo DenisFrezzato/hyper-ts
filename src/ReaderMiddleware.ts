@@ -236,6 +236,27 @@ export const asks = <R, E = never, A = never>(f: (r: R) => A): ReaderMiddleware<
   flow(f, M.right)
 
 /**
+ * Less strict version of [`asksReaderMiddleware`](#asksreadermiddleware).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+// TODO: use R.asksReaderW when fp-ts version >= 2.11.0
+export const asksReaderMiddlewareW: <R1, R2, E = never, A = never>(
+  f: (r: R1) => ReaderMiddleware<R2, H.StatusOpen, H.StatusOpen, E, A>
+) => ReaderMiddleware<R1 & R2, H.StatusOpen, H.StatusOpen, E, A> = (f) => (r) => f(r)(r)
+
+/**
+ * Effectfully accesses the environment.
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const asksReaderMiddleware: <R, E = never, A = never>(
+  f: (r: R) => ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A>
+) => ReaderMiddleware<R, H.StatusOpen, H.StatusOpen, E, A> = asksReaderMiddlewareW
+
+/**
  * @category combinators
  * @since 0.7.8
  */
