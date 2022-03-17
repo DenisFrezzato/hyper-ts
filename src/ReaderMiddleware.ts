@@ -61,7 +61,7 @@ export interface ReaderMiddleware<R, I, O, E, A> {
 }
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.6.3
  */
 export function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
@@ -71,7 +71,7 @@ export function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.6.3
  */
 export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
@@ -81,7 +81,7 @@ export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.6.3
  */
 export const fromMiddleware =
@@ -90,7 +90,7 @@ export const fromMiddleware =
     fa
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.7.0
  */
 export function gets<R, I = H.StatusOpen, E = never, A = never>(
@@ -100,7 +100,7 @@ export function gets<R, I = H.StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.7.0
  */
 export function fromConnection<R, I = H.StatusOpen, E = never, A = never>(
@@ -110,7 +110,7 @@ export function fromConnection<R, I = H.StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.7.0
  */
 export function modifyConnection<R, I, O, E>(
@@ -168,7 +168,7 @@ export function leftIO<R, I = H.StatusOpen, E = never, A = never>(fe: IO<E>): Re
 }
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export const fromEither = <R, I = H.StatusOpen, E = never, A = never>(
@@ -176,7 +176,7 @@ export const fromEither = <R, I = H.StatusOpen, E = never, A = never>(
 ): ReaderMiddleware<R, I, I, E, A> => fromMiddleware(M.fromEither(e))
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.6.3
  */
 export function fromIOEither<R, I = H.StatusOpen, E = never, A = never>(
@@ -573,7 +573,7 @@ export const apW: <R2, I, E2, A>(
 export const of: <R, I = H.StatusOpen, E = never, A = never>(a: A) => ReaderMiddleware<R, I, I, E, A> = right
 
 /**
- * @category Pointed
+ * @category IxPointed
  * @since 0.6.3
  */
 export function iof<R, I = H.StatusOpen, O = H.StatusOpen, E = never, A = never>(
@@ -1071,7 +1071,7 @@ export const chainEitherKW: <E2, A, B>(
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = chainEitherK as any
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export const fromIO: FromIO4<URI>['fromIO'] = rightIO
@@ -1104,7 +1104,7 @@ export const chainIOK = chainIOK_(FromIO, Chain)
 export const chainFirstIOK = chainFirstIOK_(FromIO, Chain)
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export const fromTask: FromTask4<URI>['fromTask'] = rightTask

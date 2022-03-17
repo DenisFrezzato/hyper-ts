@@ -70,7 +70,7 @@ export interface Middleware<I, O, E, A> {
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.7.0
  */
 export function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>) => A): Middleware<I, I, E, A> {
@@ -78,7 +78,7 @@ export function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>)
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.7.0
  */
 export function fromConnection<I = StatusOpen, E = never, A = never>(
@@ -94,7 +94,7 @@ export function fromConnection<I = StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructor
+ * @category constructors
  * @since 0.7.0
  */
 export function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, E, void> {
@@ -207,7 +207,7 @@ export const apW: <I, E2, A>(
 export const of: <I = StatusOpen, E = never, A = never>(a: A) => Middleware<I, I, E, A> = right
 
 /**
- * @category Pointed
+ * @category IxPointed
  * @since 0.7.0
  */
 export function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A): Middleware<I, O, E, A> {
@@ -282,7 +282,7 @@ export const ichain: <A, O, Z, E, B>(
 /**
  * Less strict version of [`ichainFirst`](#ichainfirst).
  *
- * @category IxMonad
+ * @category combinators
  * @since 0.7.6
  */
 export function ichainFirstW<A, O, Z, E, B>(
@@ -303,7 +303,7 @@ export function ichainFirstW<A, O, Z, E, B>(
 /**
  * Indexed version of [`chainFirst`](#chainfirst).
  *
- * @category IxMonad
+ * @category combinators
  * @since 0.7.6
  */
 export const ichainFirst: <A, O, Z, E, B>(
@@ -406,7 +406,7 @@ export function tryCatch<I = StatusOpen, E = never, A = never>(
 }
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export function fromTaskEither<I = StatusOpen, E = never, A = never>(fa: TE.TaskEither<E, A>): Middleware<I, I, E, A> {
@@ -466,14 +466,14 @@ export function leftIO<I = StatusOpen, E = never, A = never>(fe: IO<E>): Middlew
 }
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export const fromEither = <I = StatusOpen, E = never, A = never>(fa: E.Either<E, A>): Middleware<I, I, E, A> =>
   fromTaskEither(TE.fromEither(fa))
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<E, A>): Middleware<I, I, E, A> {
@@ -907,7 +907,7 @@ export const filterOrElseW: {
 } = filterOrElse
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export const fromOption: <E>(onNone: Lazy<E>) => <I, A>(ma: O.Option<A>) => Middleware<I, I, E, A> =
@@ -932,7 +932,7 @@ export const chainEitherKW: <E2, A, B>(
 ) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = chainEitherK as any
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export const fromIO: FromIO3<URI>['fromIO'] = rightIO
@@ -965,7 +965,7 @@ export const chainIOK = chainIOK_(FromIO, Chain)
 export const chainFirstIOK = chainFirstIOK_(FromIO, Chain)
 
 /**
- * @category constructors
+ * @category natural transformations
  * @since 0.7.0
  */
 export const fromTask: FromTask3<URI>['fromTask'] = rightTask

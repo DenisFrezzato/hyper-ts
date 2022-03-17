@@ -31,14 +31,13 @@ Added in v0.7.0
   - [imap](#imap)
 - [IxMonad](#ixmonad)
   - [ichain](#ichain)
-  - [ichainFirst](#ichainfirst)
-  - [ichainFirstW](#ichainfirstw)
   - [ichainW](#ichainw)
+- [IxPointed](#ixpointed)
+  - [iof](#iof)
 - [Monad](#monad)
   - [chain](#chain)
   - [chainW](#chainw)
 - [Pointed](#pointed)
-  - [iof](#iof)
   - [of](#of)
 - [combinators](#combinators)
   - [apFirst](#apfirst)
@@ -63,14 +62,12 @@ Added in v0.7.0
   - [flattenW](#flattenw)
   - [fromIOK](#fromiok)
   - [fromTaskK](#fromtaskk)
+  - [ichainFirst](#ichainfirst)
+  - [ichainFirstW](#ichainfirstw)
   - [iflatten](#iflatten)
   - [iflattenW](#iflattenw)
   - [orElse](#orelse)
   - [orElseW](#orelsew)
-- [constructor](#constructor)
-  - [fromConnection](#fromconnection)
-  - [gets](#gets)
-  - [modifyConnection](#modifyconnection)
 - [constructors](#constructors)
   - [clearCookie](#clearcookie)
   - [closeHeaders](#closeheaders)
@@ -83,18 +80,15 @@ Added in v0.7.0
   - [decodeParams](#decodeparams)
   - [decodeQuery](#decodequery)
   - [end](#end)
-  - [fromEither](#fromeither)
-  - [fromIO](#fromio)
-  - [fromIOEither](#fromioeither)
-  - [fromOption](#fromoption)
+  - [fromConnection](#fromconnection)
   - [fromPredicate](#frompredicate)
-  - [fromTask](#fromtask)
-  - [fromTaskEither](#fromtaskeither)
+  - [gets](#gets)
   - [header](#header)
   - [json](#json)
   - [left](#left)
   - [leftIO](#leftio)
   - [leftTask](#lefttask)
+  - [modifyConnection](#modifyconnection)
   - [pipeStream](#pipestream)
   - [redirect](#redirect)
   - [right](#right)
@@ -124,6 +118,13 @@ Added in v0.7.0
   - [tryCatch](#trycatch)
 - [model](#model)
   - [Middleware (interface)](#middleware-interface)
+- [natural transformations](#natural-transformations)
+  - [fromEither](#fromeither)
+  - [fromIO](#fromio)
+  - [fromIOEither](#fromioeither)
+  - [fromOption](#fromoption)
+  - [fromTask](#fromtask)
+  - [fromTaskEither](#fromtaskeither)
 - [utils](#utils)
   - [apS](#aps)
   - [apSW](#apsw)
@@ -273,34 +274,6 @@ export declare const ichain: <A, O, Z, E, B>(
 
 Added in v0.7.0
 
-## ichainFirst
-
-Indexed version of [`chainFirst`](#chainfirst).
-
-**Signature**
-
-```ts
-export declare const ichainFirst: <A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, A>
-```
-
-Added in v0.7.6
-
-## ichainFirstW
-
-Less strict version of [`ichainFirst`](#ichainfirst).
-
-**Signature**
-
-```ts
-export declare function ichainFirstW<A, O, Z, E, B>(
-  f: (a: A) => Middleware<O, Z, E, B>
-): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, A>
-```
-
-Added in v0.7.6
-
 ## ichainW
 
 Less strict version of [`ichain`](#ichain).
@@ -311,6 +284,18 @@ Less strict version of [`ichain`](#ichain).
 export declare function ichainW<A, O, Z, E, B>(
   f: (a: A) => Middleware<O, Z, E, B>
 ): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, B>
+```
+
+Added in v0.7.0
+
+# IxPointed
+
+## iof
+
+**Signature**
+
+```ts
+export declare function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A): Middleware<I, O, E, A>
 ```
 
 Added in v0.7.0
@@ -346,16 +331,6 @@ export declare const chainW: <I, E2, A, B>(
 Added in v0.7.0
 
 # Pointed
-
-## iof
-
-**Signature**
-
-```ts
-export declare function iof<I = StatusOpen, O = StatusOpen, E = never, A = never>(a: A): Middleware<I, O, E, A>
-```
-
-Added in v0.7.0
 
 ## of
 
@@ -660,6 +635,34 @@ export declare const fromTaskK: <A, B>(f: (...a: A) => Task<B>) => <R, E>(...a: 
 
 Added in v0.7.0
 
+## ichainFirst
+
+Indexed version of [`chainFirst`](#chainfirst).
+
+**Signature**
+
+```ts
+export declare const ichainFirst: <A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, A>
+```
+
+Added in v0.7.6
+
+## ichainFirstW
+
+Less strict version of [`ichainFirst`](#ichainfirst).
+
+**Signature**
+
+```ts
+export declare function ichainFirstW<A, O, Z, E, B>(
+  f: (a: A) => Middleware<O, Z, E, B>
+): <I, D>(ma: Middleware<I, O, D, A>) => Middleware<I, Z, D | E, A>
+```
+
+Added in v0.7.6
+
 ## iflatten
 
 Derivable from indexed version of `Chain`.
@@ -713,40 +716,6 @@ export declare const orElseW: <E, I, O, M, B>(
 ```
 
 Added in v0.7.5
-
-# constructor
-
-## fromConnection
-
-**Signature**
-
-```ts
-export declare function fromConnection<I = StatusOpen, E = never, A = never>(
-  f: (c: Connection<I>) => E.Either<E, A>
-): Middleware<I, I, E, A>
-```
-
-Added in v0.7.0
-
-## gets
-
-**Signature**
-
-```ts
-export declare function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>) => A): Middleware<I, I, E, A>
-```
-
-Added in v0.7.0
-
-## modifyConnection
-
-**Signature**
-
-```ts
-export declare function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, E, void>
-```
-
-Added in v0.7.0
 
 # constructors
 
@@ -903,42 +872,14 @@ export declare function end<E = never>(): Middleware<BodyOpen, ResponseEnded, E,
 
 Added in v0.7.0
 
-## fromEither
+## fromConnection
 
 **Signature**
 
 ```ts
-export declare const fromEither: <I = StatusOpen, E = never, A = never>(fa: E.Either<E, A>) => Middleware<I, I, E, A>
-```
-
-Added in v0.7.0
-
-## fromIO
-
-**Signature**
-
-```ts
-export declare const fromIO: <R, E, A>(fa: IO<A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.7.0
-
-## fromIOEither
-
-**Signature**
-
-```ts
-export declare function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<E, A>): Middleware<I, I, E, A>
-```
-
-Added in v0.7.0
-
-## fromOption
-
-**Signature**
-
-```ts
-export declare const fromOption: <E>(onNone: Lazy<E>) => <I, A>(ma: O.Option<A>) => Middleware<I, I, E, A>
+export declare function fromConnection<I = StatusOpen, E = never, A = never>(
+  f: (c: Connection<I>) => E.Either<E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -956,24 +897,12 @@ export declare const fromPredicate: {
 
 Added in v0.7.0
 
-## fromTask
+## gets
 
 **Signature**
 
 ```ts
-export declare const fromTask: <R, E, A>(fa: Task<A>) => Middleware<R, R, E, A>
-```
-
-Added in v0.7.0
-
-## fromTaskEither
-
-**Signature**
-
-```ts
-export declare function fromTaskEither<I = StatusOpen, E = never, A = never>(
-  fa: TE.TaskEither<E, A>
-): Middleware<I, I, E, A>
+export declare function gets<I = StatusOpen, E = never, A = never>(f: (c: Connection<I>) => A): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -1031,6 +960,16 @@ Added in v0.7.0
 
 ```ts
 export declare function leftTask<I = StatusOpen, E = never, A = never>(te: Task<E>): Middleware<I, I, E, A>
+```
+
+Added in v0.7.0
+
+## modifyConnection
+
+**Signature**
+
+```ts
+export declare function modifyConnection<I, O, E>(f: (c: Connection<I>) => Connection<O>): Middleware<I, O, E, void>
 ```
 
 Added in v0.7.0
@@ -1316,6 +1255,70 @@ middleware action.
 export interface Middleware<I, O, E, A> {
   (c: Connection<I>): TE.TaskEither<E, [A, Connection<O>]>
 }
+```
+
+Added in v0.7.0
+
+# natural transformations
+
+## fromEither
+
+**Signature**
+
+```ts
+export declare const fromEither: <I = StatusOpen, E = never, A = never>(fa: E.Either<E, A>) => Middleware<I, I, E, A>
+```
+
+Added in v0.7.0
+
+## fromIO
+
+**Signature**
+
+```ts
+export declare const fromIO: <R, E, A>(fa: IO<A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.7.0
+
+## fromIOEither
+
+**Signature**
+
+```ts
+export declare function fromIOEither<I = StatusOpen, E = never, A = never>(fa: IOEither<E, A>): Middleware<I, I, E, A>
+```
+
+Added in v0.7.0
+
+## fromOption
+
+**Signature**
+
+```ts
+export declare const fromOption: <E>(onNone: Lazy<E>) => <I, A>(ma: O.Option<A>) => Middleware<I, I, E, A>
+```
+
+Added in v0.7.0
+
+## fromTask
+
+**Signature**
+
+```ts
+export declare const fromTask: <R, E, A>(fa: Task<A>) => Middleware<R, R, E, A>
+```
+
+Added in v0.7.0
+
+## fromTaskEither
+
+**Signature**
+
+```ts
+export declare function fromTaskEither<I = StatusOpen, E = never, A = never>(
+  fa: TE.TaskEither<E, A>
+): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0

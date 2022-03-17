@@ -30,11 +30,12 @@ Added in v0.6.3
   - [ichainFirst](#ichainfirst)
   - [ichainFirstW](#ichainfirstw)
   - [ichainW](#ichainw)
+- [IxPointed](#ixpointed)
+  - [iof](#iof)
 - [Monad](#monad)
   - [chain](#chain)
   - [chainW](#chainw)
 - [Pointed](#pointed)
-  - [iof](#iof)
   - [of](#of)
 - [combinators](#combinators)
   - [apFirst](#apfirst)
@@ -78,10 +79,6 @@ Added in v0.6.3
   - [orElseMiddlewareK](#orelsemiddlewarek)
   - [orElseMiddlewareKW](#orelsemiddlewarekw)
   - [orElseW](#orelsew)
-- [constructor](#constructor)
-  - [fromConnection](#fromconnection)
-  - [gets](#gets)
-  - [modifyConnection](#modifyconnection)
 - [constructors](#constructors)
   - [ask](#ask)
   - [asks](#asks)
@@ -96,14 +93,9 @@ Added in v0.6.3
   - [decodeParams](#decodeparams)
   - [decodeQuery](#decodequery)
   - [end](#end)
-  - [fromEither](#fromeither)
-  - [fromIO](#fromio)
-  - [fromIOEither](#fromioeither)
-  - [fromMiddleware](#frommiddleware)
+  - [fromConnection](#fromconnection)
   - [fromPredicate](#frompredicate)
-  - [fromReaderTaskEither](#fromreadertaskeither)
-  - [fromTask](#fromtask)
-  - [fromTaskEither](#fromtaskeither)
+  - [gets](#gets)
   - [header](#header)
   - [json](#json)
   - [left](#left)
@@ -111,6 +103,7 @@ Added in v0.6.3
   - [leftReader](#leftreader)
   - [leftReaderTask](#leftreadertask)
   - [leftTask](#lefttask)
+  - [modifyConnection](#modifyconnection)
   - [pipeStream](#pipestream)
   - [redirect](#redirect)
   - [right](#right)
@@ -140,6 +133,14 @@ Added in v0.6.3
   - [~~Apply~~](#apply)
 - [model](#model)
   - [ReaderMiddleware (interface)](#readermiddleware-interface)
+- [natural transformations](#natural-transformations)
+  - [fromEither](#fromeither)
+  - [fromIO](#fromio)
+  - [fromIOEither](#fromioeither)
+  - [fromMiddleware](#frommiddleware)
+  - [fromReaderTaskEither](#fromreadertaskeither)
+  - [fromTask](#fromtask)
+  - [fromTaskEither](#fromtaskeither)
 - [utils](#utils)
   - [apS](#aps)
   - [apSW](#apsw)
@@ -335,6 +336,20 @@ export declare function ichainW<R2, A, O, Z, E2, B>(
 
 Added in v0.6.3
 
+# IxPointed
+
+## iof
+
+**Signature**
+
+```ts
+export declare function iof<R, I = H.StatusOpen, O = H.StatusOpen, E = never, A = never>(
+  a: A
+): ReaderMiddleware<R, I, O, E, A>
+```
+
+Added in v0.6.3
+
 # Monad
 
 ## chain
@@ -366,18 +381,6 @@ export declare const chainW: <R2, I, E2, A, B>(
 Added in v0.6.3
 
 # Pointed
-
-## iof
-
-**Signature**
-
-```ts
-export declare function iof<R, I = H.StatusOpen, O = H.StatusOpen, E = never, A = never>(
-  a: A
-): ReaderMiddleware<R, I, O, E, A>
-```
-
-Added in v0.6.3
 
 ## of
 
@@ -926,44 +929,6 @@ export declare const orElseW: <R2, E, I, O, M, B>(
 
 Added in v0.6.4
 
-# constructor
-
-## fromConnection
-
-**Signature**
-
-```ts
-export declare function fromConnection<R, I = H.StatusOpen, E = never, A = never>(
-  f: (c: H.Connection<I>) => E.Either<E, A>
-): ReaderMiddleware<R, I, I, E, A>
-```
-
-Added in v0.7.0
-
-## gets
-
-**Signature**
-
-```ts
-export declare function gets<R, I = H.StatusOpen, E = never, A = never>(
-  f: (c: H.Connection<I>) => A
-): ReaderMiddleware<R, I, I, E, A>
-```
-
-Added in v0.7.0
-
-## modifyConnection
-
-**Signature**
-
-```ts
-export declare function modifyConnection<R, I, O, E>(
-  f: (c: H.Connection<I>) => H.Connection<O>
-): ReaderMiddleware<R, I, O, E, void>
-```
-
-Added in v0.7.0
-
 # constructors
 
 ## ask
@@ -1121,51 +1086,17 @@ export declare function end<R, E = never>(): ReaderMiddleware<R, H.BodyOpen, H.R
 
 Added in v0.6.3
 
-## fromEither
+## fromConnection
 
 **Signature**
 
 ```ts
-export declare const fromEither: <R, I = H.StatusOpen, E = never, A = never>(
-  e: E.Either<E, A>
-) => ReaderMiddleware<R, I, I, E, A>
-```
-
-Added in v0.7.0
-
-## fromIO
-
-**Signature**
-
-```ts
-export declare const fromIO: <S, R, E, A>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
-```
-
-Added in v0.7.0
-
-## fromIOEither
-
-**Signature**
-
-```ts
-export declare function fromIOEither<R, I = H.StatusOpen, E = never, A = never>(
-  fa: IOEither<E, A>
+export declare function fromConnection<R, I = H.StatusOpen, E = never, A = never>(
+  f: (c: H.Connection<I>) => E.Either<E, A>
 ): ReaderMiddleware<R, I, I, E, A>
 ```
 
-Added in v0.6.3
-
-## fromMiddleware
-
-**Signature**
-
-```ts
-export declare const fromMiddleware: <R, I = H.StatusOpen, O = I, E = never, A = never>(
-  fa: M.Middleware<I, O, E, A>
-) => ReaderMiddleware<R, I, O, E, A>
-```
-
-Added in v0.6.3
+Added in v0.7.0
 
 ## fromPredicate
 
@@ -1182,39 +1113,17 @@ export declare const fromPredicate: {
 
 Added in v0.7.0
 
-## fromReaderTaskEither
+## gets
 
 **Signature**
 
 ```ts
-export declare function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
-  fa: ReaderTaskEither<R, E, A>
+export declare function gets<R, I = H.StatusOpen, E = never, A = never>(
+  f: (c: H.Connection<I>) => A
 ): ReaderMiddleware<R, I, I, E, A>
-```
-
-Added in v0.6.3
-
-## fromTask
-
-**Signature**
-
-```ts
-export declare const fromTask: <S, R, E, A>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
 ```
 
 Added in v0.7.0
-
-## fromTaskEither
-
-**Signature**
-
-```ts
-export declare function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
-  fa: TE.TaskEither<E, A>
-): ReaderMiddleware<R, I, I, E, A>
-```
-
-Added in v0.6.3
 
 ## header
 
@@ -1297,6 +1206,18 @@ export declare function leftTask<R, I = H.StatusOpen, E = never, A = never>(
 ```
 
 Added in v0.6.3
+
+## modifyConnection
+
+**Signature**
+
+```ts
+export declare function modifyConnection<R, I, O, E>(
+  f: (c: H.Connection<I>) => H.Connection<O>
+): ReaderMiddleware<R, I, O, E, void>
+```
+
+Added in v0.7.0
 
 ## pipeStream
 
@@ -1590,6 +1511,88 @@ Added in v0.6.3
 export interface ReaderMiddleware<R, I, O, E, A> {
   (r: R): M.Middleware<I, O, E, A>
 }
+```
+
+Added in v0.6.3
+
+# natural transformations
+
+## fromEither
+
+**Signature**
+
+```ts
+export declare const fromEither: <R, I = H.StatusOpen, E = never, A = never>(
+  e: E.Either<E, A>
+) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.0
+
+## fromIO
+
+**Signature**
+
+```ts
+export declare const fromIO: <S, R, E, A>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
+```
+
+Added in v0.7.0
+
+## fromIOEither
+
+**Signature**
+
+```ts
+export declare function fromIOEither<R, I = H.StatusOpen, E = never, A = never>(
+  fa: IOEither<E, A>
+): ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.6.3
+
+## fromMiddleware
+
+**Signature**
+
+```ts
+export declare const fromMiddleware: <R, I = H.StatusOpen, O = I, E = never, A = never>(
+  fa: M.Middleware<I, O, E, A>
+) => ReaderMiddleware<R, I, O, E, A>
+```
+
+Added in v0.6.3
+
+## fromReaderTaskEither
+
+**Signature**
+
+```ts
+export declare function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
+  fa: ReaderTaskEither<R, E, A>
+): ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.6.3
+
+## fromTask
+
+**Signature**
+
+```ts
+export declare const fromTask: <S, R, E, A>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
+```
+
+Added in v0.7.0
+
+## fromTaskEither
+
+**Signature**
+
+```ts
+export declare function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
+  fa: TE.TaskEither<E, A>
+): ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.6.3
