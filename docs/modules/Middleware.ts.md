@@ -52,11 +52,17 @@ Added in v0.7.0
   - [chainFirstTaskEitherK](#chainfirsttaskeitherk)
   - [chainFirstTaskEitherKW](#chainfirsttaskeitherkw)
   - [chainFirstTaskK](#chainfirsttaskk)
+  - [chainFirstTaskOptionK](#chainfirsttaskoptionk)
+  - [chainFirstTaskOptionKW](#chainfirsttaskoptionkw)
   - [chainFirstW](#chainfirstw)
   - [chainIOK](#chainiok)
+  - [chainOptionK](#chainoptionk)
+  - [chainOptionKW](#chainoptionkw)
   - [chainTaskEitherK](#chaintaskeitherk)
   - [chainTaskEitherKW](#chaintaskeitherkw)
   - [chainTaskK](#chaintaskk)
+  - [chainTaskOptionK](#chaintaskoptionk)
+  - [chainTaskOptionKW](#chaintaskoptionkw)
   - [filterOrElse](#filterorelse)
   - [filterOrElseW](#filterorelsew)
   - [flatten](#flatten)
@@ -90,6 +96,7 @@ Added in v0.7.0
   - [fromPredicate](#frompredicate)
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
+  - [fromTaskOption](#fromtaskoption)
   - [header](#header)
   - [json](#json)
   - [left](#left)
@@ -508,11 +515,37 @@ Added in v0.7.0
 
 ```ts
 export declare const chainFirstTaskK: <A, B>(
-  f: (a: A) => Task<B>
+  f: (a: A) => T.Task<B>
 ) => <R, E>(first: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.7.0
+
+## chainFirstTaskOptionK
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
+```
+
+Added in v0.7.9
+
+## chainFirstTaskOptionKW
+
+Less strict version of [`chainFirstTaskOptionK`](#chainfirsttaskoptionk).
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
+```
+
+Added in v0.7.9
 
 ## chainFirstW
 
@@ -541,6 +574,32 @@ export declare const chainIOK: <A, B>(
 ```
 
 Added in v0.7.0
+
+## chainOptionK
+
+**Signature**
+
+```ts
+export declare const chainOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => O.Option<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
+```
+
+Added in v0.7.9
+
+## chainOptionKW
+
+Less strict version of [`chainOptionK`](#chainoptionk).
+
+**Signature**
+
+```ts
+export declare const chainOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(f: (a: A) => O.Option<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 ## chainTaskEitherK
 
@@ -574,11 +633,37 @@ Added in v0.7.0
 
 ```ts
 export declare const chainTaskK: <A, B>(
-  f: (a: A) => Task<B>
+  f: (a: A) => T.Task<B>
 ) => <R, E>(first: Middleware<R, R, E, A>) => Middleware<R, R, E, B>
 ```
 
 Added in v0.7.0
+
+## chainTaskOptionK
+
+**Signature**
+
+```ts
+export declare const chainTaskOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
+```
+
+Added in v0.7.9
+
+## chainTaskOptionKW
+
+Less strict version of [`chainTaskOptionK`](#chaintaskoptionk).
+
+**Signature**
+
+```ts
+export declare const chainTaskOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 ## filterOrElse
 
@@ -655,7 +740,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromTaskK: <A, B>(f: (...a: A) => Task<B>) => <R, E>(...a: A) => Middleware<R, R, E, B>
+export declare const fromTaskK: <A, B>(f: (...a: A) => T.Task<B>) => <R, E>(...a: A) => Middleware<R, R, E, B>
 ```
 
 Added in v0.7.0
@@ -961,7 +1046,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromTask: <R, E, A>(fa: Task<A>) => Middleware<R, R, E, A>
+export declare const fromTask: <R, E, A>(fa: T.Task<A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.7.0
@@ -977,6 +1062,18 @@ export declare function fromTaskEither<I = StatusOpen, E = never, A = never>(
 ```
 
 Added in v0.7.0
+
+## fromTaskOption
+
+**Signature**
+
+```ts
+export declare const fromTaskOption: <E>(
+  onNone: Lazy<E>
+) => <I = StatusOpen, A = never>(fa: TO.TaskOption<A>) => Middleware<I, I, E, A>
+```
+
+Added in v0.7.9
 
 ## header
 
@@ -1030,7 +1127,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare function leftTask<I = StatusOpen, E = never, A = never>(te: Task<E>): Middleware<I, I, E, A>
+export declare function leftTask<I = StatusOpen, E = never, A = never>(te: T.Task<E>): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -1086,7 +1183,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare function rightTask<I = StatusOpen, E = never, A = never>(fa: Task<A>): Middleware<I, I, E, A>
+export declare function rightTask<I = StatusOpen, E = never, A = never>(fa: T.Task<A>): Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0

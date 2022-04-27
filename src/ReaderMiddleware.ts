@@ -6,11 +6,13 @@ import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { Task } from 'fp-ts/Task'
 import * as TE from 'fp-ts/TaskEither'
+import * as TO from 'fp-ts/TaskOption'
 import * as H from '.'
 import * as M from './Middleware'
 import { IO } from 'fp-ts/IO'
 import { IOEither } from 'fp-ts/IOEither'
 import * as E from 'fp-ts/Either'
+import * as O from 'fp-ts/Option'
 import { Monad4 } from 'fp-ts/Monad'
 import { Alt4 } from 'fp-ts/Alt'
 import { Bifunctor4 } from 'fp-ts/Bifunctor'
@@ -22,6 +24,7 @@ import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
 import {
   chainEitherK as chainEitherK_,
+  chainOptionK as chainOptionK_,
   FromEither4,
   fromPredicate as fromPredicate_,
   filterOrElse as filterOrElse_,
@@ -69,6 +72,16 @@ export function fromTaskEither<R, I = H.StatusOpen, E = never, A = never>(
 ): ReaderMiddleware<R, I, I, E, A> {
   return () => M.fromTaskEither(fa)
 }
+
+/**
+ * @category constructors
+ * @since 0.7.9
+ */
+export const fromTaskOption: <E>(
+  onNone: Lazy<E>
+) => <R, I = H.StatusOpen, A = never>(fa: TO.TaskOption<A>) => ReaderMiddleware<R, I, I, E, A> =
+  (onNone) => (fa) => () =>
+    M.fromTaskOption(onNone)(fa)
 
 /**
  * @category constructors
@@ -784,6 +797,29 @@ export const chainTaskEitherKW: <E2, A, B>(
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = chainTaskEitherK as any
 
 /**
+ * Less strict version of [`chainTaskOptionK`](#chaintaskoptionk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainTaskOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(
+  f: (a: A) => TO.TaskOption<B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = (onNone) => (f) =>
+  chainW((a) => fromTaskOption(onNone)(f(a)))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainTaskOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(
+  f: (a: A) => TO.TaskOption<B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainTaskOptionKW
+
+/**
  * Less strict version of [`chainReaderTaskK`](#chainreadertaskk).
  *
  * @category combinators
@@ -1092,6 +1128,28 @@ export const chainEitherKW: <E2, A, B>(
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = chainEitherK as any
 
 /**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(
+  f: (a: A) => O.Option<B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainOptionK_(FromEither, Chain)
+
+/**
+ * Less strict version of [`chainOptionK`](#chainoptionk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(
+  f: (a: A) => O.Option<B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, B> = chainOptionK as any
+
+/**
  * @category constructors
  * @since 0.7.0
  */
@@ -1175,6 +1233,29 @@ export const chainFirstTaskEitherKW: <E2, A, B>(
 export const chainFirstTaskEitherK: <E, A, B>(
   f: (a: A) => TE.TaskEither<E, B>
 ) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A> = chainFirstTaskEitherKW
+
+/**
+ * Less strict version of [`chainFirstTaskOptionK`](#chainfirsttaskoptionk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainFirstTaskOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(
+  f: (a: A) => TO.TaskOption<B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E1 | E2, A> = (onNone) => (f) =>
+  chainFirstW((a) => fromTaskOption(onNone)(f(a)))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainFirstTaskOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(
+  f: (a: A) => TO.TaskOption<B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A> = chainFirstTaskOptionKW
 
 /**
  * Phantom type can't be infered properly, use [`bindTo`](#bindto) instead.
