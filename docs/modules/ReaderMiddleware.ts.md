@@ -53,9 +53,13 @@ Added in v0.6.3
   - [chainFirstTaskEitherK](#chainfirsttaskeitherk)
   - [chainFirstTaskEitherKW](#chainfirsttaskeitherkw)
   - [chainFirstTaskK](#chainfirsttaskk)
+  - [chainFirstTaskOptionK](#chainfirsttaskoptionk)
+  - [chainFirstTaskOptionKW](#chainfirsttaskoptionkw)
   - [chainFirstW](#chainfirstw)
   - [chainIOK](#chainiok)
   - [chainMiddlewareK](#chainmiddlewarek)
+  - [chainOptionK](#chainoptionk)
+  - [chainOptionKW](#chainoptionkw)
   - [chainReaderTaskEitherK](#chainreadertaskeitherk)
   - [chainReaderTaskEitherKW](#chainreadertaskeitherkw)
   - [chainReaderTaskK](#chainreadertaskk)
@@ -63,6 +67,8 @@ Added in v0.6.3
   - [chainTaskEitherK](#chaintaskeitherk)
   - [chainTaskEitherKW](#chaintaskeitherkw)
   - [chainTaskK](#chaintaskk)
+  - [chainTaskOptionK](#chaintaskoptionk)
+  - [chainTaskOptionKW](#chaintaskoptionkw)
   - [filterOrElse](#filterorelse)
   - [filterOrElseW](#filterorelsew)
   - [flatten](#flatten)
@@ -141,6 +147,7 @@ Added in v0.6.3
   - [fromReaderTaskEither](#fromreadertaskeither)
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
+  - [fromTaskOption](#fromtaskoption)
 - [utils](#utils)
   - [apS](#aps)
   - [apSW](#apsw)
@@ -591,6 +598,36 @@ export declare const chainFirstTaskK: <A, B>(
 
 Added in v0.7.0
 
+## chainFirstTaskOptionK
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(
+  f: (a: A) => TO.TaskOption<B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
+
+## chainFirstTaskOptionKW
+
+Less strict version of [`chainFirstTaskOptionK`](#chainfirsttaskoptionk).
+
+**Signature**
+
+```ts
+export declare const chainFirstTaskOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(
+  f: (a: A) => TO.TaskOption<B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, A>
+```
+
+Added in v0.7.9
+
 ## chainFirstW
 
 Less strict version of [`chainFirst`](#chainfirst).
@@ -630,6 +667,34 @@ export declare const chainMiddlewareK: <R, I, E, A, B>(
 ```
 
 Added in v0.6.3
+
+## chainOptionK
+
+**Signature**
+
+```ts
+export declare const chainOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => O.Option<B>) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
+## chainOptionKW
+
+Less strict version of [`chainOptionK`](#chainoptionk).
+
+**Signature**
+
+```ts
+export declare const chainOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(
+  f: (a: A) => O.Option<B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 ## chainReaderTaskEitherK
 
@@ -716,6 +781,36 @@ export declare const chainTaskK: <A, B>(
 ```
 
 Added in v0.7.0
+
+## chainTaskOptionK
+
+**Signature**
+
+```ts
+export declare const chainTaskOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(
+  f: (a: A) => TO.TaskOption<B>
+) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
+## chainTaskOptionKW
+
+Less strict version of [`chainTaskOptionK`](#chaintaskoptionk).
+
+**Signature**
+
+```ts
+export declare const chainTaskOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(
+  f: (a: A) => TO.TaskOption<B>
+) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 ## filterOrElse
 
@@ -1596,6 +1691,18 @@ export declare function fromTaskEither<R, I = H.StatusOpen, E = never, A = never
 ```
 
 Added in v0.6.3
+
+## fromTaskOption
+
+**Signature**
+
+```ts
+export declare const fromTaskOption: <E>(
+  onNone: Lazy<E>
+) => <R, I = H.StatusOpen, A = never>(fa: TO.TaskOption<A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
 
 # utils
 

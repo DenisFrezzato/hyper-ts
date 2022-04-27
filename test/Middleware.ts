@@ -1,5 +1,7 @@
 import * as assert from 'assert'
 import * as E from 'fp-ts/Either'
+import * as O from 'fp-ts/Option'
+import * as TO from 'fp-ts/TaskOption'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
 import * as H from '../src'
@@ -106,6 +108,28 @@ describe('Middleware', () => {
     )
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertSuccess(m, c, 4, [])
+  })
+
+  describe('fromTaskOption', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        TO.some(4),
+        _.fromTaskOption(() => 'Some error')
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 4, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        TO.none,
+        _.fromTaskOption(() => 'Some error')
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
+      })
+    })
   })
 
   describe('status', () => {
@@ -315,6 +339,138 @@ describe('Middleware', () => {
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
       return assertFailure(m, c, (errors) => {
         assert.deepStrictEqual(failure(errors), ['Invalid value undefined supplied to : string'])
+      })
+    })
+  })
+
+  describe('chainOptionK', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainOptionK(() => 0)((a) => O.some(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainOptionK(() => 'Some error')(() => O.none)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
+      })
+    })
+  })
+
+  describe('chainOptionKW', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainOptionKW(() => 0)((a) => O.some(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainOptionKW(() => 'Some error')(() => O.none)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
+      })
+    })
+  })
+
+  describe('chainTaskOptionK', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainTaskOptionK(() => 0)((a) => TO.some(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainTaskOptionK(() => 'Some error')(() => TO.none)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
+      })
+    })
+  })
+
+  describe('chainTaskOptionKW', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainTaskOptionKW(() => 0)((a) => TO.some(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainTaskOptionKW(() => 'Some error')(() => TO.none)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
+      })
+    })
+  })
+
+  describe('chainFirstTaskOptionK', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainFirstTaskOptionK(() => 0)((a) => TO.some(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 4, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainFirstTaskOptionK(() => 'Some error')(() => TO.none)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
+      })
+    })
+  })
+
+  describe('chainFirstTaskOptionKW', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainFirstTaskOptionKW(() => 0)((a) => TO.some(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 4, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        _.right(4),
+        _.chainFirstTaskOptionKW(() => 'Some error')(() => TO.none)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
       })
     })
   })
