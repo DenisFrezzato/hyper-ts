@@ -1,4 +1,6 @@
 import * as E from 'fp-ts/Either'
+import * as O from 'fp-ts/Option'
+import * as TO from 'fp-ts/TaskOption'
 import { pipe } from 'fp-ts/function'
 import * as _ from '../../src/Middleware'
 
@@ -102,4 +104,97 @@ pipe(
 pipe(
   middleware1,
   _.ichainFirstW(() => middleware3) // $ExpectError
+)
+
+//
+// chainOptionK
+//
+
+// $ExpectType Middleware<"one", "one", number, number>
+pipe(
+  middleware1,
+  _.chainOptionK(() => 1)((_: boolean) => O.some(2))
+)
+
+pipe(
+  middleware1,
+  _.chainOptionK(() => true)((_: boolean) => O.some(2)) // $ExpectError
+)
+
+//
+// chainOptionKW
+//
+
+// $ExpectType Middleware<"one", "one", number, number>
+pipe(
+  middleware1,
+  _.chainOptionKW(() => 1)((_: boolean) => O.some(2))
+)
+
+// $ExpectType Middleware<"one", "one", number | boolean, number>
+pipe(
+  middleware1,
+  _.chainOptionKW(() => true)((_: boolean) => O.some(2))
+)
+
+//
+// chainTaskOptionK
+//
+
+// $ExpectType Middleware<"one", "one", number, number>
+pipe(
+  middleware1,
+  _.chainTaskOptionK(() => 1)((_: boolean) => TO.some(2))
+)
+
+pipe(
+  middleware1,
+  _.chainTaskOptionK(() => true)((_: boolean) => TO.some(2)) // $ExpectError
+)
+
+//
+// chainTaskOptionKW
+//
+
+// $ExpectType Middleware<"one", "one", number, number>
+pipe(
+  middleware1,
+  _.chainTaskOptionKW(() => 1)((_: boolean) => TO.some(2))
+)
+
+// $ExpectType Middleware<"one", "one", number | boolean, number>
+pipe(
+  middleware1,
+  _.chainTaskOptionKW(() => true)((_: boolean) => TO.some(2))
+)
+
+//
+// chainFirstTaskOptionK
+//
+
+// $ExpectType Middleware<"one", "one", number, boolean>
+pipe(
+  middleware1,
+  _.chainFirstTaskOptionK(() => 1)((_: boolean) => TO.some(2))
+)
+
+pipe(
+  middleware1,
+  _.chainFirstTaskOptionK(() => true)((_: boolean) => TO.some(2)) // $ExpectError
+)
+
+//
+// chainFirstTaskOptionKW
+//
+
+// $ExpectType Middleware<"one", "one", number, boolean>
+pipe(
+  middleware1,
+  _.chainFirstTaskOptionKW(() => 1)((_: boolean) => TO.some(2))
+)
+
+// $ExpectType Middleware<"one", "one", number | boolean, boolean>
+pipe(
+  middleware1,
+  _.chainFirstTaskOptionKW(() => true)((_: boolean) => TO.some(2))
 )

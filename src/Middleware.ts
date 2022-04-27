@@ -6,6 +6,7 @@
  * @since 0.7.0
  */
 import * as TE from 'fp-ts/TaskEither'
+import * as TO from 'fp-ts/TaskOption'
 import { Alt3 } from 'fp-ts/Alt'
 import { apFirst as apFirst_, apSecond as apSecond_, Apply3, apS as apS_ } from 'fp-ts/Apply'
 import { bind as bind_, Chain3, chainFirst as chainFirst_ } from 'fp-ts/Chain'
@@ -14,7 +15,7 @@ import { identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
 import { Functor3, bindTo as bindTo_ } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { BodyOpen, Connection, CookieOptions, HeadersOpen, MediaType, ResponseEnded, Status, StatusOpen } from '.'
-import { Task } from 'fp-ts/Task'
+import * as T from 'fp-ts/Task'
 import { IO } from 'fp-ts/IO'
 import { IOEither } from 'fp-ts/IOEither'
 import { Applicative3 } from 'fp-ts/Applicative'
@@ -27,6 +28,7 @@ import {
   fromOption as fromOption_,
   filterOrElse as filterOrElse_,
   chainEitherK as chainEitherK_,
+  chainOptionK as chainOptionK_,
   FromEither3,
 } from 'fp-ts/FromEither'
 import * as O from 'fp-ts/Option'
@@ -419,6 +421,20 @@ export function fromTaskEither<I = StatusOpen, E = never, A = never>(fa: TE.Task
 
 /**
  * @category constructors
+ * @since 0.7.9
+ */
+// TODO use TE.fromTaskOption when fp-ts version >= 2.11.0
+export const fromTaskOption: <E>(
+  onNone: Lazy<E>
+) => <I = StatusOpen, A = never>(fa: TO.TaskOption<A>) => Middleware<I, I, E, A> = (onNone) => (fa) => (c) =>
+  pipe(
+    fa,
+    T.map(E.fromOption(onNone)),
+    TE.map((a) => [a, c])
+  )
+
+/**
+ * @category constructors
  * @since 0.7.0
  */
 export function right<I = StatusOpen, E = never, A = never>(a: A): Middleware<I, I, E, A> {
@@ -437,7 +453,7 @@ export function left<I = StatusOpen, E = never, A = never>(e: E): Middleware<I, 
  * @category constructors
  * @since 0.7.0
  */
-export function rightTask<I = StatusOpen, E = never, A = never>(fa: Task<A>): Middleware<I, I, E, A> {
+export function rightTask<I = StatusOpen, E = never, A = never>(fa: T.Task<A>): Middleware<I, I, E, A> {
   return fromTaskEither(TE.rightTask(fa))
 }
 
@@ -445,7 +461,7 @@ export function rightTask<I = StatusOpen, E = never, A = never>(fa: Task<A>): Mi
  * @category constructors
  * @since 0.7.0
  */
-export function leftTask<I = StatusOpen, E = never, A = never>(te: Task<E>): Middleware<I, I, E, A> {
+export function leftTask<I = StatusOpen, E = never, A = never>(te: T.Task<E>): Middleware<I, I, E, A> {
   return fromTaskEither(TE.leftTask(te))
 }
 
@@ -932,6 +948,28 @@ export const chainEitherKW: <E2, A, B>(
 ) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = chainEitherK as any
 
 /**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => O.Option<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B> = chainOptionK_(
+  FromEither,
+  Chain
+)
+
+/**
+ * Less strict version of [`chainOptionK`](#chainoptionk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(f: (a: A) => O.Option<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> =
+  chainOptionK as any
+
+/**
  * @category constructors
  * @since 0.7.0
  */
@@ -1033,6 +1071,48 @@ export const chainFirstTaskEitherKW: <E2, A, B>(
 export const chainFirstTaskEitherK: <E, A, B>(
   f: (a: A) => TE.TaskEither<E, B>
 ) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A> = chainFirstTaskEitherKW
+
+/**
+ * Less strict version of [`chainTaskOptionK`](#chaintaskoptionk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainTaskOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> =
+  (onNone) => (f) =>
+    chainW((a) => fromTaskOption(onNone)(f(a)))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainTaskOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B> =
+  chainTaskOptionKW
+
+/**
+ * Less strict version of [`chainFirstTaskOptionK`](#chainfirsttaskoptionk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainFirstTaskOptionKW: <E2>(
+  onNone: Lazy<E2>
+) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A> =
+  (onNone) => (f) =>
+    chainFirstW((a) => fromTaskOption(onNone)(f(a)))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainFirstTaskOptionK: <E>(
+  onNone: Lazy<E>
+) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A> =
+  chainFirstTaskOptionKW
 
 /**
  * Phantom type can't be infered properly, use [`bindTo`](#bindto) instead.
