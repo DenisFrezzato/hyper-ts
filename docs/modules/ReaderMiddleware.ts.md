@@ -60,6 +60,7 @@ Added in v0.6.3
   - [chainFirstW](#chainfirstw)
   - [chainIOK](#chainiok)
   - [chainMiddlewareK](#chainmiddlewarek)
+  - [chainMiddlewareKW](#chainmiddlewarekw)
   - [chainOptionK](#chainoptionk)
   - [chainOptionKW](#chainoptionkw)
   - [chainReaderTaskEitherK](#chainreadertaskeitherk)
@@ -691,12 +692,26 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const chainMiddlewareK: <R, I, E, A, B>(
+export declare const chainMiddlewareK: <I, E, A, B>(
   f: (a: A) => M.Middleware<I, I, E, B>
-) => (ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+) => <R>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
 ```
 
 Added in v0.6.3
+
+## chainMiddlewareKW
+
+Less strict version of [`chainMiddlewareK`](#chainmiddlewarek).
+
+**Signature**
+
+```ts
+export declare const chainMiddlewareKW: <I, E2, A, B>(
+  f: (a: A) => M.Middleware<I, I, E2, B>
+) => <R, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 ## chainOptionK
 
