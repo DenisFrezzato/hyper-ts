@@ -35,6 +35,18 @@ export const MediaType = {
  */
 export type MediaType = typeof MediaType[keyof typeof MediaType]
 
+const RedirectionStatus = {
+  MultipleChoices: 300,
+  MovedPermanently: 301,
+  Found: 302,
+  SeeOther: 303,
+  NotModified: 304,
+  UseProxy: 305,
+  SwitchProxy: 306,
+  TemporaryRedirect: 307,
+  PermanentRedirect: 308,
+} as const
+
 /**
  * @since 0.5.0
  */
@@ -53,15 +65,7 @@ export const Status = {
   MultiStatus: 207,
   AlreadyReported: 208,
   IMUsed: 226,
-  MultipleChoices: 300,
-  MovedPermanently: 301,
-  Found: 302,
-  SeeOther: 303,
-  NotModified: 304,
-  UseProxy: 305,
-  SwitchProxy: 306,
-  TemporaryRedirect: 307,
-  PermanentRedirect: 308,
+  ...RedirectionStatus,
   BadRequest: 400,
   Unauthorized: 401,
   PaymentRequired: 402,
@@ -108,6 +112,11 @@ export const Status = {
  * @since 0.5.0
  */
 export type Status = typeof Status[keyof typeof Status]
+
+/**
+ * @since 0.5.0
+ */
+export type RedirectionStatus = typeof RedirectionStatus[keyof typeof RedirectionStatus]
 
 /**
  * @since 0.5.0

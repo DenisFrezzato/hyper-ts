@@ -33,6 +33,9 @@ declare const readerTaskEither2: ReaderTaskEither<R2, Error, string>
 declare const decoderU: (value: unknown) => E.Either<number, boolean>
 declare const decoderS: (value: string) => E.Either<number, boolean>
 
+declare const status: H.Status
+declare const statusRedirection: H.RedirectionStatus
+
 //
 // asksReaderMiddlewareW
 //
@@ -368,6 +371,22 @@ pipe(
   middleware1,
   _.chainFirstReaderTaskEitherK(() => readerTaskEither2) // $ExpectError
 )
+
+//
+// redirect
+//
+
+// $ExpectType ReaderMiddleware<unknown, StatusOpen, HeadersOpen, never, void>
+_.redirect('http://www.example.com/')
+
+// $ExpectType ReaderMiddleware<R1, StatusOpen, HeadersOpen, Error, void>
+_.redirect<R1, Error>('http://www.example.com/')
+
+// $ExpectType ReaderMiddleware<unknown, StatusOpen, HeadersOpen, never, void>
+_.redirect('http://www.example.com/', statusRedirection)
+
+// $ExpectError
+_.redirect('http://www.example.com/', status)
 
 //
 // chainOptionK

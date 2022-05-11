@@ -14,7 +14,17 @@ import { Bifunctor3 } from 'fp-ts/Bifunctor'
 import { identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
 import { Functor3, bindTo as bindTo_ } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
-import { BodyOpen, Connection, CookieOptions, HeadersOpen, MediaType, ResponseEnded, Status, StatusOpen } from '.'
+import {
+  BodyOpen,
+  Connection,
+  CookieOptions,
+  HeadersOpen,
+  MediaType,
+  RedirectionStatus,
+  ResponseEnded,
+  Status,
+  StatusOpen,
+} from '.'
 import * as T from 'fp-ts/Task'
 import { IO } from 'fp-ts/IO'
 import { IOEither } from 'fp-ts/IOEither'
@@ -616,9 +626,12 @@ export function json<E>(
  * @category constructors
  * @since 0.7.0
  */
-export function redirect<E = never>(uri: string | { href: string }): Middleware<StatusOpen, HeadersOpen, E, void> {
+export function redirect<E = never>(
+  uri: string | { href: string },
+  code: RedirectionStatus = Status.Found
+): Middleware<StatusOpen, HeadersOpen, E, void> {
   return pipe(
-    status(Status.Found),
+    status(code),
     ichain(() => header('Location', typeof uri === 'string' ? uri : uri.href))
   )
 }

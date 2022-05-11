@@ -316,15 +316,19 @@ describe('ReaderMiddleware', () => {
 
   describe('redirect', () => {
     it.each([
-      ['string', '/users', '/users'],
-      ['URL', new URL('http://example.com/users'), 'http://example.com/users'],
-    ])('should add the correct status / header for a %s', (_type, actual, expected) => {
-      const m1 = _.redirect(actual)
-      const r = 'yee'
-      const m2 = M.redirect(expected)
-      const c = new MockConnection<H.StatusOpen>(new MockRequest())
-      return assertProperty(m1, r, m2, c)
-    })
+      ['string', '/users', '/users', undefined, 302],
+      ['URL', new URL('http://example.com/users'), 'http://example.com/users', undefined, 302],
+      ['status code', '/users', '/users', 303, 303],
+    ] as const)(
+      'should add the correct status / header for a %s',
+      (_type, actualUrl, expectedUrl, actualStatusCode, expectedStatusCode) => {
+        const m1 = _.redirect(actualUrl, actualStatusCode)
+        const r = 'yee'
+        const m2 = M.redirect(expectedUrl, expectedStatusCode)
+        const c = new MockConnection<H.StatusOpen>(new MockRequest())
+        return assertProperty(m1, r, m2, c)
+      }
+    )
   })
 
   describe('decodeParam', () => {
