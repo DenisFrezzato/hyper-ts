@@ -457,6 +457,22 @@ describe('ReaderMiddleware', () => {
     return assertSuccess(m1, r, c, 3, [])
   })
 
+  describe('fromMiddlewareK', () => {
+    test('with a left', () => {
+      const m2 = (value: string) => M.left(value.length)
+      const m1 = _.fromMiddlewareK(m2)
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m1('foo'), undefined, c, 3)
+    })
+
+    test('with a right', () => {
+      const m2 = (value: string) => M.right(value.length)
+      const m1 = _.fromMiddlewareK(m2)
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m1('foo'), undefined, c, 3, [])
+    })
+  })
+
   it('chainMiddlewareK', () => {
     const m1 = pipe(
       _.right('foo'),

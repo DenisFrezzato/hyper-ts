@@ -76,6 +76,7 @@ Added in v0.6.3
   - [flatten](#flatten)
   - [flattenW](#flattenw)
   - [fromIOK](#fromiok)
+  - [fromMiddlewareK](#frommiddlewarek)
   - [fromReaderTaskEitherK](#fromreadertaskeitherk)
   - [fromReaderTaskK](#fromreadertaskk)
   - [fromTaskK](#fromtaskk)
@@ -915,6 +916,18 @@ export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <S, R, E>(...a: A
 ```
 
 Added in v0.7.0
+
+## fromMiddlewareK
+
+**Signature**
+
+```ts
+export declare const fromMiddlewareK: <R, A extends readonly unknown[], B, I, O, E>(
+  f: (...a: A) => M.Middleware<I, O, E, B>
+) => (...a: A) => ReaderMiddleware<R, I, O, E, B>
+```
+
+Added in v0.7.9
 
 ## fromReaderTaskEitherK
 
