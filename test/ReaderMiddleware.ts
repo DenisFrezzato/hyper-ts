@@ -2,6 +2,7 @@ import * as assert from 'assert'
 import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 import * as TE from 'fp-ts/TaskEither'
+import * as R from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderTask'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as TO from 'fp-ts/TaskOption'
@@ -84,6 +85,13 @@ describe('ReaderMiddleware', () => {
     const m1 = _.fromMiddleware(m2)
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertProperty(m1, undefined, m2, c)
+  })
+
+  it('fromReaderK', () => {
+    const m2 = (value: string) => R.of(value.length)
+    const m1 = _.fromReaderK(m2)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m1('foo'), undefined, c, 3, [])
   })
 
   it('fromReaderTaskK', () => {

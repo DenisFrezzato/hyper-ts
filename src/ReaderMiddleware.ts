@@ -271,6 +271,17 @@ export const asksReaderMiddleware: <R, E = never, A = never>(
 
 /**
  * @category combinators
+ * @since 0.7.9
+ */
+export const fromReaderK =
+  <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
+    f: (...a: A) => Reader<R, B>
+  ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
+  (...a) =>
+    rightReader(f(...a))
+
+/**
+ * @category combinators
  * @since 0.7.8
  */
 export const fromReaderTaskK =

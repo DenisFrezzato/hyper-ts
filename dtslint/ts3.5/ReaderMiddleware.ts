@@ -1,6 +1,7 @@
 import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/function'
+import { Reader } from 'fp-ts/Reader'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
 import * as TO from 'fp-ts/TaskOption'
@@ -23,6 +24,8 @@ declare const middleware3: _.ReaderMiddleware<R1, 'two', 'three', number, string
 declare const middleware4a: M.Middleware<'one', 'one', number, boolean>
 declare const middleware4b: M.Middleware<'one', 'one', Error, string>
 declare const middleware5: M.Middleware<'one', 'two', number, string>
+
+declare const reader1: Reader<R1, string>
 
 declare const readerTask1: ReaderTask<R1, string>
 declare const readerTask2: ReaderTask<R2, string>
@@ -49,6 +52,13 @@ _.asksReaderMiddleware((r: R1) => _.of<R1, H.StatusOpen, string, boolean>(true))
 
 // $ExpectError
 _.asksReaderMiddleware((r: R1) => _.of<R2, H.StatusOpen, string, boolean>(true))
+
+//
+// fromReaderK
+//
+
+// $ExpectType (a: boolean, b: number) => ReaderMiddleware<R1, StatusOpen, StatusOpen, never, string>
+_.fromReaderK((a: boolean, b: number) => reader1)
 
 //
 // fromReaderTaskK
