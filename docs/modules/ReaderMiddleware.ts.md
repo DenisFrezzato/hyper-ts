@@ -162,6 +162,7 @@ Added in v0.6.3
   - [fromMiddleware](#frommiddleware)
   - [fromOption](#fromoption)
   - [fromReaderEither](#fromreadereither)
+  - [fromReaderTask](#fromreadertask)
   - [fromReaderTaskEither](#fromreadertaskeither)
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
@@ -1909,6 +1910,18 @@ Added in v0.7.9
 export declare function fromReaderEither<R, I = H.StatusOpen, E = never, A = never>(
   fa: ReaderEither<R, E, A>
 ): ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
+
+## fromReaderTask
+
+**Signature**
+
+```ts
+export declare function fromReaderTask<R, I = H.StatusOpen, A = never>(
+  fa: ReaderTask<R, A>
+): ReaderMiddleware<R, I, I, never, A>
 ```
 
 Added in v0.7.9

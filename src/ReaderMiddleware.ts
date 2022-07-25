@@ -102,6 +102,16 @@ export function fromReaderEither<R, I = H.StatusOpen, E = never, A = never>(
 
 /**
  * @category natural transformations
+ * @since 0.7.9
+ */
+export function fromReaderTask<R, I = H.StatusOpen, A = never>(
+  fa: ReaderTask<R, A>
+): ReaderMiddleware<R, I, I, never, A> {
+  return (r) => M.fromTask(fa(r))
+}
+
+/**
+ * @category natural transformations
  * @since 0.6.3
  */
 export function fromReaderTaskEither<R, I = H.StatusOpen, E = never, A = never>(
