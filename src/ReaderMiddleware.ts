@@ -831,6 +831,25 @@ export const chainTaskOptionK: <E>(
 ) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainTaskOptionKW
 
 /**
+ * Less strict version of [`chainReaderK`](#chainreaderk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainReaderKW: <R2, A, B>(
+  f: (a: A) => Reader<R2, B>
+) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B> = (f) =>
+  chainW(fromReaderK(f))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainReaderK: <R, A, B>(
+  f: (a: A) => Reader<R, B>
+) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainReaderKW
+
+/**
  * Less strict version of [`chainReaderTaskK`](#chainreadertaskk).
  *
  * @category combinators

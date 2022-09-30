@@ -62,6 +62,8 @@ Added in v0.6.3
   - [chainMiddlewareK](#chainmiddlewarek)
   - [chainOptionK](#chainoptionk)
   - [chainOptionKW](#chainoptionkw)
+  - [chainReaderK](#chainreaderk)
+  - [chainReaderKW](#chainreaderkw)
   - [chainReaderTaskEitherK](#chainreadertaskeitherk)
   - [chainReaderTaskEitherKW](#chainreadertaskeitherkw)
   - [chainReaderTaskK](#chainreadertaskk)
@@ -723,6 +725,32 @@ export declare const chainOptionKW: <E2>(
 ) => <A, B>(
   f: (a: A) => O.Option<B>
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
+```
+
+Added in v0.7.9
+
+## chainReaderK
+
+**Signature**
+
+```ts
+export declare const chainReaderK: <R, A, B>(
+  f: (a: A) => Reader<R, B>
+) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
+## chainReaderKW
+
+Less strict version of [`chainReaderK`](#chainreaderk).
+
+**Signature**
+
+```ts
+export declare const chainReaderKW: <R2, A, B>(
+  f: (a: A) => Reader<R2, B>
+) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B>
 ```
 
 Added in v0.7.9

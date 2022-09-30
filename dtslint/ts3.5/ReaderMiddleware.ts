@@ -26,6 +26,7 @@ declare const middleware4b: M.Middleware<'one', 'one', Error, string>
 declare const middleware5: M.Middleware<'one', 'two', number, string>
 
 declare const reader1: Reader<R1, string>
+declare const reader2: Reader<R2, string>
 
 declare const readerTask1: ReaderTask<R1, string>
 declare const readerTask2: ReaderTask<R2, string>
@@ -253,6 +254,37 @@ pipe(
 pipe(
   middleware1,
   _.chainTaskOptionKW(() => true)((_: boolean) => TO.some(2))
+)
+
+//
+// chainReaderKW
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, string>
+pipe(
+  middleware1,
+  _.chainReaderKW(() => reader1)
+)
+
+// $ExpectType ReaderMiddleware<R1 & R2, "one", "one", number, string>
+pipe(
+  middleware1,
+  _.chainReaderKW(() => reader2)
+)
+
+//
+// chainReaderK
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, string>
+pipe(
+  middleware1,
+  _.chainReaderK(() => reader1)
+)
+
+pipe(
+  middleware1,
+  _.chainReaderK(() => reader2) // $ExpectError
 )
 
 //
