@@ -27,6 +27,7 @@ import {
   chainOptionK as chainOptionK_,
   FromEither4,
   fromPredicate as fromPredicate_,
+  fromOption as fromOption_,
   filterOrElse as filterOrElse_,
 } from 'fp-ts/FromEither'
 import { FromIO4, fromIOK as fromIOK_, chainIOK as chainIOK_, chainFirstIOK as chainFirstIOK_ } from 'fp-ts/FromIO'
@@ -1108,6 +1109,13 @@ export const filterOrElseW: {
     ma: ReaderMiddleware<R, I, I, E1, A>
   ) => ReaderMiddleware<R, I, I, E1 | E2, A>
 } = filterOrElse
+
+/**
+ * @category natural transformations
+ * @since 0.7.9
+ */
+export const fromOption: <E>(onNone: Lazy<E>) => <R, I, A>(ma: O.Option<A>) => ReaderMiddleware<R, I, I, E, A> =
+  fromOption_(FromEither)
 
 /**
  * @category combinators
