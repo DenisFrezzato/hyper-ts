@@ -75,7 +75,9 @@ Added in v0.6.3
   - [filterOrElseW](#filterorelsew)
   - [flatten](#flatten)
   - [flattenW](#flattenw)
+  - [fromEitherK](#fromeitherk)
   - [fromIOK](#fromiok)
+  - [fromOptionK](#fromoptionk)
   - [fromReaderTaskEitherK](#fromreadertaskeitherk)
   - [fromReaderTaskK](#fromreadertaskk)
   - [fromTaskK](#fromtaskk)
@@ -906,6 +908,18 @@ export declare const flattenW: <R1, I, E1, R2, E2, A>(
 
 Added in v0.7.2
 
+## fromEitherK
+
+**Signature**
+
+```ts
+export declare const fromEitherK: <E, A extends readonly unknown[], B>(
+  f: (...a: A) => E.Either<E, B>
+) => <R, I>(...a: A) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
 ## fromIOK
 
 **Signature**
@@ -915,6 +929,20 @@ export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <S, R, E>(...a: A
 ```
 
 Added in v0.7.0
+
+## fromOptionK
+
+**Signature**
+
+```ts
+export declare const fromOptionK: <E>(
+  onNone: Lazy<E>
+) => <A extends readonly unknown[], B>(
+  f: (...a: A) => O.Option<B>
+) => <R, I>(...a: A) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
 
 ## fromReaderTaskEitherK
 

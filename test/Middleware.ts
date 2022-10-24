@@ -343,6 +343,50 @@ describe('Middleware', () => {
     })
   })
 
+  describe('fromEitherK', () => {
+    test('with a right', async () => {
+      const m = pipe(
+        4,
+        _.fromEitherK((a) => E.right(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 8, [])
+    })
+
+    test('with a left', async () => {
+      const m = pipe(
+        4,
+        _.fromEitherK((a) => E.left(a / 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 2)
+      })
+    })
+  })
+
+  describe('fromOptionK', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        4,
+        _.fromOptionK(() => 0)((a) => O.some(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        4,
+        _.fromOptionK(() => 'Some error')(() => O.none)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
+      })
+    })
+  })
+
   describe('chainOptionK', () => {
     test('with a some', async () => {
       const m = pipe(

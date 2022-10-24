@@ -27,6 +27,8 @@ import {
   chainOptionK as chainOptionK_,
   FromEither4,
   fromPredicate as fromPredicate_,
+  fromEitherK as fromEitherK_,
+  fromOptionK as fromOptionK_,
   filterOrElse as filterOrElse_,
 } from 'fp-ts/FromEither'
 import { FromIO4, fromIOK as fromIOK_, chainIOK as chainIOK_, chainFirstIOK as chainFirstIOK_ } from 'fp-ts/FromIO'
@@ -1108,6 +1110,24 @@ export const filterOrElseW: {
     ma: ReaderMiddleware<R, I, I, E1, A>
   ) => ReaderMiddleware<R, I, I, E1 | E2, A>
 } = filterOrElse
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const fromEitherK: <E, A extends ReadonlyArray<unknown>, B>(
+  f: (...a: A) => E.Either<E, B>
+) => <R, I>(...a: A) => ReaderMiddleware<R, I, I, E, B> = fromEitherK_(FromEither)
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const fromOptionK: <E>(
+  onNone: Lazy<E>
+) => <A extends ReadonlyArray<unknown>, B>(
+  f: (...a: A) => O.Option<B>
+) => <R, I>(...a: A) => ReaderMiddleware<R, I, I, E, B> = fromOptionK_(FromEither)
 
 /**
  * @category combinators

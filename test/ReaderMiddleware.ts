@@ -601,6 +601,46 @@ describe('ReaderMiddleware', () => {
     return assertSuccess(m1, r, c, 'foo', [])
   })
 
+  describe('fromEitherK', () => {
+    test('with a right', async () => {
+      const m = pipe(
+        4,
+        _.fromEitherK((a) => E.right(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, undefined, c, 8, [])
+    })
+
+    test('with a left', async () => {
+      const m = pipe(
+        4,
+        _.fromEitherK((a) => E.left(a / 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, undefined, c, 2)
+    })
+  })
+
+  describe('fromOptionK', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        4,
+        _.fromOptionK(() => 0)((a) => O.some(a * 2))
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, undefined, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        4,
+        _.fromOptionK(() => 'Some error')(() => O.none)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, undefined, c, 'Some error')
+    })
+  })
+
   describe('chainOptionK', () => {
     test('with a some', async () => {
       const m = pipe(
