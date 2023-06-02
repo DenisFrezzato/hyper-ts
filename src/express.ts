@@ -6,8 +6,9 @@ import { IncomingMessage } from 'http'
 import { Connection, CookieOptions, HeadersOpen, ResponseEnded, Status, StatusOpen } from '.'
 import { Middleware, execMiddleware } from './Middleware'
 import * as E from 'fp-ts/Either'
-import { pipe } from 'fp-ts/function'
+import { constUndefined, pipe } from 'fp-ts/function'
 import * as L from 'fp-ts-contrib/List'
+import { pipeline } from 'stream'
 
 /**
  * @internal
@@ -147,7 +148,7 @@ function run(res: Response, action: Action): Response {
     case 'setStatus':
       return res.status(action.status)
     case 'pipeStream':
-      return action.stream.pipe(res)
+      return pipeline(action.stream, res, constUndefined)
   }
 }
 

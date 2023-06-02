@@ -126,5 +126,26 @@ describe('express', () => {
 
       return supertest(server).get('/').expect(200, 'a')
     })
+
+    it('should handle piped stream error', () => {
+      const server = express()
+      const someStream = (): Readable => {
+        const stream = new Readable()
+        stream._read = () => {
+          stream.emit('error', new Error('abort'))
+        }
+        return stream
+      }
+
+      const stream = someStream()
+      const m = pipe(
+        M.status(H.Status.OK),
+        M.ichain(() => M.closeHeaders()),
+        M.ichain(() => M.pipeStream(stream))
+      )
+      server.use(toRequestHandler(m))
+
+      return expect(supertest(server).get('/')).rejects.toThrowError('socket hang up')
+    })
   })
 })
