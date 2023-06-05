@@ -629,8 +629,11 @@ export function redirect<E = never>(uri: string | { href: string }): Middleware<
  * @category constructors
  * @since 0.7.0
  */
-export function pipeStream<E>(stream: NodeJS.ReadableStream): Middleware<BodyOpen, ResponseEnded, E, void> {
-  return modifyConnection((c) => c.pipeStream(stream))
+export function pipeStream<E>(
+  stream: NodeJS.ReadableStream,
+  onError: (err: unknown) => IO<void>
+): Middleware<BodyOpen, ResponseEnded, E, void> {
+  return modifyConnection((c) => c.pipeStream(stream, onError))
 }
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => u !== null && typeof u === 'object'

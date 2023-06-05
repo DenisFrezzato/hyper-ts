@@ -36,6 +36,7 @@ import {
   chainTaskK as chainTaskK_,
   chainFirstTaskK as chainFirstTaskK_,
 } from 'fp-ts/FromTask'
+import { ReaderIO } from 'fp-ts-contrib/ReaderIO'
 
 /**
  * @category instances
@@ -440,9 +441,13 @@ export function redirect<R, E = never>(
  * @since 0.7.3
  */
 export function pipeStream<R, E>(
-  stream: NodeJS.ReadableStream
+  stream: NodeJS.ReadableStream,
+  onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
-  return modifyConnection((c) => c.pipeStream(stream))
+  return pipe(
+    ask<R, H.BodyOpen, E>(),
+    ichain((r) => modifyConnection((c) => c.pipeStream(stream, (err) => onError(err)(r))))
+  )
 }
 
 /**

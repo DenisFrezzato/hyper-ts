@@ -1352,7 +1352,8 @@ Returns a `ReaderMiddleware` that pipes a stream to the response object.
 
 ```ts
 export declare function pipeStream<R, E>(
-  stream: NodeJS.ReadableStream
+  stream: NodeJS.ReadableStream,
+  onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void>
 ```
 

@@ -6,9 +6,11 @@ import { IncomingMessage } from 'http'
 import { Connection, CookieOptions, HeadersOpen, ResponseEnded, Status, StatusOpen } from '.'
 import { Middleware, execMiddleware } from './Middleware'
 import * as E from 'fp-ts/Either'
-import { constUndefined, pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/function'
 import * as L from 'fp-ts-contrib/List'
 import { pipeline } from 'stream'
+import * as IO from 'fp-ts/IO'
+import * as O from 'fp-ts/Option'
 
 /**
  * @internal
@@ -20,7 +22,7 @@ export type Action =
   | { type: 'setHeader'; name: string; value: string }
   | { type: 'clearCookie'; name: string; options: CookieOptions }
   | { type: 'setCookie'; name: string; value: string; options: CookieOptions }
-  | { type: 'pipeStream'; stream: NodeJS.ReadableStream }
+  | { type: 'pipeStream'; stream: NodeJS.ReadableStream; onError: (e: unknown) => IO.IO<void> }
 
 const endResponse: Action = { type: 'endResponse' }
 
@@ -120,8 +122,8 @@ export class ExpressConnection<S> implements Connection<S> {
   /**
    * @since 0.6.2
    */
-  pipeStream(stream: NodeJS.ReadableStream): ExpressConnection<ResponseEnded> {
-    return this.chain({ type: 'pipeStream', stream }, true)
+  pipeStream(stream: NodeJS.ReadableStream, onError: (e: unknown) => IO.IO<void>): ExpressConnection<ResponseEnded> {
+    return this.chain({ type: 'pipeStream', stream, onError }, true)
   }
   /**
    * @since 0.5.0
@@ -148,7 +150,9 @@ function run(res: Response, action: Action): Response {
     case 'setStatus':
       return res.status(action.status)
     case 'pipeStream':
-      return pipeline(action.stream, res, constUndefined)
+      return pipeline(action.stream, res, (err) =>
+        pipe(err, O.fromNullable, O.traverse(IO.Applicative)(action.onError))()
+      )
   }
 }
 

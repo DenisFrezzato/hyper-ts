@@ -1066,7 +1066,10 @@ Returns a middleware that pipes a stream to the response object.
 **Signature**
 
 ```ts
-export declare function pipeStream<E>(stream: NodeJS.ReadableStream): Middleware<BodyOpen, ResponseEnded, E, void>
+export declare function pipeStream<E>(
+  stream: NodeJS.ReadableStream,
+  onError: (err: unknown) => IO<void>
+): Middleware<BodyOpen, ResponseEnded, E, void>
 ```
 
 Added in v0.7.0

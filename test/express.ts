@@ -7,6 +7,7 @@ import * as express from 'express'
 import * as supertest from 'supertest'
 import * as t from 'io-ts'
 import * as E from 'fp-ts/Either'
+import * as C from 'fp-ts/Console'
 
 describe('express', () => {
   it('should call `next` with an error', () => {
@@ -120,7 +121,7 @@ describe('express', () => {
       const m = pipe(
         M.status(H.Status.OK),
         M.ichain(() => M.closeHeaders()),
-        M.ichain(() => M.pipeStream(stream))
+        M.ichain(() => M.pipeStream(stream, C.error))
       )
       server.use(toRequestHandler(m))
 
@@ -141,7 +142,7 @@ describe('express', () => {
       const m = pipe(
         M.status(H.Status.OK),
         M.ichain(() => M.closeHeaders()),
-        M.ichain(() => M.pipeStream(stream))
+        M.ichain(() => M.pipeStream(stream, C.error))
       )
       server.use(toRequestHandler(m))
 
