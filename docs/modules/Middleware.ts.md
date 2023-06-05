@@ -439,8 +439,8 @@ Derivable from `Chain`.
 **Signature**
 
 ```ts
-export declare const chainFirst: <A, R, E, B>(
-  f: (a: A) => Middleware<R, R, E, B>
+export declare const chainFirst: <A, R, E, _>(
+  f: (a: A) => Middleware<R, R, E, _>
 ) => (first: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
 ```
 
@@ -1364,7 +1364,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromIO: <R, E, A>(fa: IO<A>) => Middleware<R, R, E, A>
+export declare const fromIO: <A, R, E>(fa: IO<A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.7.0
@@ -1394,7 +1394,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromTask: <R, E, A>(fa: T.Task<A>) => Middleware<R, R, E, A>
+export declare const fromTask: <A, R, E>(fa: T.Task<A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.7.0

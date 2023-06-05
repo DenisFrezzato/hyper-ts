@@ -1660,7 +1660,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromIO: <S, R, E, A>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
+export declare const fromIO: <A, S, R, E>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
 ```
 
 Added in v0.7.0
@@ -1706,7 +1706,7 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare const fromTask: <S, R, E, A>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
+export declare const fromTask: <A, S, R, E>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
 ```
 
 Added in v0.7.0
