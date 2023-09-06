@@ -65,6 +65,8 @@ Added in v0.6.3
   - [chainMiddlewareKW](#chainmiddlewarekw)
   - [chainOptionK](#chainoptionk)
   - [chainOptionKW](#chainoptionkw)
+  - [chainReaderK](#chainreaderk)
+  - [chainReaderKW](#chainreaderkw)
   - [chainReaderTaskEitherK](#chainreadertaskeitherk)
   - [chainReaderTaskEitherKW](#chainreadertaskeitherkw)
   - [chainReaderTaskK](#chainreadertaskk)
@@ -80,6 +82,7 @@ Added in v0.6.3
   - [flattenW](#flattenw)
   - [fromIOK](#fromiok)
   - [fromReaderEitherK](#fromreadereitherk)
+  - [fromReaderK](#fromreaderk)
   - [fromReaderTaskEitherK](#fromreadertaskeitherk)
   - [fromReaderTaskK](#fromreadertaskk)
   - [fromTaskK](#fromtaskk)
@@ -778,6 +781,32 @@ export declare const chainOptionKW: <E2>(
 
 Added in v0.7.9
 
+## chainReaderK
+
+**Signature**
+
+```ts
+export declare const chainReaderK: <R, A, B>(
+  f: (a: A) => Reader<R, B>
+) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
+## chainReaderKW
+
+Less strict version of [`chainReaderK`](#chainreaderk).
+
+**Signature**
+
+```ts
+export declare const chainReaderKW: <R2, A, B>(
+  f: (a: A) => Reader<R2, B>
+) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B>
+```
+
+Added in v0.7.9
+
 ## chainReaderTaskEitherK
 
 **Signature**
@@ -975,6 +1004,18 @@ Added in v0.7.0
 ```ts
 export declare const fromReaderEitherK: <R, A extends readonly unknown[], B, I = H.StatusOpen, E = never>(
   f: (...a: A) => ReaderEither<R, E, B>
+) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
+## fromReaderK
+
+**Signature**
+
+```ts
+export declare const fromReaderK: <R, A extends readonly unknown[], B, I = H.StatusOpen, E = never>(
+  f: (...a: A) => Reader<R, B>
 ) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
 ```
 
@@ -1472,7 +1513,8 @@ Returns a `ReaderMiddleware` that pipes a stream to the response object.
 
 ```ts
 export declare function pipeStream<R, E>(
-  stream: NodeJS.ReadableStream
+  stream: NodeJS.ReadableStream,
+  onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void>
 ```
 
@@ -1779,7 +1821,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromIO: <S, R, E, A>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
+export declare const fromIO: <A, S, R, E>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
 ```
 
 Added in v0.7.0
@@ -1847,7 +1889,7 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare const fromTask: <S, R, E, A>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
+export declare const fromTask: <A, S, R, E>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
 ```
 
 Added in v0.7.0

@@ -8,6 +8,7 @@ import { MonadTask3 } from 'fp-ts/MonadTask'
 import { MonadThrow3 } from 'fp-ts/MonadThrow'
 import { IncomingMessage } from 'http'
 import * as M from './Middleware'
+import { IO } from 'fp-ts/IO'
 
 /**
  * Adapted from https://github.com/purescript-contrib/purescript-media-types
@@ -189,7 +190,11 @@ export interface Connection<S> {
   readonly setHeader: (this: Connection<HeadersOpen>, name: string, value: string) => Connection<HeadersOpen>
   readonly setStatus: (this: Connection<StatusOpen>, status: Status) => Connection<HeadersOpen>
   readonly setBody: (this: Connection<BodyOpen>, body: string | Buffer) => Connection<ResponseEnded>
-  readonly pipeStream: (this: Connection<BodyOpen>, stream: NodeJS.ReadableStream) => Connection<ResponseEnded>
+  readonly pipeStream: (
+    this: Connection<BodyOpen>,
+    stream: NodeJS.ReadableStream,
+    onError: (e: unknown) => IO<void>
+  ) => Connection<ResponseEnded>
   readonly endResponse: (this: Connection<BodyOpen>) => Connection<ResponseEnded>
 }
 

@@ -11,7 +11,7 @@ import { Alt3 } from 'fp-ts/Alt'
 import { apFirst as apFirst_, apSecond as apSecond_, Apply3, apS as apS_ } from 'fp-ts/Apply'
 import { bind as bind_, Chain3, chainFirst as chainFirst_ } from 'fp-ts/Chain'
 import { Bifunctor3 } from 'fp-ts/Bifunctor'
-import { identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
+import { identity, Lazy, pipe } from 'fp-ts/function'
 import { Functor3, bindTo as bindTo_ } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { BodyOpen, Connection, CookieOptions, HeadersOpen, MediaType, ResponseEnded, Status, StatusOpen } from '.'
@@ -40,6 +40,8 @@ import {
   chainTaskK as chainTaskK_,
   chainFirstTaskK as chainFirstTaskK_,
 } from 'fp-ts/FromTask'
+import { Refinement } from 'fp-ts/Refinement'
+import { Predicate } from 'fp-ts/Predicate'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind3<R, E, A> {
@@ -649,8 +651,11 @@ export function redirect<E = never>(uri: string | { href: string }): Middleware<
  * @category constructors
  * @since 0.7.0
  */
-export function pipeStream<E>(stream: NodeJS.ReadableStream): Middleware<BodyOpen, ResponseEnded, E, void> {
-  return modifyConnection((c) => c.pipeStream(stream))
+export function pipeStream<E>(
+  stream: NodeJS.ReadableStream,
+  onError: (err: unknown) => IO<void>
+): Middleware<BodyOpen, ResponseEnded, E, void> {
+  return modifyConnection((c) => c.pipeStream(stream, onError))
 }
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => u !== null && typeof u === 'object'

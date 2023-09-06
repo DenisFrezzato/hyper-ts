@@ -1,7 +1,7 @@
 /**
  * @since 0.6.3
  */
-import { flow, identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
+import { flow, identity, Lazy, pipe } from 'fp-ts/function'
 import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { Task } from 'fp-ts/Task'
@@ -38,6 +38,9 @@ import {
   chainTaskK as chainTaskK_,
   chainFirstTaskK as chainFirstTaskK_,
 } from 'fp-ts/FromTask'
+import { ReaderIO } from 'fp-ts/ReaderIO'
+import { Refinement } from 'fp-ts/Refinement'
+import { Predicate } from 'fp-ts/Predicate'
 
 /**
  * @category instances
@@ -283,6 +286,17 @@ export const asksReaderMiddleware: <R, E = never, A = never>(
 
 /**
  * @category combinators
+ * @since 0.7.9
+ */
+export const fromReaderK =
+  <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
+    f: (...a: A) => Reader<R, B>
+  ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
+  (...a) =>
+    rightReader(f(...a))
+
+/**
+ * @category combinators
  * @since 0.7.8
  */
 export const fromReaderTaskK =
@@ -463,9 +477,13 @@ export function redirect<R, E = never>(
  * @since 0.7.3
  */
 export function pipeStream<R, E>(
-  stream: NodeJS.ReadableStream
+  stream: NodeJS.ReadableStream,
+  onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
-  return modifyConnection((c) => c.pipeStream(stream))
+  return pipe(
+    ask<R, H.BodyOpen, E>(),
+    ichain((r) => modifyConnection((c) => c.pipeStream(stream, (err) => onError(err)(r))))
+  )
 }
 
 /**
@@ -874,6 +892,25 @@ export const chainTaskOptionK: <E>(
 ) => <A, B>(
   f: (a: A) => TO.TaskOption<B>
 ) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainTaskOptionKW
+
+/**
+ * Less strict version of [`chainReaderK`](#chainreaderk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainReaderKW: <R2, A, B>(
+  f: (a: A) => Reader<R2, B>
+) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B> = (f) =>
+  chainW(fromReaderK(f))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainReaderK: <R, A, B>(
+  f: (a: A) => Reader<R, B>
+) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainReaderKW
 
 /**
  * Less strict version of [`chainReaderTaskK`](#chainreadertaskk).

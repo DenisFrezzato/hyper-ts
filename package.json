@@ -44,7 +44,7 @@
     "docs-ts": "^0.6.10",
     "dtslint": "github:gcanti/dtslint",
     "express": "^4.17.1",
-    "fp-ts": "^2.10.0",
+    "fp-ts": "^2.13.2",
     "fp-ts-contrib": "^0.1.26",
     "fp-ts-routing": "^0.5.4",
     "glob": "^7.2.0",

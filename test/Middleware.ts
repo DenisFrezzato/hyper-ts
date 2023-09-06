@@ -11,6 +11,7 @@ import { MockConnection, MockRequest } from './_helpers'
 import { Readable } from 'stream'
 import * as _ from '../src/Middleware'
 import * as L from 'fp-ts-contrib/List'
+import * as C from 'fp-ts/Console'
 
 function assertSuccess<I, O, A>(m: _.Middleware<I, O, any, A>, cin: MockConnection<I>, a: A, actions: Array<Action>) {
   return m(cin)().then((e) => {
@@ -223,9 +224,9 @@ describe('Middleware', () => {
       }
       const stream = someStream()
       const c = new MockConnection<H.BodyOpen>(new MockRequest())
-      const m = _.pipeStream(stream)
+      const m = _.pipeStream(stream, C.error)
 
-      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream }])
+      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream, onError: C.error }])
     })
 
     it('should pipe a stream and handle the failure', () => {
@@ -238,9 +239,9 @@ describe('Middleware', () => {
       }
       const stream = someStream()
       const c = new MockConnection<H.BodyOpen>(new MockRequest())
-      const m = _.pipeStream(stream)
+      const m = _.pipeStream(stream, C.error)
 
-      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream }])
+      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream, onError: C.error }])
     })
   })
 
