@@ -22,6 +22,8 @@ Added in v0.7.0
 - [Apply](#apply)
   - [ap](#ap)
   - [apW](#apw)
+  - [iap](#iap)
+  - [iapW](#iapw)
 - [Bifunctor](#bifunctor)
   - [bimap](#bimap)
   - [mapLeft](#mapleft)
@@ -70,6 +72,10 @@ Added in v0.7.0
   - [fromIOK](#fromiok)
   - [fromOptionK](#fromoptionk)
   - [fromTaskK](#fromtaskk)
+  - [iapFirst](#iapfirst)
+  - [iapFirstW](#iapfirstw)
+  - [iapSecond](#iapsecond)
+  - [iapSecondW](#iapsecondw)
   - [ichainFirst](#ichainfirst)
   - [ichainFirstW](#ichainfirstw)
   - [iflatten](#iflatten)
@@ -208,6 +214,34 @@ export declare const apW: <I, E2, A>(
 ```
 
 Added in v0.7.0
+
+## iap
+
+Indexed version of [`ap`](#ap).
+
+**Signature**
+
+```ts
+export declare const iap: <O, Z, E, A>(
+  fa: Middleware<O, Z, E, A>
+) => <I, B>(fab: Middleware<I, O, E, (a: A) => B>) => Middleware<I, Z, E, B>
+```
+
+Added in v0.7.9
+
+## iapW
+
+Less strict version of [`iap`](#iap).
+
+**Signature**
+
+```ts
+export declare const iapW: <O, Z, E2, A>(
+  fa: Middleware<O, Z, E2, A>
+) => <I, E1, B>(fab: Middleware<I, O, E1, (a: A) => B>) => Middleware<I, Z, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 # Bifunctor
 
@@ -441,8 +475,8 @@ Derivable from `Chain`.
 **Signature**
 
 ```ts
-export declare const chainFirst: <A, R, E, B>(
-  f: (a: A) => Middleware<R, R, E, B>
+export declare const chainFirst: <A, R, E, _>(
+  f: (a: A) => Middleware<R, R, E, _>
 ) => (first: Middleware<R, R, E, A>) => Middleware<R, R, E, A>
 ```
 
@@ -745,6 +779,62 @@ export declare const fromTaskK: <A, B>(f: (...a: A) => T.Task<B>) => <R, E>(...a
 ```
 
 Added in v0.7.0
+
+## iapFirst
+
+Indexed version of [`apFirst`](#apfirst).
+
+**Signature**
+
+```ts
+export declare const iapFirst: <O, Z, E, B>(
+  second: Middleware<O, Z, E, B>
+) => <I, A>(first: Middleware<I, O, E, A>) => Middleware<I, Z, E, A>
+```
+
+Added in v0.7.9
+
+## iapFirstW
+
+Less strict version of [`iapFirst`](#iapfirst).
+
+**Signature**
+
+```ts
+export declare const iapFirstW: <O, Z, E2, B>(
+  second: Middleware<O, Z, E2, B>
+) => <I, E1, A>(first: Middleware<I, O, E1, A>) => Middleware<I, Z, E2 | E1, A>
+```
+
+Added in v0.7.1
+
+## iapSecond
+
+Indexed version of [`apSecond`](#apsecond).
+
+**Signature**
+
+```ts
+export declare const iapSecond: <O, Z, E, B>(
+  second: Middleware<O, Z, E, B>
+) => <I, A>(first: Middleware<I, O, E, A>) => Middleware<I, Z, E, B>
+```
+
+Added in v0.7.9
+
+## iapSecondW
+
+Less strict version of [`iapSecond`](#iapsecond).
+
+**Signature**
+
+```ts
+export declare const iapSecondW: <O, Z, E2, B>(
+  second: Middleware<O, Z, E2, B>
+) => <I, E1, A>(first: Middleware<I, O, E1, A>) => Middleware<I, Z, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 ## ichainFirst
 
@@ -1092,7 +1182,10 @@ Returns a middleware that pipes a stream to the response object.
 **Signature**
 
 ```ts
-export declare function pipeStream<E>(stream: NodeJS.ReadableStream): Middleware<BodyOpen, ResponseEnded, E, void>
+export declare function pipeStream<E>(
+  stream: NodeJS.ReadableStream,
+  onError: (err: unknown) => IO<void>
+): Middleware<BodyOpen, ResponseEnded, E, void>
 ```
 
 Added in v0.7.0
@@ -1387,7 +1480,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromIO: <R, E, A>(fa: IO<A>) => Middleware<R, R, E, A>
+export declare const fromIO: <A, R, E>(fa: IO<A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.7.0
@@ -1417,7 +1510,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromTask: <R, E, A>(fa: T.Task<A>) => Middleware<R, R, E, A>
+export declare const fromTask: <A, R, E>(fa: T.Task<A>) => Middleware<R, R, E, A>
 ```
 
 Added in v0.7.0

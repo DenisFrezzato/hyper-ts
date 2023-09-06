@@ -2,6 +2,7 @@ import * as assert from 'assert'
 import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 import * as TE from 'fp-ts/TaskEither'
+import * as R from 'fp-ts/Reader'
 import * as RT from 'fp-ts/ReaderTask'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as TO from 'fp-ts/TaskOption'
@@ -84,6 +85,13 @@ describe('ReaderMiddleware', () => {
     const m1 = _.fromMiddleware(m2)
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertProperty(m1, undefined, m2, c)
+  })
+
+  it('fromReaderK', () => {
+    const m2 = (value: string) => R.of(value.length)
+    const m1 = _.fromReaderK(m2)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m1('foo'), undefined, c, 3, [])
   })
 
   it('fromReaderTaskK', () => {
@@ -517,6 +525,26 @@ describe('ReaderMiddleware', () => {
     })
   })
 
+  it('chainReaderKW', () => {
+    const m1 = pipe(
+      _.right('foo'),
+      _.chainReaderKW((s) => R.of(s.length))
+    )
+    const r = 'foo'
+    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+    return assertSuccess(m1, r, c, 3, [])
+  })
+
+  it('chainReaderK', () => {
+    const m1 = pipe(
+      _.right('foo'),
+      _.chainReaderK((s) => R.of(s.length))
+    )
+    const r = 'foo'
+    const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
+    return assertSuccess(m1, r, c, 3, [])
+  })
+
   it('chainReaderTaskKW', () => {
     const m1 = pipe(
       _.right('foo'),
@@ -599,6 +627,26 @@ describe('ReaderMiddleware', () => {
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
     return assertSuccess(m1, r, c, 'foo', [])
+  })
+
+  describe('fromOption', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        O.some(8),
+        _.fromOption(() => 0)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, undefined, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        O.none,
+        _.fromOption(() => 'Some error')
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, undefined, c, 'Some error')
+    })
   })
 
   describe('fromEitherK', () => {

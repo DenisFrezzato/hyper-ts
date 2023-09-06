@@ -18,6 +18,8 @@ Added in v0.6.3
 - [Apply](#apply)
   - [ap](#ap)
   - [apW](#apw)
+  - [iap](#iap)
+  - [iapW](#iapw)
 - [Bifunctor](#bifunctor)
   - [bimap](#bimap)
   - [mapLeft](#mapleft)
@@ -60,8 +62,11 @@ Added in v0.6.3
   - [chainFirstW](#chainfirstw)
   - [chainIOK](#chainiok)
   - [chainMiddlewareK](#chainmiddlewarek)
+  - [chainMiddlewareKW](#chainmiddlewarekw)
   - [chainOptionK](#chainoptionk)
   - [chainOptionKW](#chainoptionkw)
+  - [chainReaderK](#chainreaderk)
+  - [chainReaderKW](#chainreaderkw)
   - [chainReaderTaskEitherK](#chainreadertaskeitherk)
   - [chainReaderTaskEitherKW](#chainreadertaskeitherkw)
   - [chainReaderTaskK](#chainreadertaskk)
@@ -78,9 +83,14 @@ Added in v0.6.3
   - [fromEitherK](#fromeitherk)
   - [fromIOK](#fromiok)
   - [fromOptionK](#fromoptionk)
+  - [fromReaderK](#fromreaderk)
   - [fromReaderTaskEitherK](#fromreadertaskeitherk)
   - [fromReaderTaskK](#fromreadertaskk)
   - [fromTaskK](#fromtaskk)
+  - [iapFirst](#iapfirst)
+  - [iapFirstW](#iapfirstw)
+  - [iapSecond](#iapsecond)
+  - [iapSecondW](#iapsecondw)
   - [ichainMiddlewareK](#ichainmiddlewarek)
   - [ichainMiddlewareKW](#ichainmiddlewarekw)
   - [iflatten](#iflatten)
@@ -148,6 +158,7 @@ Added in v0.6.3
   - [fromIO](#fromio)
   - [fromIOEither](#fromioeither)
   - [fromMiddleware](#frommiddleware)
+  - [fromOption](#fromoption)
   - [fromReaderTaskEither](#fromreadertaskeither)
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
@@ -221,6 +232,34 @@ Less strict version of [`ap`](#ap).
 export declare const apW: <R2, I, E2, A>(
   fa: ReaderMiddleware<R2, I, I, E2, A>
 ) => <R1, E1, B>(fab: ReaderMiddleware<R1, I, I, E1, (a: A) => B>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, B>
+```
+
+Added in v0.6.3
+
+## iap
+
+Indexed version of [`ap`](#ap).
+
+**Signature**
+
+```ts
+export declare const iap: <R, O, Z, E, A>(
+  fa: ReaderMiddleware<R, O, Z, E, A>
+) => <I, B>(fab: ReaderMiddleware<R, I, O, E, (a: A) => B>) => ReaderMiddleware<R, I, Z, E, B>
+```
+
+Added in v0.7.9
+
+## iapW
+
+Less strict version of [`iap`](#iap).
+
+**Signature**
+
+```ts
+export declare const iapW: <R2, O, Z, E2, A>(
+  fa: ReaderMiddleware<R2, O, Z, E2, A>
+) => <R1, I, E1, B>(fab: ReaderMiddleware<R1, I, O, E1, (a: A) => B>) => ReaderMiddleware<R1 & R2, I, Z, E2 | E1, B>
 ```
 
 Added in v0.6.3
@@ -693,12 +732,26 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const chainMiddlewareK: <R, I, E, A, B>(
+export declare const chainMiddlewareK: <I, E, A, B>(
   f: (a: A) => M.Middleware<I, I, E, B>
-) => (ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+) => <R>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
 ```
 
 Added in v0.6.3
+
+## chainMiddlewareKW
+
+Less strict version of [`chainMiddlewareK`](#chainmiddlewarek).
+
+**Signature**
+
+```ts
+export declare const chainMiddlewareKW: <I, E2, A, B>(
+  f: (a: A) => M.Middleware<I, I, E2, B>
+) => <R, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 ## chainOptionK
 
@@ -724,6 +777,32 @@ export declare const chainOptionKW: <E2>(
 ) => <A, B>(
   f: (a: A) => O.Option<B>
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
+```
+
+Added in v0.7.9
+
+## chainReaderK
+
+**Signature**
+
+```ts
+export declare const chainReaderK: <R, A, B>(
+  f: (a: A) => Reader<R, B>
+) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
+## chainReaderKW
+
+Less strict version of [`chainReaderK`](#chainreaderk).
+
+**Signature**
+
+```ts
+export declare const chainReaderKW: <R2, A, B>(
+  f: (a: A) => Reader<R2, B>
+) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B>
 ```
 
 Added in v0.7.9
@@ -944,6 +1023,18 @@ export declare const fromOptionK: <E>(
 
 Added in v0.7.9
 
+## fromReaderK
+
+**Signature**
+
+```ts
+export declare const fromReaderK: <R, A extends readonly unknown[], B, I = H.StatusOpen, E = never>(
+  f: (...a: A) => Reader<R, B>
+) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
 ## fromReaderTaskEitherK
 
 **Signature**
@@ -977,6 +1068,62 @@ export declare const fromTaskK: <A, B>(f: (...a: A) => Task<B>) => <S, R, E>(...
 ```
 
 Added in v0.7.0
+
+## iapFirst
+
+Indexed version of [`apFirst`](#apfirst).
+
+**Signature**
+
+```ts
+export declare const iapFirst: <R, O, Z, E, B>(
+  second: ReaderMiddleware<R, O, Z, E, B>
+) => <I, A>(first: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, A>
+```
+
+Added in v0.7.9
+
+## iapFirstW
+
+Less strict version of [`iapFirst`](#iapfirst).
+
+**Signature**
+
+```ts
+export declare const iapFirstW: <R2, O, Z, E2, B>(
+  second: ReaderMiddleware<R2, O, Z, E2, B>
+) => <R1, I, E1, A>(first: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E2 | E1, A>
+```
+
+Added in v0.7.9
+
+## iapSecond
+
+Indexed version of [`apSecond`](#apsecond).
+
+**Signature**
+
+```ts
+export declare const iapSecond: <R, O, Z, E, B>(
+  second: ReaderMiddleware<R, O, Z, E, B>
+) => <I, A>(first: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B>
+```
+
+Added in v0.7.9
+
+## iapSecondW
+
+Less strict version of [`iapSecond`](#iapsecond).
+
+**Signature**
+
+```ts
+export declare const iapSecondW: <R2, O, Z, E2, B>(
+  second: ReaderMiddleware<R2, O, Z, E2, B>
+) => <R1, I, E1, A>(first: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E2 | E1, B>
+```
+
+Added in v0.7.9
 
 ## ichainMiddlewareK
 
@@ -1380,7 +1527,8 @@ Returns a `ReaderMiddleware` that pipes a stream to the response object.
 
 ```ts
 export declare function pipeStream<R, E>(
-  stream: NodeJS.ReadableStream
+  stream: NodeJS.ReadableStream,
+  onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void>
 ```
 
@@ -1687,7 +1835,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromIO: <S, R, E, A>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
+export declare const fromIO: <A, S, R, E>(fa: IO<A>) => ReaderMiddleware<S, R, R, E, A>
 ```
 
 Added in v0.7.0
@@ -1716,6 +1864,16 @@ export declare const fromMiddleware: <R, I = H.StatusOpen, O = I, E = never, A =
 
 Added in v0.6.3
 
+## fromOption
+
+**Signature**
+
+```ts
+export declare const fromOption: <E>(onNone: Lazy<E>) => <R, I, A>(ma: O.Option<A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
+
 ## fromReaderTaskEither
 
 **Signature**
@@ -1733,7 +1891,7 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare const fromTask: <S, R, E, A>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
+export declare const fromTask: <A, S, R, E>(fa: Task<A>) => ReaderMiddleware<S, R, R, E, A>
 ```
 
 Added in v0.7.0

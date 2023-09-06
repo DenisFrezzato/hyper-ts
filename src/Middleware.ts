@@ -11,7 +11,7 @@ import { Alt3 } from 'fp-ts/Alt'
 import { apFirst as apFirst_, apSecond as apSecond_, Apply3, apS as apS_ } from 'fp-ts/Apply'
 import { bind as bind_, Chain3, chainFirst as chainFirst_ } from 'fp-ts/Chain'
 import { Bifunctor3 } from 'fp-ts/Bifunctor'
-import { identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
+import { identity, Lazy, pipe } from 'fp-ts/function'
 import { Functor3, bindTo as bindTo_ } from 'fp-ts/Functor'
 import { Monad3 } from 'fp-ts/Monad'
 import { BodyOpen, Connection, CookieOptions, HeadersOpen, MediaType, ResponseEnded, Status, StatusOpen } from '.'
@@ -42,6 +42,8 @@ import {
   chainTaskK as chainTaskK_,
   chainFirstTaskK as chainFirstTaskK_,
 } from 'fp-ts/FromTask'
+import { Refinement } from 'fp-ts/Refinement'
+import { Predicate } from 'fp-ts/Predicate'
 
 declare module 'fp-ts/HKT' {
   interface URItoKind3<R, E, A> {
@@ -203,6 +205,26 @@ export const ap =
 export const apW: <I, E2, A>(
   fa: Middleware<I, I, E2, A>
 ) => <E1, B>(fab: Middleware<I, I, E1, (a: A) => B>) => Middleware<I, I, E1 | E2, B> = ap as any
+
+/**
+ * Indexed version of [`ap`](#ap).
+ *
+ * @category Apply
+ * @since 0.7.9
+ */
+export const iap: <O, Z, E, A>(
+  fa: Middleware<O, Z, E, A>
+) => <I, B>(fab: Middleware<I, O, E, (a: A) => B>) => Middleware<I, Z, E, B> = ap as any
+
+/**
+ * Less strict version of [`iap`](#iap).
+ *
+ * @category Apply
+ * @since 0.7.9
+ */
+export const iapW: <O, Z, E2, A>(
+  fa: Middleware<O, Z, E2, A>
+) => <I, E1, B>(fab: Middleware<I, O, E1, (a: A) => B>) => Middleware<I, Z, E1 | E2, B> = iap as any
 
 /**
  * @category Pointed
@@ -631,8 +653,11 @@ export function redirect<E = never>(uri: string | { href: string }): Middleware<
  * @category constructors
  * @since 0.7.0
  */
-export function pipeStream<E>(stream: NodeJS.ReadableStream): Middleware<BodyOpen, ResponseEnded, E, void> {
-  return modifyConnection((c) => c.pipeStream(stream))
+export function pipeStream<E>(
+  stream: NodeJS.ReadableStream,
+  onError: (err: unknown) => IO<void>
+): Middleware<BodyOpen, ResponseEnded, E, void> {
+  return modifyConnection((c) => c.pipeStream(stream, onError))
 }
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => u !== null && typeof u === 'object'
@@ -851,6 +876,26 @@ export const apFirstW: <I, E2, B>(
 ) => <E1, A>(first: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A> = apFirst as any
 
 /**
+ * Indexed version of [`apFirst`](#apfirst).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapFirst: <O, Z, E, B>(
+  second: Middleware<O, Z, E, B>
+) => <I, A>(first: Middleware<I, O, E, A>) => Middleware<I, Z, E, A> = apFirst as any
+
+/**
+ * Less strict version of [`iapFirst`](#iapfirst).
+ *
+ * @category combinators
+ * @since 0.7.1
+ */
+export const iapFirstW: <O, Z, E2, B>(
+  second: Middleware<O, Z, E2, B>
+) => <I, E1, A>(first: Middleware<I, O, E1, A>) => Middleware<I, Z, E1 | E2, A> = iapFirst as any
+
+/**
  * @category combinators
  * @since 0.7.0
  */
@@ -865,6 +910,26 @@ export const apSecond = apSecond_(ApplyPar)
 export const apSecondW: <I, E2, B>(
   second: Middleware<I, I, E2, B>
 ) => <E1, A>(first: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = apSecond as any
+
+/**
+ * Indexed version of [`apSecond`](#apsecond).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapSecond: <O, Z, E, B>(
+  second: Middleware<O, Z, E, B>
+) => <I, A>(first: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> = apSecond as any
+
+/**
+ * Less strict version of [`iapSecond`](#iapsecond).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapSecondW: <O, Z, E2, B>(
+  second: Middleware<O, Z, E2, B>
+) => <I, E1, A>(first: Middleware<I, O, E1, A>) => Middleware<I, Z, E1 | E2, B> = iapSecond as any
 
 /**
  * Composes computations in sequence, using the return value of one computation to determine the next computation and

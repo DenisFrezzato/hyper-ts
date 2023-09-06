@@ -11,6 +11,7 @@ import { MockConnection, MockRequest } from './_helpers'
 import { Readable } from 'stream'
 import * as _ from '../src/Middleware'
 import * as L from 'fp-ts-contrib/List'
+import * as C from 'fp-ts/Console'
 
 function assertSuccess<I, O, A>(m: _.Middleware<I, O, any, A>, cin: MockConnection<I>, a: A, actions: Array<Action>) {
   return m(cin)().then((e) => {
@@ -223,9 +224,9 @@ describe('Middleware', () => {
       }
       const stream = someStream()
       const c = new MockConnection<H.BodyOpen>(new MockRequest())
-      const m = _.pipeStream(stream)
+      const m = _.pipeStream(stream, C.error)
 
-      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream }])
+      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream, onError: C.error }])
     })
 
     it('should pipe a stream and handle the failure', () => {
@@ -238,9 +239,9 @@ describe('Middleware', () => {
       }
       const stream = someStream()
       const c = new MockConnection<H.BodyOpen>(new MockRequest())
-      const m = _.pipeStream(stream)
+      const m = _.pipeStream(stream, C.error)
 
-      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream }])
+      return assertSuccess(m, c, undefined, [{ type: 'pipeStream', stream, onError: C.error }])
     })
   })
 
@@ -339,6 +340,28 @@ describe('Middleware', () => {
       const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
       return assertFailure(m, c, (errors) => {
         assert.deepStrictEqual(failure(errors), ['Invalid value undefined supplied to : string'])
+      })
+    })
+  })
+
+  describe('fromOption', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        O.some(8),
+        _.fromOption(() => 0)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        O.none,
+        _.fromOption(() => 'Some error')
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, c, (error) => {
+        assert.strictEqual(error, 'Some error')
       })
     })
   })

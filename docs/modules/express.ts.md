@@ -191,7 +191,7 @@ Added in v0.5.0
 **Signature**
 
 ```ts
-pipeStream(stream: NodeJS.ReadableStream): ExpressConnection<ResponseEnded>
+pipeStream(stream: NodeJS.ReadableStream, onError: (e: unknown) => IO.IO<void>): ExpressConnection<ResponseEnded>
 ```
 
 Added in v0.6.2

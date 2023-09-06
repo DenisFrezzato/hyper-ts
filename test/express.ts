@@ -3,10 +3,11 @@ import * as M from '../src/Middleware'
 import { fromRequestHandler, toRequestHandler } from '../src/express'
 import { flow, pipe } from 'fp-ts/function'
 import { Readable } from 'stream'
-import * as express from 'express'
-import * as supertest from 'supertest'
+import express from 'express'
+import supertest from 'supertest'
 import * as t from 'io-ts'
 import * as E from 'fp-ts/Either'
+import * as C from 'fp-ts/Console'
 
 describe('express', () => {
   it('should call `next` with an error', () => {
@@ -120,11 +121,32 @@ describe('express', () => {
       const m = pipe(
         M.status(H.Status.OK),
         M.ichain(() => M.closeHeaders()),
-        M.ichain(() => M.pipeStream(stream))
+        M.ichain(() => M.pipeStream(stream, C.error))
       )
       server.use(toRequestHandler(m))
 
       return supertest(server).get('/').expect(200, 'a')
+    })
+
+    it('should handle piped stream error', () => {
+      const server = express()
+      const someStream = (): Readable => {
+        const stream = new Readable()
+        stream._read = () => {
+          stream.emit('error', new Error('abort'))
+        }
+        return stream
+      }
+
+      const stream = someStream()
+      const m = pipe(
+        M.status(H.Status.OK),
+        M.ichain(() => M.closeHeaders()),
+        M.ichain(() => M.pipeStream(stream, C.error))
+      )
+      server.use(toRequestHandler(m))
+
+      return expect(supertest(server).get('/')).rejects.toThrowError('socket hang up')
     })
   })
 })
