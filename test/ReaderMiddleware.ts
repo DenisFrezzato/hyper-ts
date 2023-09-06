@@ -3,6 +3,7 @@ import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 import * as TE from 'fp-ts/TaskEither'
 import * as R from 'fp-ts/Reader'
+import * as RE from 'fp-ts/ReaderEither'
 import * as RT from 'fp-ts/ReaderTask'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as TO from 'fp-ts/TaskOption'
@@ -80,6 +81,20 @@ describe('ReaderMiddleware', () => {
     })
   })
 
+  describe('fromReaderEither', () => {
+    test('with a left', async () => {
+      const m = pipe(RE.left(4), _.fromReaderEither)
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, undefined, c, 4)
+    })
+
+    test('with a right', async () => {
+      const m = pipe(RE.right(4), _.fromReaderEither)
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, undefined, c, 4, [])
+    })
+  })
+
   it('fromMiddleware', () => {
     const m2 = M.right(42)
     const m1 = _.fromMiddleware(m2)
@@ -99,6 +114,22 @@ describe('ReaderMiddleware', () => {
     const m1 = _.fromReaderTaskK(m2)
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertSuccess(m1('foo'), undefined, c, 3, [])
+  })
+
+  describe('fromReaderEitherK', () => {
+    test('with a left', () => {
+      const m2 = (value: string) => RE.left(value.length)
+      const m1 = _.fromReaderEitherK(m2)
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m1('foo'), undefined, c, 3)
+    })
+
+    test('with a right', () => {
+      const m2 = (value: string) => RE.right(value.length)
+      const m1 = _.fromReaderEitherK(m2)
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m1('foo'), undefined, c, 3, [])
+    })
   })
 
   describe('fromReaderTaskEitherK', () => {
