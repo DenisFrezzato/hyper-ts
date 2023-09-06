@@ -18,7 +18,7 @@ const exec =
       })
     })
 
-export const main = exec('npm publish', {
+export const main = exec(`npm publish --otp=${process.env.NPM_OTP}`, {
   cwd: DIST,
 })
 
