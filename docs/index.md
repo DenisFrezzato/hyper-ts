@@ -38,8 +38,8 @@ cannot be made. A few examples of such mistakes could be:
 ```ts
 import * as express from 'express'
 import * as H from 'hyper-ts'
-import * as M from 'hyper-ts/lib/Middleware'
-import { toRequestHandler } from 'hyper-ts/lib/express'
+import * as M from 'hyper-ts/Middleware'
+import { toRequestHandler } from 'hyper-ts/express'
 import { pipe } from 'fp-ts/function'
 
 const hello: M.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
@@ -108,7 +108,7 @@ During the connection lifecycle the following flow is statically enforced
 StatusOpen -> HeadersOpen -> BodyOpen -> ResponseEnded
 ```
 
-**Note**. `hyper-ts` supports [express 4.x](http://expressjs.com/) by default by exporting a `Connection` instance from the `hyper-ts/lib/express` module.
+**Note**. `hyper-ts` supports [express 4.x](http://expressjs.com/) by default by exporting a `Connection` instance from the `hyper-ts/express` module.
 
 ## Middleware
 
@@ -157,7 +157,7 @@ Input validation/decoding is done by defining a decoding function with the follo
 
 ```ts
 import * as H from 'hyper-ts'
-import * as M from 'hyper-ts/lib/Middleware'
+import * as M from 'hyper-ts/Middleware'
 import * as E from 'fp-ts/Either'
 
 const isUnknownRecord = (u: unknown): u is Record<string, unknown> => typeof u === 'object' && u !== null
@@ -172,7 +172,7 @@ You can also use [io-ts](https://github.com/gcanti/io-ts) decoders.
 
 ```ts
 import * as H from 'hyper-ts'
-import * as M from 'hyper-ts/lib/Middleware'
+import * as M from 'hyper-ts/Middleware'
 import * as t from 'io-ts'
 
 // returns a middleware validating `req.param.user_id`
@@ -186,8 +186,8 @@ Here I'm using `t.string` but you can pass _any_ `io-ts` runtime type
 
 ```ts
 import * as H from 'hyper-ts'
-import * as M from 'hyper-ts/lib/Middleware'
-import { IntFromString } from 'io-ts-types/lib/IntFromString'
+import * as M from 'hyper-ts/Middleware'
+import { IntFromString } from 'io-ts-types/IntFromString'
 
 // validation succeeds only if `req.param.user_id` can be parsed to an integer
 export const middleware3: M.Middleware<
@@ -202,7 +202,7 @@ export const middleware3: M.Middleware<
 
 ```ts
 import * as H from 'hyper-ts'
-import * as M from 'hyper-ts/lib/Middleware'
+import * as M from 'hyper-ts/Middleware'
 import * as t from 'io-ts'
 
 // returns a middleware validating both `req.param.user_id` and `req.param.user_name`
@@ -218,7 +218,7 @@ export const middleware = M.decodeParams(
 
 ```ts
 import * as H from 'hyper-ts'
-import * as M from 'hyper-ts/lib/Middleware'
+import * as M from 'hyper-ts/Middleware'
 import * as t from 'io-ts'
 
 // return a middleware validating the query "order=desc&shoe[color]=blue&shoe[type]=converse"
@@ -237,7 +237,7 @@ export const middleware = M.decodeQuery(
 
 ```ts
 import * as H from 'hyper-ts'
-import * as M from 'hyper-ts/lib/Middleware'
+import * as M from 'hyper-ts/Middleware'
 import * as t from 'io-ts'
 
 // return a middleware validating `req.body`

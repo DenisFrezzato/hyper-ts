@@ -16,7 +16,7 @@ export const middleware2: M.Middleware<H.StatusOpen, H.StatusOpen, t.Errors, str
   t.string.decode
 )
 
-import { IntFromString } from 'io-ts-types/lib/IntFromString'
+import { IntFromString } from 'io-ts-types/IntFromString'
 
 // validation succeeds only if `req.param.user_id` can be parsed to an integer
 export const middleware3: M.Middleware<
