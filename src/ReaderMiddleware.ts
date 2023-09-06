@@ -830,11 +830,23 @@ export const chainMiddlewareKW =
 
 /**
  * @category combinators
- * @since 0.6.3
+ * @since 0.7.9
  */
-export const chainMiddlewareK: <I, E, A, B>(
-  f: (a: A) => M.Middleware<I, I, E, B>
-) => <R>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainMiddlewareKW
+export const fromMiddlewareK =
+  <R, A extends ReadonlyArray<unknown>, B, I, O, E>(
+    f: (...a: A) => M.Middleware<I, O, E, B>
+  ): ((...a: A) => ReaderMiddleware<R, I, O, E, B>) =>
+  (...a) =>
+    fromMiddleware(f(...a))
+
+/**
+ * @category combinators
+ * @since 0.6.5
+ */
+export const ichainMiddlewareKW =
+  <R, A, O, Z, E, B>(f: (a: A) => M.Middleware<O, Z, E, B>) =>
+  <I, D>(ma: ReaderMiddleware<R, I, O, D, A>): ReaderMiddleware<R, I, Z, D | E, B> =>
+    pipe(ma, ichainW(fromMiddlewareK(f)))
 
 /**
  * @category combinators
@@ -842,15 +854,15 @@ export const chainMiddlewareK: <I, E, A, B>(
  */
 export const ichainMiddlewareK: <R, A, O, Z, E, B>(
   f: (a: A) => M.Middleware<O, Z, E, B>
-) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B> = chainMiddlewareK as any
+) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B> = ichainMiddlewareKW
 
 /**
  * @category combinators
- * @since 0.6.5
+ * @since 0.6.3
  */
-export const ichainMiddlewareKW: <R, A, O, Z, E, B>(
-  f: (a: A) => M.Middleware<O, Z, E, B>
-) => <I, D>(ma: ReaderMiddleware<R, I, O, D, A>) => ReaderMiddleware<R, I, Z, D | E, B> = chainMiddlewareK as any
+export const chainMiddlewareK: <I, E, A, B>(
+  f: (a: A) => M.Middleware<I, I, E, B>
+) => <R>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainMiddlewareKW
 
 /**
  * @category combinators

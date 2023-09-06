@@ -188,6 +188,16 @@ pipe(
 )
 
 //
+// fromMiddlewareK
+//
+
+// $ExpectType (a: boolean, b: number) => ReaderMiddleware<unknown, "one", "two", number, string>
+_.fromMiddlewareK((a: boolean, b: number) => middleware5)
+
+// $ExpectType ReaderMiddleware<R1, "one", "two", number, string>
+pipe(middleware1, _.ichain(_.fromMiddlewareK((a: boolean) => middleware5)))
+
+//
 // rightReaderTask
 //
 
