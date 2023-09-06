@@ -153,6 +153,7 @@ Added in v0.6.3
   - [fromIO](#fromio)
   - [fromIOEither](#fromioeither)
   - [fromMiddleware](#frommiddleware)
+  - [fromOption](#fromoption)
   - [fromReaderTaskEither](#fromreadertaskeither)
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
@@ -1792,6 +1793,16 @@ export declare const fromMiddleware: <R, I = H.StatusOpen, O = I, E = never, A =
 ```
 
 Added in v0.6.3
+
+## fromOption
+
+**Signature**
+
+```ts
+export declare const fromOption: <E>(onNone: Lazy<E>) => <R, I, A>(ma: O.Option<A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
 
 ## fromReaderTaskEither
 
