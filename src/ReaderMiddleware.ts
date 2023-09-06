@@ -836,9 +836,9 @@ export const ichainMiddlewareK: <R, A, O, Z, E, B>(
  * @category combinators
  * @since 0.6.3
  */
-export const chainMiddlewareK: <R, I, E, A, B>(
+export const chainMiddlewareK: <I, E, A, B>(
   f: (a: A) => M.Middleware<I, I, E, B>
-) => (ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = ichainMiddlewareK
+) => <R>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainMiddlewareKW
 
 /**
  * @category combinators

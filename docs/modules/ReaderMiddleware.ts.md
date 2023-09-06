@@ -731,9 +731,9 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const chainMiddlewareK: <R, I, E, A, B>(
+export declare const chainMiddlewareK: <I, E, A, B>(
   f: (a: A) => M.Middleware<I, I, E, B>
-) => (ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+) => <R>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
 ```
 
 Added in v0.6.3
