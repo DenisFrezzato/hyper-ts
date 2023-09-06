@@ -28,6 +28,7 @@ import {
   chainOptionK as chainOptionK_,
   FromEither4,
   fromPredicate as fromPredicate_,
+  fromOption as fromOption_,
   filterOrElse as filterOrElse_,
 } from 'fp-ts/FromEither'
 import { FromIO4, fromIOK as fromIOK_, chainIOK as chainIOK_, chainFirstIOK as chainFirstIOK_ } from 'fp-ts/FromIO'
@@ -623,6 +624,29 @@ export const apW: <R2, I, E2, A>(
   ap as any
 
 /**
+ * Indexed version of [`ap`](#ap).
+ *
+ * @category Apply
+ * @since 0.7.9
+ */
+export const iap =
+  <R, O, Z, E, A>(fa: ReaderMiddleware<R, O, Z, E, A>) =>
+  <I, B>(fab: ReaderMiddleware<R, I, O, E, (a: A) => B>): ReaderMiddleware<R, I, Z, E, B> =>
+  (r) =>
+    pipe(fab(r), M.iap(fa(r)))
+
+/**
+ * Less strict version of [`iap`](#iap).
+ *
+ * @category Apply
+ * @since 0.6.3
+ */
+export const iapW: <R2, O, Z, E2, A>(
+  fa: ReaderMiddleware<R2, O, Z, E2, A>
+) => <R1, I, E1, B>(fab: ReaderMiddleware<R1, I, O, E1, (a: A) => B>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B> =
+  iap as any
+
+/**
  * @category Pointed
  * @since 0.6.3
  */
@@ -771,16 +795,26 @@ export const altW: <R2, I, E2, A>(
 ) => <R1, E1>(fa: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> = alt as any
 
 /**
+ * Less strict version of [`chainMiddlewareK`](#chainmiddlewarek).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainMiddlewareKW =
+  <I, E2, A, B>(f: (a: A) => M.Middleware<I, I, E2, B>) =>
+  <R, E1>(ma: ReaderMiddleware<R, I, I, E1, A>): ReaderMiddleware<R, I, I, E1 | E2, B> =>
+    pipe(
+      ma,
+      chainW((a) => fromMiddleware(f(a)))
+    )
+
+/**
  * @category combinators
  * @since 0.6.3
  */
-export const chainMiddlewareK =
-  <R, I, E, A, B>(f: (a: A) => M.Middleware<I, I, E, B>) =>
-  (ma: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, B> =>
-    pipe(
-      ma,
-      chain((a) => fromMiddleware(f(a)))
-    )
+export const chainMiddlewareK: <I, E, A, B>(
+  f: (a: A) => M.Middleware<I, I, E, B>
+) => <R>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainMiddlewareKW
 
 /**
  * @category combinators
@@ -1051,6 +1085,27 @@ export const apFirstW: <R2, I, E2, B>(
   apFirst as any
 
 /**
+ * Indexed version of [`apFirst`](#apfirst).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapFirst: <R, O, Z, E, B>(
+  second: ReaderMiddleware<R, O, Z, E, B>
+) => <I, A>(first: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, A> = apFirst as any
+
+/**
+ * Less strict version of [`iapFirst`](#iapfirst).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapFirstW: <R2, O, Z, E2, B>(
+  second: ReaderMiddleware<R2, O, Z, E2, B>
+) => <R1, I, E1, A>(first: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A> =
+  iapFirst as any
+
+/**
  * @category combinators
  * @since 0.7.0
  */
@@ -1066,6 +1121,27 @@ export const apSecondW: <R2, I, E2, B>(
   second: ReaderMiddleware<R2, I, I, E2, B>
 ) => <R1, E1, A>(first: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> =
   apSecond as any
+
+/**
+ * Indexed version of [`apSecond`](#apsecond).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapSecond: <R, O, Z, E, B>(
+  second: ReaderMiddleware<R, O, Z, E, B>
+) => <I, A>(first: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B> = apSecond as any
+
+/**
+ * Less strict version of [`iapSecond`](#iapsecond).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapSecondW: <R2, O, Z, E2, B>(
+  second: ReaderMiddleware<R2, O, Z, E2, B>
+) => <R1, I, E1, A>(first: ReaderMiddleware<R1, I, O, E1, A>) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B> =
+  iapSecond as any
 
 /**
  * Composes computations in sequence, using the return value of one computation to determine
@@ -1130,6 +1206,13 @@ export const filterOrElseW: {
     ma: ReaderMiddleware<R, I, I, E1, A>
   ) => ReaderMiddleware<R, I, I, E1 | E2, A>
 } = filterOrElse
+
+/**
+ * @category natural transformations
+ * @since 0.7.9
+ */
+export const fromOption: <E>(onNone: Lazy<E>) => <R, I, A>(ma: O.Option<A>) => ReaderMiddleware<R, I, I, E, A> =
+  fromOption_(FromEither)
 
 /**
  * @category combinators

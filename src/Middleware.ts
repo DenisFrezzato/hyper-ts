@@ -203,6 +203,26 @@ export const apW: <I, E2, A>(
 ) => <E1, B>(fab: Middleware<I, I, E1, (a: A) => B>) => Middleware<I, I, E1 | E2, B> = ap as any
 
 /**
+ * Indexed version of [`ap`](#ap).
+ *
+ * @category Apply
+ * @since 0.7.9
+ */
+export const iap: <O, Z, E, A>(
+  fa: Middleware<O, Z, E, A>
+) => <I, B>(fab: Middleware<I, O, E, (a: A) => B>) => Middleware<I, Z, E, B> = ap as any
+
+/**
+ * Less strict version of [`iap`](#iap).
+ *
+ * @category Apply
+ * @since 0.7.9
+ */
+export const iapW: <O, Z, E2, A>(
+  fa: Middleware<O, Z, E2, A>
+) => <I, E1, B>(fab: Middleware<I, O, E1, (a: A) => B>) => Middleware<I, Z, E1 | E2, B> = iap as any
+
+/**
  * @category Pointed
  * @since 0.7.0
  */
@@ -849,6 +869,26 @@ export const apFirstW: <I, E2, B>(
 ) => <E1, A>(first: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A> = apFirst as any
 
 /**
+ * Indexed version of [`apFirst`](#apfirst).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapFirst: <O, Z, E, B>(
+  second: Middleware<O, Z, E, B>
+) => <I, A>(first: Middleware<I, O, E, A>) => Middleware<I, Z, E, A> = apFirst as any
+
+/**
+ * Less strict version of [`iapFirst`](#iapfirst).
+ *
+ * @category combinators
+ * @since 0.7.1
+ */
+export const iapFirstW: <O, Z, E2, B>(
+  second: Middleware<O, Z, E2, B>
+) => <I, E1, A>(first: Middleware<I, O, E1, A>) => Middleware<I, Z, E1 | E2, A> = iapFirst as any
+
+/**
  * @category combinators
  * @since 0.7.0
  */
@@ -863,6 +903,26 @@ export const apSecond = apSecond_(ApplyPar)
 export const apSecondW: <I, E2, B>(
   second: Middleware<I, I, E2, B>
 ) => <E1, A>(first: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = apSecond as any
+
+/**
+ * Indexed version of [`apSecond`](#apsecond).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapSecond: <O, Z, E, B>(
+  second: Middleware<O, Z, E, B>
+) => <I, A>(first: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> = apSecond as any
+
+/**
+ * Less strict version of [`iapSecond`](#iapsecond).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const iapSecondW: <O, Z, E2, B>(
+  second: Middleware<O, Z, E2, B>
+) => <I, E1, A>(first: Middleware<I, O, E1, A>) => Middleware<I, Z, E1 | E2, B> = iapSecond as any
 
 /**
  * Composes computations in sequence, using the return value of one computation to determine the next computation and

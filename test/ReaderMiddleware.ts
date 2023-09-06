@@ -87,7 +87,7 @@ describe('ReaderMiddleware', () => {
       return assertFailure(m, undefined, c, 4)
     })
 
-    test('with a none', async () => {
+    test('with a right', async () => {
       const m = pipe(RE.right(4), _.fromReaderEither)
       const c = new MockConnection<H.StatusOpen>(new MockRequest())
       return assertSuccess(m, undefined, c, 4, [])
@@ -630,6 +630,26 @@ describe('ReaderMiddleware', () => {
     const r = 'foo'
     const c = new MockConnection<H.StatusOpen>(new MockRequest({}, undefined, undefined, {}))
     return assertSuccess(m1, r, c, 'foo', [])
+  })
+
+  describe('fromOption', () => {
+    test('with a some', async () => {
+      const m = pipe(
+        O.some(8),
+        _.fromOption(() => 0)
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertSuccess(m, undefined, c, 8, [])
+    })
+
+    test('with a none', async () => {
+      const m = pipe(
+        O.none,
+        _.fromOption(() => 'Some error')
+      )
+      const c = new MockConnection<H.StatusOpen>(new MockRequest())
+      return assertFailure(m, undefined, c, 'Some error')
+    })
   })
 
   describe('chainOptionK', () => {

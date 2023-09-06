@@ -447,3 +447,19 @@ pipe(
   middleware1,
   _.chainFirstTaskOptionKW(() => true)((_: boolean) => TO.some(2))
 )
+
+//
+// chainMiddlewareK
+//
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number, boolean>
+pipe(
+  middleware1,
+  _.chainMiddlewareK(() => middleware4a)
+)
+
+// $ExpectType ReaderMiddleware<R1, "one", "one", number | Error, string>
+pipe(
+  middleware1,
+  _.chainMiddlewareKW(() => middleware4b)
+)
