@@ -272,6 +272,17 @@ export const asksReaderMiddleware: <R, E = never, A = never>(
 
 /**
  * @category combinators
+ * @since 0.7.9
+ */
+export const fromReaderK =
+  <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
+    f: (...a: A) => Reader<R, B>
+  ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
+  (...a) =>
+    rightReader(f(...a))
+
+/**
+ * @category combinators
  * @since 0.7.8
  */
 export const fromReaderTaskK =
@@ -852,6 +863,25 @@ export const chainTaskOptionK: <E>(
 ) => <A, B>(
   f: (a: A) => TO.TaskOption<B>
 ) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainTaskOptionKW
+
+/**
+ * Less strict version of [`chainReaderK`](#chainreaderk).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainReaderKW: <R2, A, B>(
+  f: (a: A) => Reader<R2, B>
+) => <R1, I, E>(ma: ReaderMiddleware<R1, I, I, E, A>) => ReaderMiddleware<R1 & R2, I, I, E, B> = (f) =>
+  chainW(fromReaderK(f))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainReaderK: <R, A, B>(
+  f: (a: A) => Reader<R, B>
+) => <I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainReaderKW
 
 /**
  * Less strict version of [`chainReaderTaskK`](#chainreadertaskk).
