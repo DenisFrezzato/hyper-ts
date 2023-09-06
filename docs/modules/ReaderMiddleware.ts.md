@@ -82,6 +82,7 @@ Added in v0.6.3
   - [flattenW](#flattenw)
   - [fromIOK](#fromiok)
   - [fromMiddlewareK](#frommiddlewarek)
+  - [fromReaderEitherK](#fromreadereitherk)
   - [fromReaderK](#fromreaderk)
   - [fromReaderTaskEitherK](#fromreadertaskeitherk)
   - [fromReaderTaskK](#fromreadertaskk)
@@ -158,6 +159,7 @@ Added in v0.6.3
   - [fromIOEither](#fromioeither)
   - [fromMiddleware](#frommiddleware)
   - [fromOption](#fromoption)
+  - [fromReaderEither](#fromreadereither)
   - [fromReaderTaskEither](#fromreadertaskeither)
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
@@ -1004,6 +1006,18 @@ Added in v0.7.0
 export declare const fromMiddlewareK: <R, A extends readonly unknown[], B, I, O, E>(
   f: (...a: A) => M.Middleware<I, O, E, B>
 ) => (...a: A) => ReaderMiddleware<R, I, O, E, B>
+```
+
+Added in v0.7.9
+
+## fromReaderEitherK
+
+**Signature**
+
+```ts
+export declare const fromReaderEitherK: <R, A extends readonly unknown[], B, I = H.StatusOpen, E = never>(
+  f: (...a: A) => ReaderEither<R, E, B>
+) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
 ```
 
 Added in v0.7.9
@@ -1855,6 +1869,18 @@ Added in v0.6.3
 
 ```ts
 export declare const fromOption: <E>(onNone: Lazy<E>) => <R, I, A>(ma: O.Option<A>) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
+
+## fromReaderEither
+
+**Signature**
+
+```ts
+export declare function fromReaderEither<R, I = H.StatusOpen, E = never, A = never>(
+  fa: ReaderEither<R, E, A>
+): ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.7.9

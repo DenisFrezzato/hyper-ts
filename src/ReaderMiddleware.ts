@@ -20,6 +20,7 @@ import { MonadThrow4 } from 'fp-ts/MonadThrow'
 import { Functor4, bindTo as bindTo_ } from 'fp-ts/Functor'
 import { Apply4, apS as apS_, apFirst as apFirst_, apSecond as apSecond_ } from 'fp-ts/Apply'
 import { Applicative4 } from 'fp-ts/Applicative'
+import { ReaderEither } from 'fp-ts/ReaderEither'
 import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
 import { Reader } from 'fp-ts/Reader'
 import {
@@ -86,6 +87,16 @@ export const fromTaskOption: <E>(
 ) => <R, I = H.StatusOpen, A = never>(fa: TO.TaskOption<A>) => ReaderMiddleware<R, I, I, E, A> =
   (onNone) => (fa) => () =>
     M.fromTaskOption(onNone)(fa)
+
+/**
+ * @category natural transformations
+ * @since 0.7.9
+ */
+export function fromReaderEither<R, I = H.StatusOpen, E = never, A = never>(
+  fa: ReaderEither<R, E, A>
+): ReaderMiddleware<R, I, I, E, A> {
+  return (r) => M.fromEither(fa(r))
+}
 
 /**
  * @category natural transformations
@@ -294,6 +305,17 @@ export const fromReaderTaskK =
   ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
   (...a) =>
     rightReaderTask(f(...a))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const fromReaderEitherK =
+  <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
+    f: (...a: A) => ReaderEither<R, E, B>
+  ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
+  (...a) =>
+    fromReaderEither(f(...a))
 
 /**
  * @category combinators
