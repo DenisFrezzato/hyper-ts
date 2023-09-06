@@ -749,16 +749,26 @@ export const altW: <R2, I, E2, A>(
 ) => <R1, E1>(fa: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A> = alt as any
 
 /**
+ * Less strict version of [`chainMiddlewareK`](#chainmiddlewarek).
+ *
+ * @category combinators
+ * @since 0.7.9
+ */
+export const chainMiddlewareKW =
+  <I, E2, A, B>(f: (a: A) => M.Middleware<I, I, E2, B>) =>
+  <R, E1>(ma: ReaderMiddleware<R, I, I, E1, A>): ReaderMiddleware<R, I, I, E1 | E2, B> =>
+    pipe(
+      ma,
+      chainW((a) => fromMiddleware(f(a)))
+    )
+
+/**
  * @category combinators
  * @since 0.6.3
  */
-export const chainMiddlewareK =
-  <R, I, E, A, B>(f: (a: A) => M.Middleware<I, I, E, B>) =>
-  (ma: ReaderMiddleware<R, I, I, E, A>): ReaderMiddleware<R, I, I, E, B> =>
-    pipe(
-      ma,
-      chain((a) => fromMiddleware(f(a)))
-    )
+export const chainMiddlewareK: <I, E, A, B>(
+  f: (a: A) => M.Middleware<I, I, E, B>
+) => <R>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B> = chainMiddlewareKW
 
 /**
  * @category combinators
