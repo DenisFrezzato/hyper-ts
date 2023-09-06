@@ -30,6 +30,8 @@ import {
   chainEitherK as chainEitherK_,
   chainOptionK as chainOptionK_,
   FromEither3,
+  fromEitherK as fromEitherK_,
+  fromOptionK as fromOptionK_,
 } from 'fp-ts/FromEither'
 import * as O from 'fp-ts/Option'
 import * as J from 'fp-ts/Json'
@@ -993,6 +995,23 @@ export const filterOrElseW: {
  */
 export const fromOption: <E>(onNone: Lazy<E>) => <I, A>(ma: O.Option<A>) => Middleware<I, I, E, A> =
   fromOption_(FromEither)
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const fromEitherK: <E, A extends ReadonlyArray<unknown>, B>(
+  f: (...a: A) => E.Either<E, B>
+) => <I>(...a: A) => Middleware<I, I, E, B> = fromEitherK_(FromEither)
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const fromOptionK: <E>(
+  onNone: Lazy<E>
+) => <A extends ReadonlyArray<unknown>, B>(f: (...a: A) => O.Option<B>) => <I>(...a: A) => Middleware<I, I, E, B> =
+  fromOptionK_(FromEither)
 
 /**
  * @category combinators
