@@ -68,7 +68,9 @@ Added in v0.7.0
   - [filterOrElseW](#filterorelsew)
   - [flatten](#flatten)
   - [flattenW](#flattenw)
+  - [fromEitherK](#fromeitherk)
   - [fromIOK](#fromiok)
+  - [fromOptionK](#fromoptionk)
   - [fromTaskK](#fromtaskk)
   - [iapFirst](#iapfirst)
   - [iapFirstW](#iapfirstw)
@@ -734,6 +736,18 @@ export declare const flattenW: <I, E1, E2, A>(
 
 Added in v0.7.2
 
+## fromEitherK
+
+**Signature**
+
+```ts
+export declare const fromEitherK: <E, A extends readonly unknown[], B>(
+  f: (...a: A) => E.Either<E, B>
+) => <I>(...a: A) => Middleware<I, I, E, B>
+```
+
+Added in v0.7.9
+
 ## fromIOK
 
 **Signature**
@@ -743,6 +757,18 @@ export declare const fromIOK: <A, B>(f: (...a: A) => IO<B>) => <R, E>(...a: A) =
 ```
 
 Added in v0.7.0
+
+## fromOptionK
+
+**Signature**
+
+```ts
+export declare const fromOptionK: <E>(
+  onNone: Lazy<E>
+) => <A extends readonly unknown[], B>(f: (...a: A) => O.Option<B>) => <I>(...a: A) => Middleware<I, I, E, B>
+```
+
+Added in v0.7.9
 
 ## fromTaskK
 
