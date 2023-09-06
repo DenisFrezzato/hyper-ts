@@ -1,7 +1,7 @@
 /**
  * @since 0.6.3
  */
-import { flow, identity, Lazy, pipe, Predicate, Refinement } from 'fp-ts/function'
+import { flow, identity, Lazy, pipe } from 'fp-ts/function'
 import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { Task } from 'fp-ts/Task'
@@ -37,6 +37,9 @@ import {
   chainTaskK as chainTaskK_,
   chainFirstTaskK as chainFirstTaskK_,
 } from 'fp-ts/FromTask'
+import { ReaderIO } from 'fp-ts/ReaderIO'
+import { Refinement } from 'fp-ts/Refinement'
+import { Predicate } from 'fp-ts/Predicate'
 
 /**
  * @category instances
@@ -452,9 +455,13 @@ export function redirect<R, E = never>(
  * @since 0.7.3
  */
 export function pipeStream<R, E>(
-  stream: NodeJS.ReadableStream
+  stream: NodeJS.ReadableStream,
+  onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
-  return modifyConnection((c) => c.pipeStream(stream))
+  return pipe(
+    ask<R, H.BodyOpen, E>(),
+    ichain((r) => modifyConnection((c) => c.pipeStream(stream, (err) => onError(err)(r))))
+  )
 }
 
 /**
