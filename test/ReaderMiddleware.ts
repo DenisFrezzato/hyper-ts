@@ -4,6 +4,7 @@ import * as O from 'fp-ts/Option'
 import * as TE from 'fp-ts/TaskEither'
 import * as R from 'fp-ts/Reader'
 import * as RE from 'fp-ts/ReaderEither'
+import * as RIO from 'fp-ts/ReaderIO'
 import * as RT from 'fp-ts/ReaderTask'
 import * as RTE from 'fp-ts/ReaderTaskEither'
 import * as TO from 'fp-ts/TaskOption'
@@ -95,6 +96,12 @@ describe('ReaderMiddleware', () => {
     })
   })
 
+  test('fromReaderIO', async () => {
+    const m = pipe(RIO.of(4), _.fromReaderIO)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, undefined, c, 4, [])
+  })
+
   it('fromMiddleware', () => {
     const m2 = M.right(42)
     const m1 = _.fromMiddleware(m2)
@@ -105,6 +112,13 @@ describe('ReaderMiddleware', () => {
   it('fromReaderK', () => {
     const m2 = (value: string) => R.of(value.length)
     const m1 = _.fromReaderK(m2)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m1('foo'), undefined, c, 3, [])
+  })
+
+  test('fromReaderIOK', () => {
+    const m2 = (value: string) => RIO.of(value.length)
+    const m1 = _.fromReaderIOK(m2)
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertSuccess(m1('foo'), undefined, c, 3, [])
   })
@@ -232,6 +246,18 @@ describe('ReaderMiddleware', () => {
     )
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertSuccess(m, 4, c, 4, [])
+  })
+
+  test('rightReaderIO', async () => {
+    const m = pipe(RIO.of('foo'), _.rightReaderIO)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, 4, c, 'foo', [])
+  })
+
+  test('leftReaderIO', async () => {
+    const m = pipe(RIO.of('foo'), _.leftReaderIO)
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertFailure(m, 4, c, 'foo')
   })
 
   it('rightReaderTask', async () => {
