@@ -13,6 +13,23 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.7.9
+- **New Feature**
+  - `Middleware`
+    - Add `chainFirstTaskOptionK`, `chainFirstTaskOptionKW`, `chainOptionK`, `chainOptionKW`, `chainTaskOptionK`, `chainTaskOptionKW`, `fromTaskOption`, `fromEitherK`, `fromOptionK` (@thewilkybarkid)
+    - Add `iap`, `iapW`, `iapFirst`, `iapFirstW`, `iapSecond`, `iapSecondW` (@mlegenhausen)
+  - `ReaderMiddleware`
+    - Add `chainFirstTaskOptionK`, `chainFirstTaskOptionKW`, `chainOptionK`, `chainOptionKW`, `chainTaskOptionK`, `chainTaskOptionKW`, `fromTaskOption`, `asksReaderMiddleware`, `asksReaderMiddlewareW`, `fromOption`, `chainReaderK`, `chainReaderKW`, `fromReaderK`, `fromReaderEitherK`, `fromReaderEither`, `fromEitherK`, `fromOptionK`, `fromMiddlewareK`, `fromReaderIOK`, `leftReaderIO`, `rightReaderIO`, `fromReaderIO` (@thewilkybarkid)
+    - Add `chainMiddlewareKW` (@DenisFrezzato)
+    - Add `iap`, `iapW`, `iapFirst`, `iapFirstW`, `iapSecond`, `iapSecondW`, `fromReaderTask` (@mlegenhausen)
+- **Bug Fix**
+  - `Middleware`
+    - Add error handler to `pipeStream` (@mlegenhausen)
+  - `ReaderMiddleware`
+    - Add error handler to `pipeStream` (@mlegenhausen)
+- **Polish**
+  - expose modules without lib/es6 prefix (@thewilkybarkid)
+
 # 0.7.8
 - **New Feature**
   - `ReaderMiddleware`
@@ -60,7 +77,7 @@ high state of flux, you're at risk of it changing without notice.
     - Fix `pipeStream` stream type (@DenisFrezzato)
   - `ReaderMiddleware`
     - Add `pipeStream` (@DenisFrezzato)
-    
+
 # 0.7.2
 
 - **New Feature**
@@ -176,12 +193,12 @@ high state of flux, you're at risk of it changing without notice.
 
 # 0.6.3
 
-- **New feature** 
+- **New feature**
   - Add `ReaderMiddleware` #41 (@DenisFrezzato)
 
 # 0.6.2
 
-- **New feature** 
+- **New feature**
   - pipe stream to response, #38 (@DenisFrezzato)
 
 
