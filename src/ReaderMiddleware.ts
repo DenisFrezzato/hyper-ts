@@ -104,6 +104,14 @@ export function fromReaderEither<R, I = H.StatusOpen, E = never, A = never>(
  * @category natural transformations
  * @since 0.7.9
  */
+export function fromReaderIO<R, I = H.StatusOpen, A = never>(fa: ReaderIO<R, A>): ReaderMiddleware<R, I, I, never, A> {
+  return (r) => M.fromIO(fa(r))
+}
+
+/**
+ * @category natural transformations
+ * @since 0.7.9
+ */
 export function fromReaderTask<R, I = H.StatusOpen, A = never>(
   fa: ReaderTask<R, A>
 ): ReaderMiddleware<R, I, I, never, A> {
@@ -246,6 +254,24 @@ export function leftReader<R, I = H.StatusOpen, E = never, A = never>(
 
 /**
  * @category constructors
+ * @since 0.7.9
+ */
+export const rightReaderIO =
+  <R, I = H.StatusOpen, E = never, A = never>(ma: ReaderIO<R, A>): ReaderMiddleware<R, I, I, E, A> =>
+  (r) =>
+    M.rightIO(ma(r))
+
+/**
+ * @category constructors
+ * @since 0.7.9
+ */
+export const leftReaderIO =
+  <R, I = H.StatusOpen, E = never, A = never>(me: ReaderIO<R, E>): ReaderMiddleware<R, I, I, E, A> =>
+  (r) =>
+    M.leftIO(me(r))
+
+/**
+ * @category constructors
  * @since 0.7.7
  */
 export const rightReaderTask =
@@ -306,6 +332,17 @@ export const fromReaderK =
   ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
   (...a) =>
     rightReader(f(...a))
+
+/**
+ * @category combinators
+ * @since 0.7.9
+ */
+export const fromReaderIOK =
+  <R, A extends ReadonlyArray<unknown>, B, I = H.StatusOpen, E = never>(
+    f: (...a: A) => ReaderIO<R, B>
+  ): ((...a: A) => ReaderMiddleware<R, I, I, E, B>) =>
+  (...a) =>
+    rightReaderIO(f(...a))
 
 /**
  * @category combinators

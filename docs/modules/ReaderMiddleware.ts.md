@@ -85,6 +85,7 @@ Added in v0.6.3
   - [fromMiddlewareK](#frommiddlewarek)
   - [fromOptionK](#fromoptionk)
   - [fromReaderEitherK](#fromreadereitherk)
+  - [fromReaderIOK](#fromreaderiok)
   - [fromReaderK](#fromreaderk)
   - [fromReaderTaskEitherK](#fromreadertaskeitherk)
   - [fromReaderTaskK](#fromreadertaskk)
@@ -123,6 +124,7 @@ Added in v0.6.3
   - [left](#left)
   - [leftIO](#leftio)
   - [leftReader](#leftreader)
+  - [leftReaderIO](#leftreaderio)
   - [leftReaderTask](#leftreadertask)
   - [leftTask](#lefttask)
   - [modifyConnection](#modifyconnection)
@@ -131,6 +133,7 @@ Added in v0.6.3
   - [right](#right)
   - [rightIO](#rightio)
   - [rightReader](#rightreader)
+  - [rightReaderIO](#rightreaderio)
   - [rightReaderTask](#rightreadertask)
   - [rightTask](#righttask)
   - [send](#send)
@@ -162,6 +165,7 @@ Added in v0.6.3
   - [fromMiddleware](#frommiddleware)
   - [fromOption](#fromoption)
   - [fromReaderEither](#fromreadereither)
+  - [fromReaderIO](#fromreaderio)
   - [fromReaderTask](#fromreadertask)
   - [fromReaderTaskEither](#fromreadertaskeither)
   - [fromTask](#fromtask)
@@ -1051,6 +1055,18 @@ export declare const fromReaderEitherK: <R, A extends readonly unknown[], B, I =
 
 Added in v0.7.9
 
+## fromReaderIOK
+
+**Signature**
+
+```ts
+export declare const fromReaderIOK: <R, A extends readonly unknown[], B, I = H.StatusOpen, E = never>(
+  f: (...a: A) => ReaderIO<R, B>
+) => (...a: A) => ReaderMiddleware<R, I, I, E, B>
+```
+
+Added in v0.7.9
+
 ## fromReaderK
 
 **Signature**
@@ -1511,6 +1527,18 @@ export declare function leftReader<R, I = H.StatusOpen, E = never, A = never>(
 
 Added in v0.6.3
 
+## leftReaderIO
+
+**Signature**
+
+```ts
+export declare const leftReaderIO: <R, I = H.StatusOpen, E = never, A = never>(
+  me: ReaderIO<R, E>
+) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
+
 ## leftReaderTask
 
 **Signature**
@@ -1605,6 +1633,18 @@ export declare const rightReader: <R, I = H.StatusOpen, E = never, A = never>(
 ```
 
 Added in v0.6.3
+
+## rightReaderIO
+
+**Signature**
+
+```ts
+export declare const rightReaderIO: <R, I = H.StatusOpen, E = never, A = never>(
+  ma: ReaderIO<R, A>
+) => ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
 
 ## rightReaderTask
 
@@ -1910,6 +1950,18 @@ Added in v0.7.9
 export declare function fromReaderEither<R, I = H.StatusOpen, E = never, A = never>(
   fa: ReaderEither<R, E, A>
 ): ReaderMiddleware<R, I, I, E, A>
+```
+
+Added in v0.7.9
+
+## fromReaderIO
+
+**Signature**
+
+```ts
+export declare function fromReaderIO<R, I = H.StatusOpen, A = never>(
+  fa: ReaderIO<R, A>
+): ReaderMiddleware<R, I, I, never, A>
 ```
 
 Added in v0.7.9
