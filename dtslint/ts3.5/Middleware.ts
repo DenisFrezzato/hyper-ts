@@ -2,6 +2,7 @@ import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
 import * as TO from 'fp-ts/TaskOption'
 import { pipe } from 'fp-ts/function'
+import * as H from '../../src'
 import * as _ from '../../src/Middleware'
 
 declare const middleware1: _.Middleware<'one', 'one', number, boolean>
@@ -10,6 +11,8 @@ declare const middleware2b: _.Middleware<'one', 'two', Error, string>
 declare const middleware3: _.Middleware<'two', 'three', number, string>
 declare const decoderU: (value: unknown) => E.Either<number, boolean>
 declare const decoderS: (value: string) => E.Either<number, boolean>
+declare const status: H.Status
+declare const statusRedirection: H.RedirectionStatus
 
 //
 // decodeParam
@@ -105,6 +108,22 @@ pipe(
   middleware1,
   _.ichainFirstW(() => middleware3) // $ExpectError
 )
+
+//
+// redirect
+//
+
+// $ExpectType Middleware<StatusOpen, HeadersOpen, never, void>
+_.redirect('http://www.example.com/')
+
+// $ExpectType Middleware<StatusOpen, HeadersOpen, Error, void>
+_.redirect<Error>('http://www.example.com/')
+
+// $ExpectType Middleware<StatusOpen, HeadersOpen, never, void>
+_.redirect('http://www.example.com/', statusRedirection)
+
+// $ExpectError
+_.redirect('http://www.example.com/', status)
 
 //
 // chainOptionK

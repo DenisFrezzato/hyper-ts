@@ -1596,7 +1596,8 @@ Added in v0.7.3
 
 ```ts
 export declare function redirect<R, E = never>(
-  uri: string | { href: string }
+  uri: string | { href: string },
+  code: H.RedirectionStatus = H.Status.Found
 ): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void>
 ```
 

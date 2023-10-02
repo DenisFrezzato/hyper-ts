@@ -74,6 +74,7 @@ Added in v0.5.0
   - [HeadersOpen (interface)](#headersopen-interface)
   - [MediaType](#mediatype)
   - [MediaType (type alias)](#mediatype-type-alias)
+  - [RedirectionStatus (type alias)](#redirectionstatus-type-alias)
   - [ResponseEnded (interface)](#responseended-interface)
   - [Status](#status)
   - [Status (type alias)](#status-type-alias)
@@ -793,6 +794,16 @@ export type MediaType = typeof MediaType[keyof typeof MediaType]
 
 Added in v0.5.0
 
+## RedirectionStatus (type alias)
+
+**Signature**
+
+```ts
+export type RedirectionStatus = typeof RedirectionStatus[keyof typeof RedirectionStatus]
+```
+
+Added in v0.5.0
+
 ## ResponseEnded (interface)
 
 Type indicating that headers have already been sent, and that the body stream, and thus the response, is finished
@@ -813,29 +824,6 @@ Added in v0.5.0
 
 ```ts
 export declare const Status: {
-  readonly Continue: 100
-  readonly SwitchingProtocols: 101
-  readonly Processing: 102
-  readonly EarlyHints: 103
-  readonly OK: 200
-  readonly Created: 201
-  readonly Accepted: 202
-  readonly NonAuthoritativeInformation: 203
-  readonly NoContent: 204
-  readonly ResetContent: 205
-  readonly PartialContent: 206
-  readonly MultiStatus: 207
-  readonly AlreadyReported: 208
-  readonly IMUsed: 226
-  readonly MultipleChoices: 300
-  readonly MovedPermanently: 301
-  readonly Found: 302
-  readonly SeeOther: 303
-  readonly NotModified: 304
-  readonly UseProxy: 305
-  readonly SwitchProxy: 306
-  readonly TemporaryRedirect: 307
-  readonly PermanentRedirect: 308
   readonly BadRequest: 400
   readonly Unauthorized: 401
   readonly PaymentRequired: 402
@@ -876,6 +864,29 @@ export declare const Status: {
   readonly LoopDetected: 508
   readonly NotExtended: 510
   readonly NetworkAuthenticationRequired: 511
+  readonly MultipleChoices: 300
+  readonly MovedPermanently: 301
+  readonly Found: 302
+  readonly SeeOther: 303
+  readonly NotModified: 304
+  readonly UseProxy: 305
+  readonly SwitchProxy: 306
+  readonly TemporaryRedirect: 307
+  readonly PermanentRedirect: 308
+  readonly Continue: 100
+  readonly SwitchingProtocols: 101
+  readonly Processing: 102
+  readonly EarlyHints: 103
+  readonly OK: 200
+  readonly Created: 201
+  readonly Accepted: 202
+  readonly NonAuthoritativeInformation: 203
+  readonly NoContent: 204
+  readonly ResetContent: 205
+  readonly PartialContent: 206
+  readonly MultiStatus: 207
+  readonly AlreadyReported: 208
+  readonly IMUsed: 226
 }
 ```
 

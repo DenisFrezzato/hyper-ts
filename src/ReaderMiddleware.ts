@@ -514,9 +514,10 @@ export function json<R, E>(
  * @since 0.6.3
  */
 export function redirect<R, E = never>(
-  uri: string | { href: string }
+  uri: string | { href: string },
+  code: H.RedirectionStatus = H.Status.Found
 ): ReaderMiddleware<R, H.StatusOpen, H.HeadersOpen, E, void> {
-  return () => M.redirect(uri)
+  return () => M.redirect(uri, code)
 }
 
 /**
