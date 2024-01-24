@@ -525,7 +525,7 @@ export function redirect<R, E = never>(
  * @category constructors
  * @since 0.7.3
  */
-export function pipeStream<R, E>(
+export function pipeStream<R, E = never>(
   stream: NodeJS.ReadableStream,
   onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void> {
