@@ -429,10 +429,11 @@ describe('Middleware', () => {
 
     it('should pipe a stream and handle the failure', () => {
       const someStream = (): Readable => {
-        const stream = new Readable()
-        setTimeout(() => {
-          throw new Error('Boom')
-        }, 1)
+        const stream = new Readable({
+          read() {
+            this.destroy(new Error('Boom'))
+          },
+        })
         return stream
       }
       const stream = someStream()
