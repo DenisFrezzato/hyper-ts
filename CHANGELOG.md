@@ -25,6 +25,9 @@ high state of flux, you're at risk of it changing without notice.
     - Add `flatMapMiddleware`, `flatMapEither`, `flatMapOption`, `flatMapIO`, `flatMapTask`, `flatMapTaskEither`, `flatMapTaskOption`, `flatMapReader`, `flatMapReaderTask`, `flatMapReaderTaskEither` (dual) (@DenisFrezzato)
     - Add `tap`, `itap` (dual, alias of `chainFirstW`/`ichainFirstW`) (@DenisFrezzato)
     - Add `tapIO`, `tapTask`, `tapTaskEither`, `tapTaskOption`, `tapReaderTask`, `tapReaderTaskEither` (dual) (@DenisFrezzato)
+- **Bug Fix**
+  - `ReaderMiddleware`
+    - Fix `pipeStream` to use `never` as default for type parameter `E` (@OliverJAsh)
 - **Breaking Change**
   - Require `express` `^5` as a peer dependency (@DenisFrezzato)
 - **Internal**

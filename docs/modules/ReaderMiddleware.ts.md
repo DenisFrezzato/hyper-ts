@@ -1603,7 +1603,7 @@ Returns a `ReaderMiddleware` that pipes a stream to the response object.
 **Signature**
 
 ```ts
-export declare function pipeStream<R, E>(
+export declare function pipeStream<R, E = never>(
   stream: NodeJS.ReadableStream,
   onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void>
