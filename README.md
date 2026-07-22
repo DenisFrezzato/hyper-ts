@@ -22,11 +22,12 @@ cannot be made. A few examples of such mistakes could be:
 
 # TypeScript compatibility
 
-| `hyper-ts` version | `fp-ts` version | `typescript` version |
-| ------------------ | --------------- | -------------------- |
-| 0.7.x+             | 2.10.5+         | 4.3+                 |
-| 0.5.x+             | 2.0.5+          | 3.5+                 |
-| 0.4.x+             | 1.15.0+         | 3.0.1+               |
+| `hyper-ts` version | `fp-ts` version | `typescript` version | `express` version |
+| ------------------ | --------------- | -------------------- | ----------------- |
+| 0.8.x+             | 2.10.5+         | 5.4+                 | 5.x               |
+| 0.7.x+             | 2.10.5+         | 4.3+                 | 4.x               |
+| 0.5.x+             | 2.0.5+          | 3.5+                 | 4.x               |
+| 0.4.x+             | 1.15.0+         | 3.0.1+               | 4.x               |
 
 # Hello world
 
@@ -39,8 +40,8 @@ import { pipe } from 'fp-ts/function'
 
 const hello: M.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
   M.status(H.Status.OK), // writes the response status
-  M.ichain(() => M.closeHeaders()), // tells hyper-ts that we're done with the headers
-  M.ichain(() => M.send('Hello hyper-ts on express!')) // sends the response as text
+  M.iflatMap(() => M.closeHeaders()), // tells hyper-ts that we're done with the headers
+  M.iflatMap(() => M.send('Hello hyper-ts on express!')) // sends the response as text
 )
 
 express()
@@ -53,7 +54,7 @@ express()
 ```ts
 const hello = pipe(
   M.status(H.Status.OK),
-  M.ichain(() => M.json({ a: 1 }, () => 'error'))
+  M.iflatMap(() => M.json({ a: 1 }, () => 'error'))
 )
 ```
 
@@ -103,7 +104,7 @@ During the connection lifecycle the following flow is statically enforced
 StatusOpen -> HeadersOpen -> BodyOpen -> ResponseEnded
 ```
 
-**Note**. `hyper-ts` supports [express 4.x](http://expressjs.com/) by default by exporting a `Connection` instance from the `hyper-ts/express` module.
+**Note**. `hyper-ts` supports [express 5.x](http://expressjs.com/) by default by exporting a `Connection` instance from the `hyper-ts/express` module.
 
 ## Middleware
 
@@ -119,7 +120,7 @@ interface Middleware<I, O, E, A> {
 The input and output type parameters are used to ensure that a `Connection` is transformed, and that side-effects are
 performed, correctly, throughout the middleware chain.
 
-Middlewares are composed using `chain` and `ichain`, the indexed monadic version of `chain`.
+Middlewares are composed using `flatMap` and `iflatMap`, the indexed monadic version of `flatMap`.
 
 # Type safety
 
@@ -130,11 +131,11 @@ import { Status, status } from 'hyper-ts'
 
 pipe(
   M.status(H.Status.OK),
-  M.ichain(() => M.header('name', 'value')),
-  M.ichain(() => M.closeHeaders()),
-  M.ichain(() => M.send('Hello hyper-ts on express!')),
+  M.iflatMap(() => M.header('name', 'value')),
+  M.iflatMap(() => M.closeHeaders()),
+  M.iflatMap(() => M.send('Hello hyper-ts on express!')),
   // try to write a header after sending the body
-  M.ichain(() => M.header('name', 'value')) // static error
+  M.iflatMap(() => M.header('name', 'value')) // static error
 )
 ```
 
