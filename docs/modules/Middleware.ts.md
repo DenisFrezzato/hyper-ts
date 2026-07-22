@@ -1198,7 +1198,8 @@ Returns a middleware that sends a redirect to `uri`
 
 ```ts
 export declare function redirect<E = never>(
-  uri: string | { href: string }
+  uri: string | { href: string },
+  code: RedirectionStatus = Status.Found
 ): Middleware<StatusOpen, HeadersOpen, E, void>
 ```
 
