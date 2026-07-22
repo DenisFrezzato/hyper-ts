@@ -1,7 +1,15 @@
 /**
  * @since 0.6.3
  */
-import { flow, identity, Lazy, pipe } from 'fp-ts/function'
+import {
+  // `dual` is public at runtime but marked `@internal` in fp-ts, so it's absent from the type defs.
+  // @ts-expect-error
+  dual,
+  flow,
+  identity,
+  Lazy,
+  pipe,
+} from 'fp-ts/function'
 import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { Task } from 'fp-ts/Task'
@@ -764,10 +772,7 @@ export const flatMap: {
     ma: ReaderMiddleware<R1, I, I, E1, A>,
     f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
   ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, B>
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1
-    ? (ma: ReaderMiddleware<any, any, any, any, any>) => _chain(ma, args[0] as any)
-    : _chain(args[0] as any, args[1] as any)) as any
+} = /*#__PURE__*/ dual(2, _chain)
 
 /**
  * Less strict version of [`flatten`](#flatten).
@@ -813,8 +818,7 @@ export const iflatMap: {
     ma: ReaderMiddleware<R1, I, O, E1, A>,
     f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
   ): ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B>
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1 ? ichainW(args[0] as any) : ichainW(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => ichainW(f)(ma))
 
 /**
  * Less strict version of [`ichain`](#ichain).
@@ -1531,8 +1535,7 @@ export const flatMapMiddleware: {
     E1 | E2,
     B
   >
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1 ? chainMiddlewareKW(args[0] as any) : chainMiddlewareKW(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainMiddlewareKW(f)(ma))
 
 /**
  * Alias of `chainEitherKW`.
@@ -1551,8 +1554,7 @@ export const flatMapEither: {
     E1 | E2,
     B
   >
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1 ? chainEitherKW(args[0] as any) : chainEitherKW(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainEitherKW(f)(ma))
 
 /**
  * @category sequencing
@@ -1567,15 +1569,14 @@ export const flatMapOption: {
     f: (a: A) => O.Option<B>,
     onNone: (a: A) => E2
   ): ReaderMiddleware<R, I, I, E1 | E2, B>
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 2
-    ? (ma: ReaderMiddleware<any, any, any, any, any>) => (flatMapOption as any)(ma, args[0], args[1])
-    : flatMapEither(args[0] as any, (a: any) =>
-        pipe(
-          (args[1] as any)(a),
-          E.fromOption(() => (args[2] as any)(a))
-        )
-      )) as any
+} = /*#__PURE__*/ dual(3, (ma: any, f: any, onNone: any) =>
+  flatMapEither(ma, (a: any) =>
+    pipe(
+      f(a),
+      E.fromOption(() => onNone(a))
+    )
+  )
+)
 
 /**
  * Alias of `chainIOK`.
@@ -1586,8 +1587,7 @@ export const flatMapOption: {
 export const flatMapIO: {
   <A, B>(f: (a: A) => IO<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
   <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => IO<B>): ReaderMiddleware<R, I, I, E, B>
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1 ? chainIOK(args[0] as any) : chainIOK(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainIOK(f)(ma))
 
 /**
  * Alias of `chainTaskK`.
@@ -1598,8 +1598,7 @@ export const flatMapIO: {
 export const flatMapTask: {
   <A, B>(f: (a: A) => Task<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
   <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => Task<B>): ReaderMiddleware<R, I, I, E, B>
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1 ? chainTaskK(args[0] as any) : chainTaskK(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainTaskK(f)(ma))
 
 /**
  * Alias of `chainTaskEitherKW`.
@@ -1618,8 +1617,7 @@ export const flatMapTaskEither: {
     E1 | E2,
     B
   >
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1 ? chainTaskEitherKW(args[0] as any) : chainTaskEitherKW(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainTaskEitherKW(f)(ma))
 
 /**
  * @category sequencing
@@ -1634,12 +1632,9 @@ export const flatMapTaskOption: {
     f: (a: A) => TO.TaskOption<B>,
     onNone: (a: A) => E2
   ): ReaderMiddleware<R, I, I, E1 | E2, B>
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 2
-    ? (ma: ReaderMiddleware<any, any, any, any, any>) => (flatMapTaskOption as any)(ma, args[0], args[1])
-    : flatMapTaskEither(args[0] as any, (a: any) =>
-        TE.fromTaskOption(() => (args[2] as any)(a))((args[1] as any)(a))
-      )) as any
+} = /*#__PURE__*/ dual(3, (ma: any, f: any, onNone: any) =>
+  flatMapTaskEither(ma, (a: any) => TE.fromTaskOption(() => onNone(a))(f(a)))
+)
 
 /**
  * Alias of `chainReaderKW`.
@@ -1658,8 +1653,7 @@ export const flatMapReader: {
     E,
     B
   >
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1 ? chainReaderKW(args[0] as any) : chainReaderKW(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainReaderKW(f)(ma))
 
 /**
  * Alias of `chainReaderTaskKW`.
@@ -1678,8 +1672,7 @@ export const flatMapReaderTask: {
     E,
     B
   >
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1 ? chainReaderTaskKW(args[0] as any) : chainReaderTaskKW(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainReaderTaskKW(f)(ma))
 
 /**
  * Alias of `chainReaderTaskEitherKW`.
@@ -1695,10 +1688,7 @@ export const flatMapReaderTaskEither: {
     ma: ReaderMiddleware<R1, I, I, E1, A>,
     f: (a: A) => ReaderTaskEither<R2, E2, B>
   ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, B>
-} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
-  args.length === 1
-    ? chainReaderTaskEitherKW(args[0] as any)
-    : chainReaderTaskEitherKW(args[1] as any)(args[0] as any)) as any
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainReaderTaskEitherKW(f)(ma))
 
 /**
  * Alias of `chainFirstW`.

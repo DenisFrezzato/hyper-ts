@@ -30,6 +30,7 @@ high state of flux, you're at risk of it changing without notice.
     - Fix `pipeStream` to use `never` as default for type parameter `E` (@OliverJAsh)
 - **Breaking Change**
   - Require `express` `^5` as a peer dependency (@DenisFrezzato)
+  - Bump `fp-ts` peer dependency to `^2.14.0` (introduces `dual`, used to implement the dual `flatMap`/`tap` combinators) (@DenisFrezzato)
 - **Internal**
   - Migrate type tests from `dtslint` to `tstyche` (@DenisFrezzato)
   - Upgrade to TypeScript `5`, `@types/node` `22` and `jest` `29` (@DenisFrezzato)

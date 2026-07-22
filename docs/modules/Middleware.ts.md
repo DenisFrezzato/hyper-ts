@@ -180,7 +180,7 @@ Added in v0.7.0
 
 ```ts
 export declare const alt: <I, E, A>(
-  that: Lazy<Middleware<I, I, E, A>>
+  that: _function.Lazy<Middleware<I, I, E, A>>
 ) => (fa: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
 ```
 
@@ -194,7 +194,7 @@ Less strict version of [`alt`](#alt).
 
 ```ts
 export declare const altW: <I, E2, A>(
-  that: Lazy<Middleware<I, I, E2, A>>
+  that: _function.Lazy<Middleware<I, I, E2, A>>
 ) => <E1>(fa: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
 ```
 
@@ -553,7 +553,7 @@ Added in v0.7.0
 
 ```ts
 export declare const chainFirstTaskOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
 ```
 
@@ -567,7 +567,7 @@ Less strict version of [`chainFirstTaskOptionK`](#chainfirsttaskoptionk).
 
 ```ts
 export declare const chainFirstTaskOptionKW: <E2>(
-  onNone: Lazy<E2>
+  onNone: _function.Lazy<E2>
 ) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
 ```
 
@@ -607,7 +607,7 @@ Added in v0.7.0
 
 ```ts
 export declare const chainOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <A, B>(f: (a: A) => O.Option<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
 ```
 
@@ -621,7 +621,7 @@ Less strict version of [`chainOptionK`](#chainoptionk).
 
 ```ts
 export declare const chainOptionKW: <E2>(
-  onNone: Lazy<E2>
+  onNone: _function.Lazy<E2>
 ) => <A, B>(f: (a: A) => O.Option<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
 ```
 
@@ -671,7 +671,7 @@ Added in v0.7.0
 
 ```ts
 export declare const chainTaskOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
 ```
 
@@ -685,7 +685,7 @@ Less strict version of [`chainTaskOptionK`](#chaintaskoptionk).
 
 ```ts
 export declare const chainTaskOptionKW: <E2>(
-  onNone: Lazy<E2>
+  onNone: _function.Lazy<E2>
 ) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
 ```
 
@@ -779,7 +779,7 @@ Added in v0.7.0
 
 ```ts
 export declare const fromOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <A extends readonly unknown[], B>(f: (...a: A) => O.Option<B>) => <I>(...a: A) => Middleware<I, I, E, B>
 ```
 
@@ -1515,7 +1515,7 @@ Added in v0.7.0
 **Signature**
 
 ```ts
-export declare const fromOption: <E>(onNone: Lazy<E>) => <I, A>(ma: O.Option<A>) => Middleware<I, I, E, A>
+export declare const fromOption: <E>(onNone: _function.Lazy<E>) => <I, A>(ma: O.Option<A>) => Middleware<I, I, E, A>
 ```
 
 Added in v0.7.0
@@ -1548,7 +1548,7 @@ Added in v0.7.0
 
 ```ts
 export declare const fromTaskOption: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <I = StatusOpen, A = never>(fa: TO.TaskOption<A>) => Middleware<I, I, E, A>
 ```
 
