@@ -5,7 +5,7 @@ import * as M from '../src/Middleware'
 import { Either, right, left } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/function'
 
-// "Middleware function requestTime" example on http://expressjs.com/en/guide/writing-middleware.html
+// "Middleware function requestTime" example on https://expressjs.com/en/5x/guide/writing-middleware/#middleware-function-requesttime
 
 const app = express()
 
@@ -22,23 +22,23 @@ const parseRequestTime = pipe(
     (req: any) => right(req.requestTime),
     (err) => String(err)
   ),
-  M.chain((u) => M.fromEither(decodeNumber(u)))
+  M.flatMap((u) => M.fromEither(decodeNumber(u)))
 )
 
 const sendRequestTime = (requestTime: number): M.Middleware<H.StatusOpen, H.ResponseEnded, string, void> =>
   pipe(
     M.status(H.Status.OK),
-    M.ichain(() => M.closeHeaders()),
-    M.ichain(() => M.send(`Current time: ${requestTime}`))
+    M.iflatMap(() => M.closeHeaders()),
+    M.iflatMap(() => M.send(`Current time: ${requestTime}`))
   )
 
 const badRequest = (message: string) =>
   pipe(
     M.status(H.Status.BadRequest),
-    M.ichain(() => M.closeHeaders()),
-    M.ichain(() => M.send(message))
+    M.iflatMap(() => M.closeHeaders()),
+    M.iflatMap(() => M.send(message))
   )
 
-app.get('/', toRequestHandler(pipe(parseRequestTime, M.ichain(sendRequestTime), M.orElse(badRequest))))
+app.get('/', toRequestHandler(pipe(parseRequestTime, M.iflatMap(sendRequestTime), M.orElse(badRequest))))
 
 app.listen(3000)

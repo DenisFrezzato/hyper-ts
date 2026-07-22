@@ -6,7 +6,7 @@ import { pipe } from 'fp-ts/function'
 
 const hello = pipe(
   M.status(H.Status.OK),
-  M.ichain(() => M.json({ a: 1 }, () => 'error'))
+  M.iflatMap(() => M.json({ a: 1 }, () => 'error'))
 )
 
 express()

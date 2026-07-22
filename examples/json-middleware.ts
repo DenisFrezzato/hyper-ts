@@ -22,7 +22,7 @@ const Body = t.strict({
 
 const bodyDecoder = pipe(
   jsonMiddleware,
-  M.ichain(() =>
+  M.iflatMap(() =>
     M.decodeBody((u) =>
       pipe(
         Body.decode(u),
@@ -35,18 +35,18 @@ const bodyDecoder = pipe(
 function badRequest(message: string): M.Middleware<H.StatusOpen, H.ResponseEnded, never, void> {
   return pipe(
     M.status(H.Status.BadRequest),
-    M.ichain(() => M.closeHeaders()),
-    M.ichain(() => M.send(message))
+    M.iflatMap(() => M.closeHeaders()),
+    M.iflatMap(() => M.send(message))
   )
 }
 
 const hello = pipe(
   bodyDecoder,
-  M.ichain(({ name }) =>
+  M.iflatMap(({ name }) =>
     pipe(
       M.status<string>(H.Status.OK),
-      M.ichain(() => M.closeHeaders()),
-      M.ichain(() => M.send(`Hello ${name}!`))
+      M.iflatMap(() => M.closeHeaders()),
+      M.iflatMap(() => M.send(`Hello ${name}!`))
     )
   ),
   M.orElse(badRequest)

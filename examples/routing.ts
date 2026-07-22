@@ -44,8 +44,8 @@ const routingMiddleware = pipe(fromParser(router, 'not found'), M.iflattenW)
 const notFound = (message: string) =>
   pipe(
     M.status(H.Status.NotFound),
-    M.ichain(() => M.closeHeaders()),
-    M.ichain(() => M.send(message))
+    M.iflatMap(() => M.closeHeaders()),
+    M.iflatMap(() => M.send(message))
   )
 
 export const GET: M.Middleware<H.StatusOpen, H.StatusOpen, string, 'GET'> = M.decodeMethod((s) =>
@@ -54,17 +54,17 @@ export const GET: M.Middleware<H.StatusOpen, H.StatusOpen, string, 'GET'> = M.de
 
 const homeRoute = pipe(
   GET,
-  M.ichain(() => M.status(H.Status.OK)),
-  M.ichain(() => M.closeHeaders()),
-  M.ichain(() => M.send('Welcome!'))
+  M.iflatMap(() => M.status(H.Status.OK)),
+  M.iflatMap(() => M.closeHeaders()),
+  M.iflatMap(() => M.send('Welcome!'))
 )
 
 const userRoute = (user: String) =>
   pipe(
     GET,
-    M.ichain(() => M.status(H.Status.OK)),
-    M.ichain(() => M.closeHeaders()),
-    M.ichain(() => M.send(`Welcome ${user} user!`))
+    M.iflatMap(() => M.status(H.Status.OK)),
+    M.iflatMap(() => M.closeHeaders()),
+    M.iflatMap(() => M.send(`Welcome ${user} user!`))
   )
 
 const appMiddleware = pipe(routingMiddleware, M.orElse(notFound))
