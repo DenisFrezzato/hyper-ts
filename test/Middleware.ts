@@ -222,6 +222,71 @@ describe('Middleware', () => {
     )
   })
 
+  it('tap', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    // keeps the original value, discards the tapped one
+    await assertSuccess(
+      _.tap(_.right(4), (a) => _.right(a + 1)),
+      c,
+      4,
+      []
+    )
+    return assertFailure(
+      _.tap(_.right(4), () => _.left('err')),
+      c,
+      (l) => assert.strictEqual(l, 'err')
+    )
+  })
+
+  it('tapIO', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(
+      _.tapIO(_.right(4), (a) => () => a + 1),
+      c,
+      4,
+      []
+    )
+  })
+
+  it('tapTaskEither', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.tapTaskEither(_.right(4), (a) => TE.right(a + 1)),
+      c,
+      4,
+      []
+    )
+    return assertFailure(
+      _.tapTaskEither(_.right(4), () => TE.left('err')),
+      c,
+      (l) => assert.strictEqual(l, 'err')
+    )
+  })
+
+  it('tapTaskOption', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.tapTaskOption(
+        _.right(4),
+        (a) => TO.some(a + 1),
+        () => 'none'
+      ),
+      c,
+      4,
+      []
+    )
+    // onNone receives the value
+    return assertFailure(
+      _.tapTaskOption(
+        _.right(4),
+        () => TO.none,
+        (a) => `none-${a}`
+      ),
+      c,
+      (l) => assert.strictEqual(l, 'none-4')
+    )
+  })
+
   it('ichainFirst', async () => {
     const fa = _.right(4)
     const fb = _.right(true)

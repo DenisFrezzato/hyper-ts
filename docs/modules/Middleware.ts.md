@@ -149,6 +149,12 @@ Added in v0.7.0
   - [flatMapTaskEither](#flatmaptaskeither)
   - [flatMapTaskOption](#flatmaptaskoption)
   - [iflatMap](#iflatmap)
+  - [itap](#itap)
+  - [tap](#tap)
+  - [tapIO](#tapio)
+  - [tapTask](#taptask)
+  - [tapTaskEither](#taptaskeither)
+  - [tapTaskOption](#taptaskoption)
 - [utils](#utils)
   - [apS](#aps)
   - [apSW](#apsw)
@@ -1681,6 +1687,108 @@ export declare const iflatMap: {
     Z,
     E1 | E2,
     B
+  >
+}
+```
+
+Added in v0.8.0
+
+## itap
+
+Indexed version of [`tap`](#tap). Alias of `ichainFirstW`.
+
+**Signature**
+
+```ts
+export declare const itap: {
+  <A, O, Z, E2, B>(f: (a: A) => Middleware<O, Z, E2, B>): <I, E1>(
+    ma: Middleware<I, O, E1, A>
+  ) => Middleware<I, Z, E2 | E1, A>
+  <I, O, Z, E1, A, E2, B>(ma: Middleware<I, O, E1, A>, f: (a: A) => Middleware<O, Z, E2, B>): Middleware<
+    I,
+    Z,
+    E1 | E2,
+    A
+  >
+}
+```
+
+Added in v0.8.0
+
+## tap
+
+Alias of `chainFirstW`.
+
+**Signature**
+
+```ts
+export declare const tap: {
+  <I, A, E2, B>(f: (a: A) => Middleware<I, I, E2, B>): <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => Middleware<I, I, E2, B>): Middleware<I, I, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
+
+## tapIO
+
+Alias of `chainFirstIOK`.
+
+**Signature**
+
+```ts
+export declare const tapIO: {
+  <A, B>(f: (a: A) => IO<B>): <I, E>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
+  <I, E, A, B>(ma: Middleware<I, I, E, A>, f: (a: A) => IO<B>): Middleware<I, I, E, A>
+}
+```
+
+Added in v0.8.0
+
+## tapTask
+
+Alias of `chainFirstTaskK`.
+
+**Signature**
+
+```ts
+export declare const tapTask: {
+  <A, B>(f: (a: A) => T.Task<B>): <I, E>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
+  <I, E, A, B>(ma: Middleware<I, I, E, A>, f: (a: A) => T.Task<B>): Middleware<I, I, E, A>
+}
+```
+
+Added in v0.8.0
+
+## tapTaskEither
+
+Alias of `chainFirstTaskEitherKW`.
+
+**Signature**
+
+```ts
+export declare const tapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, A>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): Middleware<I, I, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
+
+## tapTaskOption
+
+**Signature**
+
+```ts
+export declare const tapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <I, E1>(
+    ma: Middleware<I, I, E1, A>
+  ) => Middleware<I, I, E2 | E1, A>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): Middleware<
+    I,
+    I,
+    E1 | E2,
+    A
   >
 }
 ```

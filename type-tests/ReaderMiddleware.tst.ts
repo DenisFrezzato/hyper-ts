@@ -381,6 +381,112 @@ describe('flatMapReaderTaskEither', () => {
   })
 })
 
+describe('tap', () => {
+  test('data-last, keeps the value and widens the environment and error type', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.tap(() => middlewareSame)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'one', number | Error, boolean>>()
+  })
+  test('data-first, keeps the value and widens the environment and error type', () => {
+    expect(_.tap(middleware1, () => middlewareSame)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'one', number | Error, boolean>
+    >()
+  })
+})
+
+describe('itap', () => {
+  test('data-last, transitions the state and keeps the value', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.itap(() => middleware2b)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'two', number | Error, boolean>>()
+  })
+  test('data-first, transitions the state and keeps the value', () => {
+    expect(_.itap(middleware1, () => middleware2b)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'two', number | Error, boolean>
+    >()
+  })
+})
+
+describe('tapIO', () => {
+  test('data-last, keeps the value and error type', () => {
+    expect(pipe(middleware1, _.tapIO(ioF))).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number, boolean>>()
+  })
+  test('data-first, keeps the value and error type', () => {
+    expect(_.tapIO(middleware1, ioF)).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number, boolean>>()
+  })
+})
+
+describe('tapTask', () => {
+  test('data-last, keeps the value and error type', () => {
+    expect(pipe(middleware1, _.tapTask(taskF))).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number, boolean>>()
+  })
+  test('data-first, keeps the value and error type', () => {
+    expect(_.tapTask(middleware1, taskF)).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number, boolean>>()
+  })
+})
+
+describe('tapTaskEither', () => {
+  test('data-last, keeps the value and widens the error type', () => {
+    expect(pipe(middleware1, _.tapTaskEither(teF))).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, boolean>
+    >()
+  })
+  test('data-first, keeps the value and widens the error type', () => {
+    expect(_.tapTaskEither(middleware1, teF)).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number | Error, boolean>>()
+  })
+})
+
+describe('tapTaskOption', () => {
+  test('data-last, keeps the value and widens the error type', () => {
+    expect(pipe(middleware1, _.tapTaskOption(toF, onNone))).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, boolean>
+    >()
+  })
+  test('data-first, keeps the value and widens the error type', () => {
+    expect(_.tapTaskOption(middleware1, toF, onNone)).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, boolean>
+    >()
+  })
+})
+
+describe('tapReaderTask', () => {
+  test('data-last, keeps the value and intersects the environments', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.tapReaderTask(() => readerTask2)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'one', number, boolean>>()
+  })
+  test('data-first, keeps the value and intersects the environments', () => {
+    expect(_.tapReaderTask(middleware1, () => readerTask2)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'one', number, boolean>
+    >()
+  })
+})
+
+describe('tapReaderTaskEither', () => {
+  test('data-last, keeps the value and widens the environment and error type', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.tapReaderTaskEither(() => readerTaskEither2)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'one', number | Error, boolean>>()
+  })
+  test('data-first, keeps the value and widens the environment and error type', () => {
+    expect(_.tapReaderTaskEither(middleware1, () => readerTaskEither2)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'one', number | Error, boolean>
+    >()
+  })
+})
+
 describe('ichainFirst', () => {
   test('preserves the environment and error type', () => {
     expect(

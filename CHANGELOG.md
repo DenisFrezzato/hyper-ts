@@ -18,9 +18,13 @@ high state of flux, you're at risk of it changing without notice.
   - `Middleware`
     - Add `flatMap`, `iflatMap` (dual, alias of `chainW`/`ichainW`) (@DenisFrezzato)
     - Add `flatMapEither`, `flatMapOption`, `flatMapIO`, `flatMapTask`, `flatMapTaskEither`, `flatMapTaskOption` (dual) (@DenisFrezzato)
+    - Add `tap`, `itap` (dual, alias of `chainFirstW`/`ichainFirstW`) (@DenisFrezzato)
+    - Add `tapIO`, `tapTask`, `tapTaskEither`, `tapTaskOption` (dual) (@DenisFrezzato)
   - `ReaderMiddleware`
     - Add `flatMap`, `iflatMap` (dual, alias of `chainW`/`ichainW`) (@DenisFrezzato)
     - Add `flatMapMiddleware`, `flatMapEither`, `flatMapOption`, `flatMapIO`, `flatMapTask`, `flatMapTaskEither`, `flatMapTaskOption`, `flatMapReader`, `flatMapReaderTask`, `flatMapReaderTaskEither` (dual) (@DenisFrezzato)
+    - Add `tap`, `itap` (dual, alias of `chainFirstW`/`ichainFirstW`) (@DenisFrezzato)
+    - Add `tapIO`, `tapTask`, `tapTaskEither`, `tapTaskOption`, `tapReaderTask`, `tapReaderTaskEither` (dual) (@DenisFrezzato)
 - **Breaking Change**
   - Require `express` `^5` as a peer dependency (@DenisFrezzato)
 - **Internal**

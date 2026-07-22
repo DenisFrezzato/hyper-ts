@@ -346,6 +346,67 @@ describe('ReaderMiddleware', () => {
     )
   })
 
+  it('tap', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    // keeps the original value, discards the tapped one
+    await assertSuccess(
+      _.tap(_.right(4), (a) => _.right(a + 1)),
+      undefined,
+      c,
+      4,
+      []
+    )
+    return assertFailure(
+      _.tap(_.right(4), () => _.left('err')),
+      undefined,
+      c,
+      'err'
+    )
+  })
+
+  it('tapReaderTask', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(
+      _.tapReaderTask(_.right(4), () => (r: { x: number }) => () => Promise.resolve(r.x)),
+      { x: 10 },
+      c,
+      4,
+      []
+    )
+  })
+
+  it('tapReaderTaskEither', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.tapReaderTaskEither(_.right(4), (a) => RTE.right(a + 1)),
+      undefined,
+      c,
+      4,
+      []
+    )
+    return assertFailure(
+      _.tapReaderTaskEither(_.right(4), () => RTE.left('err')),
+      undefined,
+      c,
+      'err'
+    )
+  })
+
+  it('tapTaskOption', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    // onNone receives the value
+    return assertFailure(
+      _.tapTaskOption(
+        _.right(4),
+        () => TO.none,
+        (a) => `none-${a}`
+      ),
+      undefined,
+      c,
+      'none-4'
+    )
+  })
+
   it('ichainFirst', async () => {
     const fa = _.right(4)
     const fb = _.right(true)

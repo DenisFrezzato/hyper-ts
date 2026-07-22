@@ -1325,6 +1325,96 @@ export const flatMapTaskOption: {
       )) as any
 
 /**
+ * Alias of `chainFirstW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tap: {
+  <I, A, E2, B>(f: (a: A) => Middleware<I, I, E2, B>): <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => Middleware<I, I, E2, B>): Middleware<I, I, E1 | E2, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainFirstW(args[0] as any) : chainFirstW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Indexed version of [`tap`](#tap). Alias of `ichainFirstW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const itap: {
+  <A, O, Z, E2, B>(f: (a: A) => Middleware<O, Z, E2, B>): <I, E1>(
+    ma: Middleware<I, O, E1, A>
+  ) => Middleware<I, Z, E1 | E2, A>
+  <I, O, Z, E1, A, E2, B>(ma: Middleware<I, O, E1, A>, f: (a: A) => Middleware<O, Z, E2, B>): Middleware<
+    I,
+    Z,
+    E1 | E2,
+    A
+  >
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? ichainFirstW(args[0] as any) : ichainFirstW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainFirstIOK`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapIO: {
+  <A, B>(f: (a: A) => IO<B>): <I, E>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
+  <I, E, A, B>(ma: Middleware<I, I, E, A>, f: (a: A) => IO<B>): Middleware<I, I, E, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainFirstIOK(args[0] as any) : chainFirstIOK(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainFirstTaskK`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapTask: {
+  <A, B>(f: (a: A) => T.Task<B>): <I, E>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A>
+  <I, E, A, B>(ma: Middleware<I, I, E, A>, f: (a: A) => T.Task<B>): Middleware<I, I, E, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainFirstTaskK(args[0] as any) : chainFirstTaskK(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainFirstTaskEitherKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, A>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): Middleware<I, I, E1 | E2, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1
+    ? chainFirstTaskEitherKW(args[0] as any)
+    : chainFirstTaskEitherKW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <I, E1>(
+    ma: Middleware<I, I, E1, A>
+  ) => Middleware<I, I, E1 | E2, A>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): Middleware<
+    I,
+    I,
+    E1 | E2,
+    A
+  >
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 2
+    ? (ma: Middleware<any, any, any, any>) => (tapTaskOption as any)(ma, args[0], args[1])
+    : tapTaskEither(args[0] as any, (a: any) =>
+        TE.fromTaskOption(() => (args[2] as any)(a))((args[1] as any)(a))
+      )) as any
+
+/**
  * Phantom type can't be infered properly, use [`bindTo`](#bindto) instead.
  *
  * @since 0.7.0

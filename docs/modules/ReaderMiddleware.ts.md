@@ -184,6 +184,14 @@ Added in v0.6.3
   - [flatMapTaskEither](#flatmaptaskeither)
   - [flatMapTaskOption](#flatmaptaskoption)
   - [iflatMap](#iflatmap)
+  - [itap](#itap)
+  - [tap](#tap)
+  - [tapIO](#tapio)
+  - [tapReaderTask](#tapreadertask)
+  - [tapReaderTaskEither](#tapreadertaskeither)
+  - [tapTask](#taptask)
+  - [tapTaskEither](#taptaskeither)
+  - [tapTaskOption](#taptaskoption)
 - [utils](#utils)
   - [apS](#aps)
   - [apSW](#apsw)
@@ -2277,6 +2285,161 @@ export declare const iflatMap: {
     ma: ReaderMiddleware<R1, I, O, E1, A>,
     f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
   ): ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## itap
+
+Indexed version of [`tap`](#tap). Alias of `ichainFirstW`.
+
+**Signature**
+
+```ts
+export declare const itap: {
+  <R2, A, O, Z, E2, B>(f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, Z, E2 | E1, A>
+  <R1, I, O, Z, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
+
+## tap
+
+Alias of `chainFirstW`.
+
+**Signature**
+
+```ts
+export declare const tap: {
+  <R2, I, A, E2, B>(f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>): <R1, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
+
+## tapIO
+
+Alias of `chainFirstIOK`.
+
+**Signature**
+
+```ts
+export declare const tapIO: {
+  <A, B>(f: (a: A) => IO<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => IO<B>): ReaderMiddleware<R, I, I, E, A>
+}
+```
+
+Added in v0.8.0
+
+## tapReaderTask
+
+Alias of `chainFirstReaderTaskKW`.
+
+**Signature**
+
+```ts
+export declare const tapReaderTask: {
+  <A, R2, B>(f: (a: A) => ReaderTask<R2, B>): <R1, I, E>(
+    ma: ReaderMiddleware<R1, I, I, E, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E, A>
+  <R1, I, E, A, R2, B>(ma: ReaderMiddleware<R1, I, I, E, A>, f: (a: A) => ReaderTask<R2, B>): ReaderMiddleware<
+    R1 & R2,
+    I,
+    I,
+    E,
+    A
+  >
+}
+```
+
+Added in v0.8.0
+
+## tapReaderTaskEither
+
+Alias of `chainFirstReaderTaskEitherKW`.
+
+**Signature**
+
+```ts
+export declare const tapReaderTaskEither: {
+  <A, R2, E2, B>(f: (a: A) => ReaderTaskEither<R2, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderTaskEither<R2, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
+
+## tapTask
+
+Alias of `chainFirstTaskK`.
+
+**Signature**
+
+```ts
+export declare const tapTask: {
+  <A, B>(f: (a: A) => Task<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => Task<B>): ReaderMiddleware<R, I, I, E, A>
+}
+```
+
+Added in v0.8.0
+
+## tapTaskEither
+
+Alias of `chainFirstTaskEitherKW`.
+
+**Signature**
+
+```ts
+export declare const tapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, A>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    A
+  >
+}
+```
+
+Added in v0.8.0
+
+## tapTaskOption
+
+**Signature**
+
+```ts
+export declare const tapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, A>
+  <R, I, E1, A, E2, B>(
+    ma: ReaderMiddleware<R, I, I, E1, A>,
+    f: (a: A) => TO.TaskOption<B>,
+    onNone: (a: A) => E2
+  ): ReaderMiddleware<R, I, I, E1 | E2, A>
 }
 ```
 
