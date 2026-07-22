@@ -262,6 +262,20 @@ export const chainW: <I, E2, A, B>(
 ) => <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B> = chain as any
 
 /**
+ * Alias of `chainW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMap: {
+  <I, A, E2, B>(f: (a: A) => Middleware<I, I, E2, B>): <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => Middleware<I, I, E2, B>): Middleware<I, I, E1 | E2, B>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1
+    ? (ma: Middleware<any, any, any, any>) => _chain(ma, args[0] as any)
+    : _chain(args[0] as any, args[1] as any)) as any
+
+/**
  * Less strict version of [`flatten`](#flatten).
  *
  * @category combinators
@@ -304,6 +318,25 @@ export function ichainW<A, O, Z, E, B>(
 export const ichain: <A, O, Z, E, B>(
   f: (a: A) => Middleware<O, Z, E, B>
 ) => <I>(ma: Middleware<I, O, E, A>) => Middleware<I, Z, E, B> = ichainW
+
+/**
+ * Indexed version of [`flatMap`](#flatmap). Alias of `ichainW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const iflatMap: {
+  <A, O, Z, E2, B>(f: (a: A) => Middleware<O, Z, E2, B>): <I, E1>(
+    ma: Middleware<I, O, E1, A>
+  ) => Middleware<I, Z, E1 | E2, B>
+  <I, O, Z, E1, A, E2, B>(ma: Middleware<I, O, E1, A>, f: (a: A) => Middleware<O, Z, E2, B>): Middleware<
+    I,
+    Z,
+    E1 | E2,
+    B
+  >
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? ichainW(args[0] as any) : ichainW(args[1] as any)(args[0] as any)) as any
 
 /**
  * Less strict version of [`ichainFirst`](#ichainfirst).
@@ -1197,6 +1230,99 @@ export const chainFirstTaskOptionK: <E>(
   onNone: Lazy<E>
 ) => <A, B>(f: (a: A) => TO.TaskOption<B>) => <I>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, A> =
   chainFirstTaskOptionKW
+
+/**
+ * Alias of `chainEitherKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapEither: {
+  <A, E2, B>(f: (a: A) => E.Either<E2, B>): <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => E.Either<E2, B>): Middleware<I, I, E1 | E2, B>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainEitherKW(args[0] as any) : chainEitherKW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapOption: {
+  <A, E2, B>(f: (a: A) => O.Option<B>, onNone: (a: A) => E2): <I, E1>(
+    ma: Middleware<I, I, E1, A>
+  ) => Middleware<I, I, E1 | E2, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => O.Option<B>, onNone: (a: A) => E2): Middleware<
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 2
+    ? (ma: Middleware<any, any, any, any>) => (flatMapOption as any)(ma, args[0], args[1])
+    : flatMapEither(args[0] as any, (a: any) =>
+        pipe(
+          (args[1] as any)(a),
+          E.fromOption(() => (args[2] as any)(a))
+        )
+      )) as any
+
+/**
+ * Alias of `chainIOK`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapIO: {
+  <A, B>(f: (a: A) => IO<B>): <I, E>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
+  <I, E, A, B>(ma: Middleware<I, I, E, A>, f: (a: A) => IO<B>): Middleware<I, I, E, B>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainIOK(args[0] as any) : chainIOK(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainTaskK`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapTask: {
+  <A, B>(f: (a: A) => T.Task<B>): <I, E>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
+  <I, E, A, B>(ma: Middleware<I, I, E, A>, f: (a: A) => T.Task<B>): Middleware<I, I, E, B>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainTaskK(args[0] as any) : chainTaskK(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainTaskEitherKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E1 | E2, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): Middleware<I, I, E1 | E2, B>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainTaskEitherKW(args[0] as any) : chainTaskEitherKW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <I, E1>(
+    ma: Middleware<I, I, E1, A>
+  ) => Middleware<I, I, E1 | E2, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): Middleware<
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 2
+    ? (ma: Middleware<any, any, any, any>) => (flatMapTaskOption as any)(ma, args[0], args[1])
+    : flatMapTaskEither(args[0] as any, (a: any) =>
+        TE.fromTaskOption(() => (args[2] as any)(a))((args[1] as any)(a))
+      )) as any
 
 /**
  * Phantom type can't be infered properly, use [`bindTo`](#bindto) instead.

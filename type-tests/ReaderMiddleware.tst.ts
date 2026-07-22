@@ -1,10 +1,13 @@
 import * as E from 'fp-ts/Either'
+import { IO } from 'fp-ts/IO'
 import * as O from 'fp-ts/Option'
 import { Reader } from 'fp-ts/Reader'
 import { ReaderEither } from 'fp-ts/ReaderEither'
 import { ReaderIO } from 'fp-ts/ReaderIO'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { ReaderTaskEither } from 'fp-ts/ReaderTaskEither'
+import { Task } from 'fp-ts/Task'
+import * as TE from 'fp-ts/TaskEither'
 import * as TO from 'fp-ts/TaskOption'
 import { pipe } from 'fp-ts/function'
 import { describe, expect, test } from 'tstyche'
@@ -24,6 +27,7 @@ declare const middleware1: _.ReaderMiddleware<R1, 'one', 'one', number, boolean>
 declare const middleware2a: _.ReaderMiddleware<R1, 'one', 'two', number, string>
 declare const middleware2b: _.ReaderMiddleware<R2, 'one', 'two', Error, string>
 declare const middleware3: _.ReaderMiddleware<R1, 'two', 'three', number, string>
+declare const middlewareSame: _.ReaderMiddleware<R2, 'one', 'one', Error, string>
 declare const middleware4a: M.Middleware<'one', 'one', number, boolean>
 declare const middleware4b: M.Middleware<'one', 'one', Error, string>
 declare const middleware5: M.Middleware<'one', 'two', number, string>
@@ -40,6 +44,14 @@ declare const readerTask2: ReaderTask<R2, string>
 
 declare const readerTaskEither1: ReaderTaskEither<R1, number, string>
 declare const readerTaskEither2: ReaderTaskEither<R2, Error, string>
+
+declare const eF: (a: boolean) => E.Either<Error, string>
+declare const oF: (a: boolean) => O.Option<string>
+declare const ioF: (a: boolean) => IO<string>
+declare const taskF: (a: boolean) => Task<string>
+declare const teF: (a: boolean) => TE.TaskEither<Error, string>
+declare const toF: (a: boolean) => TO.TaskOption<string>
+declare const onNone: (a: boolean) => Error
 
 declare const decoderU: (value: unknown) => E.Either<number, boolean>
 declare const decoderS: (value: string) => E.Either<number, boolean>
@@ -201,6 +213,170 @@ describe('decodeHeader', () => {
   test('explicit type arguments', () => {
     expect(_.decodeHeader<R1, 'one', number, boolean>('foo', decoderU)).type.toBe<
       _.ReaderMiddleware<R1, 'one', 'one', number, boolean>
+    >()
+  })
+})
+
+describe('flatMap', () => {
+  test('data-last, widens the environment and error type', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.flatMap(() => middlewareSame)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'one', number | Error, string>>()
+  })
+  test('data-first, widens the environment and error type', () => {
+    expect(_.flatMap(middleware1, () => middlewareSame)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'one', number | Error, string>
+    >()
+  })
+})
+
+describe('iflatMap', () => {
+  test('data-last, transitions the state and widens the environment and error type', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.iflatMap(() => middleware2b)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'two', number | Error, string>>()
+  })
+  test('data-first, transitions the state and widens the environment and error type', () => {
+    expect(_.iflatMap(middleware1, () => middleware2b)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'two', number | Error, string>
+    >()
+  })
+})
+
+describe('flatMapMiddleware', () => {
+  test('data-last, widens the error type', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.flatMapMiddleware(() => middleware4b)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number | Error, string>>()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapMiddleware(middleware1, () => middleware4b)).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, string>
+    >()
+  })
+})
+
+describe('flatMapEither', () => {
+  test('data-last, widens the error type', () => {
+    expect(pipe(middleware1, _.flatMapEither(eF))).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, string>
+    >()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapEither(middleware1, eF)).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number | Error, string>>()
+  })
+})
+
+describe('flatMapOption', () => {
+  test('data-last, widens the error type', () => {
+    expect(pipe(middleware1, _.flatMapOption(oF, onNone))).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, string>
+    >()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapOption(middleware1, oF, onNone)).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, string>
+    >()
+  })
+})
+
+describe('flatMapIO', () => {
+  test('data-last, preserves the error type', () => {
+    expect(pipe(middleware1, _.flatMapIO(ioF))).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number, string>>()
+  })
+  test('data-first, preserves the error type', () => {
+    expect(_.flatMapIO(middleware1, ioF)).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number, string>>()
+  })
+})
+
+describe('flatMapTask', () => {
+  test('data-last, preserves the error type', () => {
+    expect(pipe(middleware1, _.flatMapTask(taskF))).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number, string>>()
+  })
+  test('data-first, preserves the error type', () => {
+    expect(_.flatMapTask(middleware1, taskF)).type.toBe<_.ReaderMiddleware<R1, 'one', 'one', number, string>>()
+  })
+})
+
+describe('flatMapTaskEither', () => {
+  test('data-last, widens the error type', () => {
+    expect(pipe(middleware1, _.flatMapTaskEither(teF))).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, string>
+    >()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapTaskEither(middleware1, teF)).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, string>
+    >()
+  })
+})
+
+describe('flatMapTaskOption', () => {
+  test('data-last, widens the error type', () => {
+    expect(pipe(middleware1, _.flatMapTaskOption(toF, onNone))).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, string>
+    >()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapTaskOption(middleware1, toF, onNone)).type.toBe<
+      _.ReaderMiddleware<R1, 'one', 'one', number | Error, string>
+    >()
+  })
+})
+
+describe('flatMapReader', () => {
+  test('data-last, intersects the environments', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.flatMapReader(() => reader2)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'one', number, string>>()
+  })
+  test('data-first, intersects the environments', () => {
+    expect(_.flatMapReader(middleware1, () => reader2)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'one', number, string>
+    >()
+  })
+})
+
+describe('flatMapReaderTask', () => {
+  test('data-last, intersects the environments', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.flatMapReaderTask(() => readerTask2)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'one', number, string>>()
+  })
+  test('data-first, intersects the environments', () => {
+    expect(_.flatMapReaderTask(middleware1, () => readerTask2)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'one', number, string>
+    >()
+  })
+})
+
+describe('flatMapReaderTaskEither', () => {
+  test('data-last, intersects the environments and widens the error type', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.flatMapReaderTaskEither(() => readerTaskEither2)
+      )
+    ).type.toBe<_.ReaderMiddleware<R1 & R2, 'one', 'one', number | Error, string>>()
+  })
+  test('data-first, intersects the environments and widens the error type', () => {
+    expect(_.flatMapReaderTaskEither(middleware1, () => readerTaskEither2)).type.toBe<
+      _.ReaderMiddleware<R1 & R2, 'one', 'one', number | Error, string>
     >()
   })
 })

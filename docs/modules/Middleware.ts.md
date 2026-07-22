@@ -140,6 +140,15 @@ Added in v0.7.0
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
   - [fromTaskOption](#fromtaskoption)
+- [sequencing](#sequencing)
+  - [flatMap](#flatmap)
+  - [flatMapEither](#flatmapeither)
+  - [flatMapIO](#flatmapio)
+  - [flatMapOption](#flatmapoption)
+  - [flatMapTask](#flatmaptask)
+  - [flatMapTaskEither](#flatmaptaskeither)
+  - [flatMapTaskOption](#flatmaptaskoption)
+  - [iflatMap](#iflatmap)
 - [utils](#utils)
   - [apS](#aps)
   - [apSW](#apsw)
@@ -1538,6 +1547,145 @@ export declare const fromTaskOption: <E>(
 ```
 
 Added in v0.7.9
+
+# sequencing
+
+## flatMap
+
+Alias of `chainW`.
+
+**Signature**
+
+```ts
+export declare const flatMap: {
+  <I, A, E2, B>(f: (a: A) => Middleware<I, I, E2, B>): <E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => Middleware<I, I, E2, B>): Middleware<I, I, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapEither
+
+Alias of `chainEitherKW`.
+
+**Signature**
+
+```ts
+export declare const flatMapEither: {
+  <A, E2, B>(f: (a: A) => E.Either<E2, B>): <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => E.Either<E2, B>): Middleware<I, I, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapIO
+
+Alias of `chainIOK`.
+
+**Signature**
+
+```ts
+export declare const flatMapIO: {
+  <A, B>(f: (a: A) => IO<B>): <I, E>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
+  <I, E, A, B>(ma: Middleware<I, I, E, A>, f: (a: A) => IO<B>): Middleware<I, I, E, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapOption
+
+**Signature**
+
+```ts
+export declare const flatMapOption: {
+  <A, E2, B>(f: (a: A) => O.Option<B>, onNone: (a: A) => E2): <I, E1>(
+    ma: Middleware<I, I, E1, A>
+  ) => Middleware<I, I, E2 | E1, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => O.Option<B>, onNone: (a: A) => E2): Middleware<
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+}
+```
+
+Added in v0.8.0
+
+## flatMapTask
+
+Alias of `chainTaskK`.
+
+**Signature**
+
+```ts
+export declare const flatMapTask: {
+  <A, B>(f: (a: A) => T.Task<B>): <I, E>(ma: Middleware<I, I, E, A>) => Middleware<I, I, E, B>
+  <I, E, A, B>(ma: Middleware<I, I, E, A>, f: (a: A) => T.Task<B>): Middleware<I, I, E, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapTaskEither
+
+Alias of `chainTaskEitherKW`.
+
+**Signature**
+
+```ts
+export declare const flatMapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <I, E1>(ma: Middleware<I, I, E1, A>) => Middleware<I, I, E2 | E1, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): Middleware<I, I, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapTaskOption
+
+**Signature**
+
+```ts
+export declare const flatMapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <I, E1>(
+    ma: Middleware<I, I, E1, A>
+  ) => Middleware<I, I, E2 | E1, B>
+  <I, E1, A, E2, B>(ma: Middleware<I, I, E1, A>, f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): Middleware<
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+}
+```
+
+Added in v0.8.0
+
+## iflatMap
+
+Indexed version of [`flatMap`](#flatmap). Alias of `ichainW`.
+
+**Signature**
+
+```ts
+export declare const iflatMap: {
+  <A, O, Z, E2, B>(f: (a: A) => Middleware<O, Z, E2, B>): <I, E1>(
+    ma: Middleware<I, O, E1, A>
+  ) => Middleware<I, Z, E2 | E1, B>
+  <I, O, Z, E1, A, E2, B>(ma: Middleware<I, O, E1, A>, f: (a: A) => Middleware<O, Z, E2, B>): Middleware<
+    I,
+    Z,
+    E1 | E2,
+    B
+  >
+}
+```
+
+Added in v0.8.0
 
 # utils
 

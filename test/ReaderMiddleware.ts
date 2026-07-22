@@ -226,6 +226,126 @@ describe('ReaderMiddleware', () => {
     return assertSuccess(m, 4, c, true, [])
   })
 
+  it('flatMap (data-last)', async () => {
+    const fa = _.right(4)
+    const m = pipe(
+      fa,
+      _.flatMap((a) => _.right(a + 1))
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, undefined, c, 5, [])
+  })
+
+  it('flatMap (data-first)', async () => {
+    const fa = _.right(4)
+    const m = _.flatMap(fa, (a) => _.right(a + 1))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, undefined, c, 5, [])
+  })
+
+  it('iflatMap (data-last)', async () => {
+    const fa = _.right(4)
+    const m = pipe(
+      fa,
+      _.iflatMap((a) => _.right(a + 1))
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, undefined, c, 5, [])
+  })
+
+  it('iflatMap (data-first)', async () => {
+    const fa = _.right(4)
+    const m = _.iflatMap(fa, (a) => _.right(a + 1))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, undefined, c, 5, [])
+  })
+
+  it('flatMapMiddleware', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(
+      _.flatMapMiddleware(_.right(4), (a) => M.right(a + 1)),
+      undefined,
+      c,
+      5,
+      []
+    )
+  })
+
+  it('flatMapEither', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.flatMapEither(_.right(4), (a) => E.right(a + 1)),
+      undefined,
+      c,
+      5,
+      []
+    )
+    return assertFailure(
+      _.flatMapEither(_.right(4), () => E.left('err')),
+      undefined,
+      c,
+      'err'
+    )
+  })
+
+  it('flatMapOption', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    // onNone receives the value
+    return assertFailure(
+      _.flatMapOption(
+        _.right(4),
+        () => O.none,
+        (a) => `none-${a}`
+      ),
+      undefined,
+      c,
+      'none-4'
+    )
+  })
+
+  it('flatMapReader', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(
+      _.flatMapReader(_.right(4), (a) => (r: { x: number }) => a + r.x),
+      { x: 10 },
+      c,
+      14,
+      []
+    )
+  })
+
+  it('flatMapReaderTaskEither', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.flatMapReaderTaskEither(_.right(4), (a) => RTE.right(a + 1)),
+      undefined,
+      c,
+      5,
+      []
+    )
+    return assertFailure(
+      _.flatMapReaderTaskEither(_.right(4), () => RTE.left('err')),
+      undefined,
+      c,
+      'err'
+    )
+  })
+
+  it('flatMapTaskOption', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    // onNone receives the value
+    return assertFailure(
+      _.flatMapTaskOption(
+        _.right(4),
+        () => TO.none,
+        (a) => `none-${a}`
+      ),
+      undefined,
+      c,
+      'none-4'
+    )
+  })
+
   it('ichainFirst', async () => {
     const fa = _.right(4)
     const fb = _.right(true)

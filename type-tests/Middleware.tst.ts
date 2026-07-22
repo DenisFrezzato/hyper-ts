@@ -1,5 +1,8 @@
 import * as E from 'fp-ts/Either'
+import { IO } from 'fp-ts/IO'
 import * as O from 'fp-ts/Option'
+import { Task } from 'fp-ts/Task'
+import * as TE from 'fp-ts/TaskEither'
 import * as TO from 'fp-ts/TaskOption'
 import { pipe } from 'fp-ts/function'
 import { describe, expect, test } from 'tstyche'
@@ -10,6 +13,14 @@ declare const middleware1: _.Middleware<'one', 'one', number, boolean>
 declare const middleware2a: _.Middleware<'one', 'two', number, string>
 declare const middleware2b: _.Middleware<'one', 'two', Error, string>
 declare const middleware3: _.Middleware<'two', 'three', number, string>
+declare const middlewareSame: _.Middleware<'one', 'one', Error, string>
+declare const eF: (a: boolean) => E.Either<Error, string>
+declare const oF: (a: boolean) => O.Option<string>
+declare const ioF: (a: boolean) => IO<string>
+declare const taskF: (a: boolean) => Task<string>
+declare const teF: (a: boolean) => TE.TaskEither<Error, string>
+declare const toF: (a: boolean) => TO.TaskOption<string>
+declare const onNone: (a: boolean) => Error
 declare const decoderU: (value: unknown) => E.Either<number, boolean>
 declare const decoderS: (value: string) => E.Either<number, boolean>
 
@@ -67,6 +78,94 @@ describe('decodeHeader', () => {
   test('explicit type arguments', () => {
     expect(_.decodeHeader<'one', number, boolean>('foo', decoderU)).type.toBe<
       _.Middleware<'one', 'one', number, boolean>
+    >()
+  })
+})
+
+describe('flatMap', () => {
+  test('data-last, widens the error type', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.flatMap(() => middlewareSame)
+      )
+    ).type.toBe<_.Middleware<'one', 'one', number | Error, string>>()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMap(middleware1, () => middlewareSame)).type.toBe<_.Middleware<'one', 'one', number | Error, string>>()
+  })
+})
+
+describe('iflatMap', () => {
+  test('data-last, transitions the state and widens the error type', () => {
+    expect(
+      pipe(
+        middleware1,
+        _.iflatMap(() => middleware2b)
+      )
+    ).type.toBe<_.Middleware<'one', 'two', number | Error, string>>()
+  })
+  test('data-first, transitions the state and widens the error type', () => {
+    expect(_.iflatMap(middleware1, () => middleware2b)).type.toBe<_.Middleware<'one', 'two', number | Error, string>>()
+  })
+})
+
+describe('flatMapEither', () => {
+  test('data-last, widens the error type', () => {
+    expect(pipe(middleware1, _.flatMapEither(eF))).type.toBe<_.Middleware<'one', 'one', number | Error, string>>()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapEither(middleware1, eF)).type.toBe<_.Middleware<'one', 'one', number | Error, string>>()
+  })
+})
+
+describe('flatMapOption', () => {
+  test('data-last, widens the error type', () => {
+    expect(pipe(middleware1, _.flatMapOption(oF, onNone))).type.toBe<
+      _.Middleware<'one', 'one', number | Error, string>
+    >()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapOption(middleware1, oF, onNone)).type.toBe<_.Middleware<'one', 'one', number | Error, string>>()
+  })
+})
+
+describe('flatMapIO', () => {
+  test('data-last, preserves the error type', () => {
+    expect(pipe(middleware1, _.flatMapIO(ioF))).type.toBe<_.Middleware<'one', 'one', number, string>>()
+  })
+  test('data-first, preserves the error type', () => {
+    expect(_.flatMapIO(middleware1, ioF)).type.toBe<_.Middleware<'one', 'one', number, string>>()
+  })
+})
+
+describe('flatMapTask', () => {
+  test('data-last, preserves the error type', () => {
+    expect(pipe(middleware1, _.flatMapTask(taskF))).type.toBe<_.Middleware<'one', 'one', number, string>>()
+  })
+  test('data-first, preserves the error type', () => {
+    expect(_.flatMapTask(middleware1, taskF)).type.toBe<_.Middleware<'one', 'one', number, string>>()
+  })
+})
+
+describe('flatMapTaskEither', () => {
+  test('data-last, widens the error type', () => {
+    expect(pipe(middleware1, _.flatMapTaskEither(teF))).type.toBe<_.Middleware<'one', 'one', number | Error, string>>()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapTaskEither(middleware1, teF)).type.toBe<_.Middleware<'one', 'one', number | Error, string>>()
+  })
+})
+
+describe('flatMapTaskOption', () => {
+  test('data-last, widens the error type', () => {
+    expect(pipe(middleware1, _.flatMapTaskOption(toF, onNone))).type.toBe<
+      _.Middleware<'one', 'one', number | Error, string>
+    >()
+  })
+  test('data-first, widens the error type', () => {
+    expect(_.flatMapTaskOption(middleware1, toF, onNone)).type.toBe<
+      _.Middleware<'one', 'one', number | Error, string>
     >()
   })
 })
