@@ -171,6 +171,27 @@ Added in v0.6.3
   - [fromTask](#fromtask)
   - [fromTaskEither](#fromtaskeither)
   - [fromTaskOption](#fromtaskoption)
+- [sequencing](#sequencing)
+  - [flatMap](#flatmap)
+  - [flatMapEither](#flatmapeither)
+  - [flatMapIO](#flatmapio)
+  - [flatMapMiddleware](#flatmapmiddleware)
+  - [flatMapOption](#flatmapoption)
+  - [flatMapReader](#flatmapreader)
+  - [flatMapReaderTask](#flatmapreadertask)
+  - [flatMapReaderTaskEither](#flatmapreadertaskeither)
+  - [flatMapTask](#flatmaptask)
+  - [flatMapTaskEither](#flatmaptaskeither)
+  - [flatMapTaskOption](#flatmaptaskoption)
+  - [iflatMap](#iflatmap)
+  - [itap](#itap)
+  - [tap](#tap)
+  - [tapIO](#tapio)
+  - [tapReaderTask](#tapreadertask)
+  - [tapReaderTaskEither](#tapreadertaskeither)
+  - [tapTask](#taptask)
+  - [tapTaskEither](#taptaskeither)
+  - [tapTaskOption](#taptaskoption)
 - [utils](#utils)
   - [apS](#aps)
   - [apSW](#apsw)
@@ -194,7 +215,7 @@ Added in v0.6.3
 
 ```ts
 export declare const alt: <R, I, E, A>(
-  that: Lazy<ReaderMiddleware<R, I, I, E, A>>
+  that: _function.Lazy<ReaderMiddleware<R, I, I, E, A>>
 ) => (fa: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
 ```
 
@@ -208,7 +229,7 @@ Less strict version of [`alt`](#alt).
 
 ```ts
 export declare const altW: <R2, I, E2, A>(
-  that: Lazy<ReaderMiddleware<R2, I, I, E2, A>>
+  that: _function.Lazy<ReaderMiddleware<R2, I, I, E2, A>>
 ) => <R1, E1>(fa: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
 ```
 
@@ -683,7 +704,7 @@ Added in v0.7.0
 
 ```ts
 export declare const chainFirstTaskOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <A, B>(
   f: (a: A) => TO.TaskOption<B>
 ) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
@@ -699,7 +720,7 @@ Less strict version of [`chainFirstTaskOptionK`](#chainfirsttaskoptionk).
 
 ```ts
 export declare const chainFirstTaskOptionKW: <E2>(
-  onNone: Lazy<E2>
+  onNone: _function.Lazy<E2>
 ) => <A, B>(
   f: (a: A) => TO.TaskOption<B>
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, A>
@@ -767,7 +788,7 @@ Added in v0.7.9
 
 ```ts
 export declare const chainOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <A, B>(f: (a: A) => O.Option<B>) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
 ```
 
@@ -781,7 +802,7 @@ Less strict version of [`chainOptionK`](#chainoptionk).
 
 ```ts
 export declare const chainOptionKW: <E2>(
-  onNone: Lazy<E2>
+  onNone: _function.Lazy<E2>
 ) => <A, B>(
   f: (a: A) => O.Option<B>
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
@@ -907,7 +928,7 @@ Added in v0.7.0
 
 ```ts
 export declare const chainTaskOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <A, B>(
   f: (a: A) => TO.TaskOption<B>
 ) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
@@ -923,7 +944,7 @@ Less strict version of [`chainTaskOptionK`](#chaintaskoptionk).
 
 ```ts
 export declare const chainTaskOptionKW: <E2>(
-  onNone: Lazy<E2>
+  onNone: _function.Lazy<E2>
 ) => <A, B>(
   f: (a: A) => TO.TaskOption<B>
 ) => <R, I, E1>(ma: ReaderMiddleware<R, I, I, E1, A>) => ReaderMiddleware<R, I, I, E2 | E1, B>
@@ -1035,7 +1056,7 @@ Added in v0.7.9
 
 ```ts
 export declare const fromOptionK: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <A extends readonly unknown[], B>(
   f: (...a: A) => O.Option<B>
 ) => <R, I>(...a: A) => ReaderMiddleware<R, I, I, E, B>
@@ -1582,7 +1603,7 @@ Returns a `ReaderMiddleware` that pipes a stream to the response object.
 **Signature**
 
 ```ts
-export declare function pipeStream<R, E>(
+export declare function pipeStream<R, E = never>(
   stream: NodeJS.ReadableStream,
   onError: (reason: unknown) => ReaderIO<R, void>
 ): ReaderMiddleware<R, H.BodyOpen, H.ResponseEnded, E, void>
@@ -1937,7 +1958,9 @@ Added in v0.6.3
 **Signature**
 
 ```ts
-export declare const fromOption: <E>(onNone: Lazy<E>) => <R, I, A>(ma: O.Option<A>) => ReaderMiddleware<R, I, I, E, A>
+export declare const fromOption: <E>(
+  onNone: _function.Lazy<E>
+) => <R, I, A>(ma: O.Option<A>) => ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.7.9
@@ -2018,11 +2041,411 @@ Added in v0.6.3
 
 ```ts
 export declare const fromTaskOption: <E>(
-  onNone: Lazy<E>
+  onNone: _function.Lazy<E>
 ) => <R, I = H.StatusOpen, A = never>(fa: TO.TaskOption<A>) => ReaderMiddleware<R, I, I, E, A>
 ```
 
 Added in v0.7.9
+
+# sequencing
+
+## flatMap
+
+Alias of `chainW`.
+
+**Signature**
+
+```ts
+export declare const flatMap: {
+  <R2, I, A, E2, B>(f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>): <R1, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, B>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapEither
+
+Alias of `chainEitherKW`.
+
+**Signature**
+
+```ts
+export declare const flatMapEither: {
+  <A, E2, B>(f: (a: A) => E.Either<E2, B>): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, B>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => E.Either<E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+}
+```
+
+Added in v0.8.0
+
+## flatMapIO
+
+Alias of `chainIOK`.
+
+**Signature**
+
+```ts
+export declare const flatMapIO: {
+  <A, B>(f: (a: A) => IO<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => IO<B>): ReaderMiddleware<R, I, I, E, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapMiddleware
+
+Alias of `chainMiddlewareKW`.
+
+**Signature**
+
+```ts
+export declare const flatMapMiddleware: {
+  <I, A, E2, B>(f: (a: A) => M.Middleware<I, I, E2, B>): <R, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, B>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => M.Middleware<I, I, E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+}
+```
+
+Added in v0.8.0
+
+## flatMapOption
+
+**Signature**
+
+```ts
+export declare const flatMapOption: {
+  <A, E2, B>(f: (a: A) => O.Option<B>, onNone: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, B>
+  <R, I, E1, A, E2, B>(
+    ma: ReaderMiddleware<R, I, I, E1, A>,
+    f: (a: A) => O.Option<B>,
+    onNone: (a: A) => E2
+  ): ReaderMiddleware<R, I, I, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapReader
+
+Alias of `chainReaderKW`.
+
+**Signature**
+
+```ts
+export declare const flatMapReader: {
+  <A, R2, B>(f: (a: A) => Reader<R2, B>): <R1, I, E>(
+    ma: ReaderMiddleware<R1, I, I, E, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E, B>
+  <R1, I, E, A, R2, B>(ma: ReaderMiddleware<R1, I, I, E, A>, f: (a: A) => Reader<R2, B>): ReaderMiddleware<
+    R1 & R2,
+    I,
+    I,
+    E,
+    B
+  >
+}
+```
+
+Added in v0.8.0
+
+## flatMapReaderTask
+
+Alias of `chainReaderTaskKW`.
+
+**Signature**
+
+```ts
+export declare const flatMapReaderTask: {
+  <A, R2, B>(f: (a: A) => ReaderTask<R2, B>): <R1, I, E>(
+    ma: ReaderMiddleware<R1, I, I, E, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E, B>
+  <R1, I, E, A, R2, B>(ma: ReaderMiddleware<R1, I, I, E, A>, f: (a: A) => ReaderTask<R2, B>): ReaderMiddleware<
+    R1 & R2,
+    I,
+    I,
+    E,
+    B
+  >
+}
+```
+
+Added in v0.8.0
+
+## flatMapReaderTaskEither
+
+Alias of `chainReaderTaskEitherKW`.
+
+**Signature**
+
+```ts
+export declare const flatMapReaderTaskEither: {
+  <A, R2, E2, B>(f: (a: A) => ReaderTaskEither<R2, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, B>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderTaskEither<R2, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapTask
+
+Alias of `chainTaskK`.
+
+**Signature**
+
+```ts
+export declare const flatMapTask: {
+  <A, B>(f: (a: A) => Task<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => Task<B>): ReaderMiddleware<R, I, I, E, B>
+}
+```
+
+Added in v0.8.0
+
+## flatMapTaskEither
+
+Alias of `chainTaskEitherKW`.
+
+**Signature**
+
+```ts
+export declare const flatMapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, B>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+}
+```
+
+Added in v0.8.0
+
+## flatMapTaskOption
+
+**Signature**
+
+```ts
+export declare const flatMapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, B>
+  <R, I, E1, A, E2, B>(
+    ma: ReaderMiddleware<R, I, I, E1, A>,
+    f: (a: A) => TO.TaskOption<B>,
+    onNone: (a: A) => E2
+  ): ReaderMiddleware<R, I, I, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## iflatMap
+
+Indexed version of [`flatMap`](#flatmap). Alias of `ichainW`.
+
+**Signature**
+
+```ts
+export declare const iflatMap: {
+  <R2, A, O, Z, E2, B>(f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, Z, E2 | E1, B>
+  <R1, I, O, Z, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B>
+}
+```
+
+Added in v0.8.0
+
+## itap
+
+Indexed version of [`tap`](#tap). Alias of `ichainFirstW`.
+
+**Signature**
+
+```ts
+export declare const itap: {
+  <R2, A, O, Z, E2, B>(f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, Z, E2 | E1, A>
+  <R1, I, O, Z, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
+
+## tap
+
+Alias of `chainFirstW`.
+
+**Signature**
+
+```ts
+export declare const tap: {
+  <R2, I, A, E2, B>(f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>): <R1, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
+
+## tapIO
+
+Alias of `chainFirstIOK`.
+
+**Signature**
+
+```ts
+export declare const tapIO: {
+  <A, B>(f: (a: A) => IO<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => IO<B>): ReaderMiddleware<R, I, I, E, A>
+}
+```
+
+Added in v0.8.0
+
+## tapReaderTask
+
+Alias of `chainFirstReaderTaskKW`.
+
+**Signature**
+
+```ts
+export declare const tapReaderTask: {
+  <A, R2, B>(f: (a: A) => ReaderTask<R2, B>): <R1, I, E>(
+    ma: ReaderMiddleware<R1, I, I, E, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E, A>
+  <R1, I, E, A, R2, B>(ma: ReaderMiddleware<R1, I, I, E, A>, f: (a: A) => ReaderTask<R2, B>): ReaderMiddleware<
+    R1 & R2,
+    I,
+    I,
+    E,
+    A
+  >
+}
+```
+
+Added in v0.8.0
+
+## tapReaderTaskEither
+
+Alias of `chainFirstReaderTaskEitherKW`.
+
+**Signature**
+
+```ts
+export declare const tapReaderTaskEither: {
+  <A, R2, E2, B>(f: (a: A) => ReaderTaskEither<R2, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E2 | E1, A>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderTaskEither<R2, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
+
+## tapTask
+
+Alias of `chainFirstTaskK`.
+
+**Signature**
+
+```ts
+export declare const tapTask: {
+  <A, B>(f: (a: A) => Task<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => Task<B>): ReaderMiddleware<R, I, I, E, A>
+}
+```
+
+Added in v0.8.0
+
+## tapTaskEither
+
+Alias of `chainFirstTaskEitherKW`.
+
+**Signature**
+
+```ts
+export declare const tapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, A>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    A
+  >
+}
+```
+
+Added in v0.8.0
+
+## tapTaskOption
+
+**Signature**
+
+```ts
+export declare const tapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E2 | E1, A>
+  <R, I, E1, A, E2, B>(
+    ma: ReaderMiddleware<R, I, I, E1, A>,
+    f: (a: A) => TO.TaskOption<B>,
+    onNone: (a: A) => E2
+  ): ReaderMiddleware<R, I, I, E1 | E2, A>
+}
+```
+
+Added in v0.8.0
 
 # utils
 

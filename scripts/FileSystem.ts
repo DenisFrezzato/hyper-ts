@@ -1,6 +1,6 @@
+import * as E from 'fp-ts/Either'
 import * as TE from 'fp-ts/TaskEither'
-import { flow } from 'fp-ts/function'
-import * as fs from 'fs'
+import { promises as fsp } from 'fs'
 import G from 'glob'
 
 export interface FileSystem {
@@ -11,19 +11,24 @@ export interface FileSystem {
   readonly mkdir: (path: string) => TE.TaskEither<Error, void>
 }
 
-const readFile = TE.taskify<fs.PathLike, string, NodeJS.ErrnoException, string>(fs.readFile)
-const writeFile = TE.taskify<fs.PathLike, string, NodeJS.ErrnoException, void>(fs.writeFile)
-const copyFile = TE.taskify<fs.PathLike, fs.PathLike, NodeJS.ErrnoException, void>(fs.copyFile)
+const readFile = (path: string): TE.TaskEither<Error, string> =>
+  TE.tryCatch(() => fsp.readFile(path, 'utf8'), E.toError)
+
+const writeFile = (path: string, content: string): TE.TaskEither<Error, void> =>
+  TE.tryCatch(() => fsp.writeFile(path, content), E.toError)
+
+const copyFile = (from: string, to: string): TE.TaskEither<Error, void> =>
+  TE.tryCatch(() => fsp.copyFile(from, to), E.toError)
+
 const glob = TE.taskify<string, Error, ReadonlyArray<string>>(G)
-const mkdirTE = TE.taskify(fs.mkdir)
+
+const mkdir = (path: string): TE.TaskEither<Error, void> =>
+  TE.tryCatch(() => fsp.mkdir(path).then(() => undefined), E.toError)
 
 export const fileSystem: FileSystem = {
-  readFile: (path) => readFile(path, 'utf8'),
+  readFile,
   writeFile,
   copyFile,
   glob,
-  mkdir: flow(
-    mkdirTE,
-    TE.map(() => undefined)
-  ),
+  mkdir,
 }

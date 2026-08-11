@@ -1,6 +1,7 @@
 import * as assert from 'assert'
 import * as E from 'fp-ts/Either'
 import * as O from 'fp-ts/Option'
+import * as TE from 'fp-ts/TaskEither'
 import * as TO from 'fp-ts/TaskOption'
 import * as t from 'io-ts'
 import { failure } from 'io-ts/lib/PathReporter'
@@ -87,6 +88,203 @@ describe('Middleware', () => {
     const m = pipe(fa, _.apSecondW(fb))
     const c = new MockConnection<H.StatusOpen>(new MockRequest())
     return assertSuccess(m, c, true, [])
+  })
+
+  it('flatMap (data-last)', async () => {
+    const fa = _.right(4)
+    const m = pipe(
+      fa,
+      _.flatMap((a) => _.right(a + 1))
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, 5, [])
+  })
+
+  it('flatMap (data-first)', async () => {
+    const fa = _.right(4)
+    const m = _.flatMap(fa, (a) => _.right(a + 1))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, 5, [])
+  })
+
+  it('iflatMap (data-last)', async () => {
+    const fa = _.right(4)
+    const m = pipe(
+      fa,
+      _.iflatMap((a) => _.right(a + 1))
+    )
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, 5, [])
+  })
+
+  it('iflatMap (data-first)', async () => {
+    const fa = _.right(4)
+    const m = _.iflatMap(fa, (a) => _.right(a + 1))
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(m, c, 5, [])
+  })
+
+  it('flatMapEither', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.flatMapEither(_.right(4), (a) => E.right(a + 1)),
+      c,
+      5,
+      []
+    )
+    return assertFailure(
+      _.flatMapEither(_.right(4), () => E.left('err')),
+      c,
+      (l) => assert.strictEqual(l, 'err')
+    )
+  })
+
+  it('flatMapOption', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.flatMapOption(
+        _.right(4),
+        (a) => O.some(a + 1),
+        () => 'none'
+      ),
+      c,
+      5,
+      []
+    )
+    // onNone receives the value
+    return assertFailure(
+      _.flatMapOption(
+        _.right(4),
+        () => O.none,
+        (a) => `none-${a}`
+      ),
+      c,
+      (l) => assert.strictEqual(l, 'none-4')
+    )
+  })
+
+  it('flatMapIO', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(
+      _.flatMapIO(_.right(4), (a) => () => a + 1),
+      c,
+      5,
+      []
+    )
+  })
+
+  it('flatMapTask', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(
+      _.flatMapTask(_.right(4), (a) => () => Promise.resolve(a + 1)),
+      c,
+      5,
+      []
+    )
+  })
+
+  it('flatMapTaskEither', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.flatMapTaskEither(_.right(4), (a) => TE.right(a + 1)),
+      c,
+      5,
+      []
+    )
+    return assertFailure(
+      _.flatMapTaskEither(_.right(4), () => TE.left('err')),
+      c,
+      (l) => assert.strictEqual(l, 'err')
+    )
+  })
+
+  it('flatMapTaskOption', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.flatMapTaskOption(
+        _.right(4),
+        (a) => TO.some(a + 1),
+        () => 'none'
+      ),
+      c,
+      5,
+      []
+    )
+    // onNone receives the value
+    return assertFailure(
+      _.flatMapTaskOption(
+        _.right(4),
+        () => TO.none,
+        (a) => `none-${a}`
+      ),
+      c,
+      (l) => assert.strictEqual(l, 'none-4')
+    )
+  })
+
+  it('tap', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    // keeps the original value, discards the tapped one
+    await assertSuccess(
+      _.tap(_.right(4), (a) => _.right(a + 1)),
+      c,
+      4,
+      []
+    )
+    return assertFailure(
+      _.tap(_.right(4), () => _.left('err')),
+      c,
+      (l) => assert.strictEqual(l, 'err')
+    )
+  })
+
+  it('tapIO', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    return assertSuccess(
+      _.tapIO(_.right(4), (a) => () => a + 1),
+      c,
+      4,
+      []
+    )
+  })
+
+  it('tapTaskEither', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.tapTaskEither(_.right(4), (a) => TE.right(a + 1)),
+      c,
+      4,
+      []
+    )
+    return assertFailure(
+      _.tapTaskEither(_.right(4), () => TE.left('err')),
+      c,
+      (l) => assert.strictEqual(l, 'err')
+    )
+  })
+
+  it('tapTaskOption', async () => {
+    const c = new MockConnection<H.StatusOpen>(new MockRequest())
+    await assertSuccess(
+      _.tapTaskOption(
+        _.right(4),
+        (a) => TO.some(a + 1),
+        () => 'none'
+      ),
+      c,
+      4,
+      []
+    )
+    // onNone receives the value
+    return assertFailure(
+      _.tapTaskOption(
+        _.right(4),
+        () => TO.none,
+        (a) => `none-${a}`
+      ),
+      c,
+      (l) => assert.strictEqual(l, 'none-4')
+    )
   })
 
   it('ichainFirst', async () => {
@@ -231,10 +429,11 @@ describe('Middleware', () => {
 
     it('should pipe a stream and handle the failure', () => {
       const someStream = (): Readable => {
-        const stream = new Readable()
-        setTimeout(() => {
-          throw new Error('Boom')
-        }, 1)
+        const stream = new Readable({
+          read() {
+            this.destroy(new Error('Boom'))
+          },
+        })
         return stream
       }
       const stream = someStream()

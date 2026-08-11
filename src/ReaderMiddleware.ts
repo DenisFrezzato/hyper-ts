@@ -1,7 +1,15 @@
 /**
  * @since 0.6.3
  */
-import { flow, identity, Lazy, pipe } from 'fp-ts/function'
+import {
+  // `dual` is public at runtime but marked `@internal` in fp-ts, so it's absent from the type defs.
+  // @ts-expect-error
+  dual,
+  flow,
+  identity,
+  Lazy,
+  pipe,
+} from 'fp-ts/function'
 import { bind as bind_, chainFirst as chainFirst_, Chain4 } from 'fp-ts/Chain'
 import { ReaderTask } from 'fp-ts/ReaderTask'
 import { Task } from 'fp-ts/Task'
@@ -751,6 +759,22 @@ export const chainW: <R2, I, E2, A, B>(
 ) => <R1, E1>(ma: ReaderMiddleware<R1, I, I, E1, A>) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B> = chain as any
 
 /**
+ * Alias of `chainW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMap: {
+  <R2, I, A, E2, B>(f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>): <R1, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, B>
+} = /*#__PURE__*/ dual(2, _chain)
+
+/**
  * Less strict version of [`flatten`](#flatten).
  *
  * @category combinators
@@ -779,6 +803,22 @@ export const flatten: <R, I, E, A>(
 export const ichain: <R, A, O, Z, E, B>(
   f: (a: A) => ReaderMiddleware<R, O, Z, E, B>
 ) => <I>(ma: ReaderMiddleware<R, I, O, E, A>) => ReaderMiddleware<R, I, Z, E, B> = ichainW
+
+/**
+ * Indexed version of [`flatMap`](#flatmap). Alias of `ichainW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const iflatMap: {
+  <R2, A, O, Z, E2, B>(f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B>
+  <R1, I, O, Z, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, Z, E1 | E2, B>
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => ichainW(f)(ma))
 
 /**
  * Less strict version of [`ichain`](#ichain).
@@ -1477,6 +1517,319 @@ export const chainFirstTaskOptionK: <E>(
 ) => <A, B>(
   f: (a: A) => TO.TaskOption<B>
 ) => <R, I>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A> = chainFirstTaskOptionKW
+
+/**
+ * Alias of `chainMiddlewareKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapMiddleware: {
+  <I, A, E2, B>(f: (a: A) => M.Middleware<I, I, E2, B>): <R, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, B>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => M.Middleware<I, I, E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainMiddlewareKW(f)(ma))
+
+/**
+ * Alias of `chainEitherKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapEither: {
+  <A, E2, B>(f: (a: A) => E.Either<E2, B>): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, B>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => E.Either<E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainEitherKW(f)(ma))
+
+/**
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapOption: {
+  <A, E2, B>(f: (a: A) => O.Option<B>, onNone: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, B>
+  <R, I, E1, A, E2, B>(
+    ma: ReaderMiddleware<R, I, I, E1, A>,
+    f: (a: A) => O.Option<B>,
+    onNone: (a: A) => E2
+  ): ReaderMiddleware<R, I, I, E1 | E2, B>
+} = /*#__PURE__*/ dual(3, (ma: any, f: any, onNone: any) =>
+  flatMapEither(ma, (a: any) =>
+    pipe(
+      f(a),
+      E.fromOption(() => onNone(a))
+    )
+  )
+)
+
+/**
+ * Alias of `chainIOK`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapIO: {
+  <A, B>(f: (a: A) => IO<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => IO<B>): ReaderMiddleware<R, I, I, E, B>
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainIOK(f)(ma))
+
+/**
+ * Alias of `chainTaskK`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapTask: {
+  <A, B>(f: (a: A) => Task<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, B>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => Task<B>): ReaderMiddleware<R, I, I, E, B>
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainTaskK(f)(ma))
+
+/**
+ * Alias of `chainTaskEitherKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, B>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    B
+  >
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainTaskEitherKW(f)(ma))
+
+/**
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, B>
+  <R, I, E1, A, E2, B>(
+    ma: ReaderMiddleware<R, I, I, E1, A>,
+    f: (a: A) => TO.TaskOption<B>,
+    onNone: (a: A) => E2
+  ): ReaderMiddleware<R, I, I, E1 | E2, B>
+} = /*#__PURE__*/ dual(3, (ma: any, f: any, onNone: any) =>
+  flatMapTaskEither(ma, (a: any) => TE.fromTaskOption(() => onNone(a))(f(a)))
+)
+
+/**
+ * Alias of `chainReaderKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapReader: {
+  <A, R2, B>(f: (a: A) => Reader<R2, B>): <R1, I, E>(
+    ma: ReaderMiddleware<R1, I, I, E, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E, B>
+  <R1, I, E, A, R2, B>(ma: ReaderMiddleware<R1, I, I, E, A>, f: (a: A) => Reader<R2, B>): ReaderMiddleware<
+    R1 & R2,
+    I,
+    I,
+    E,
+    B
+  >
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainReaderKW(f)(ma))
+
+/**
+ * Alias of `chainReaderTaskKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapReaderTask: {
+  <A, R2, B>(f: (a: A) => ReaderTask<R2, B>): <R1, I, E>(
+    ma: ReaderMiddleware<R1, I, I, E, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E, B>
+  <R1, I, E, A, R2, B>(ma: ReaderMiddleware<R1, I, I, E, A>, f: (a: A) => ReaderTask<R2, B>): ReaderMiddleware<
+    R1 & R2,
+    I,
+    I,
+    E,
+    B
+  >
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainReaderTaskKW(f)(ma))
+
+/**
+ * Alias of `chainReaderTaskEitherKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const flatMapReaderTaskEither: {
+  <A, R2, E2, B>(f: (a: A) => ReaderTaskEither<R2, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, B>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderTaskEither<R2, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, B>
+} = /*#__PURE__*/ dual(2, (ma: any, f: any) => chainReaderTaskEitherKW(f)(ma))
+
+/**
+ * Alias of `chainFirstW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tap: {
+  <R2, I, A, E2, B>(f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>): <R1, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, I, I, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainFirstW(args[0] as any) : chainFirstW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Indexed version of [`tap`](#tap). Alias of `ichainFirstW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const itap: {
+  <R2, A, O, Z, E2, B>(f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A>
+  <R1, I, O, Z, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, O, E1, A>,
+    f: (a: A) => ReaderMiddleware<R2, O, Z, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, Z, E1 | E2, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? ichainFirstW(args[0] as any) : ichainFirstW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainFirstIOK`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapIO: {
+  <A, B>(f: (a: A) => IO<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => IO<B>): ReaderMiddleware<R, I, I, E, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainFirstIOK(args[0] as any) : chainFirstIOK(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainFirstTaskK`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapTask: {
+  <A, B>(f: (a: A) => Task<B>): <R, I, E>(ma: ReaderMiddleware<R, I, I, E, A>) => ReaderMiddleware<R, I, I, E, A>
+  <R, I, E, A, B>(ma: ReaderMiddleware<R, I, I, E, A>, f: (a: A) => Task<B>): ReaderMiddleware<R, I, I, E, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1 ? chainFirstTaskK(args[0] as any) : chainFirstTaskK(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainFirstTaskEitherKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapTaskEither: {
+  <A, E2, B>(f: (a: A) => TE.TaskEither<E2, B>): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, A>
+  <R, I, E1, A, E2, B>(ma: ReaderMiddleware<R, I, I, E1, A>, f: (a: A) => TE.TaskEither<E2, B>): ReaderMiddleware<
+    R,
+    I,
+    I,
+    E1 | E2,
+    A
+  >
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1
+    ? chainFirstTaskEitherKW(args[0] as any)
+    : chainFirstTaskEitherKW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapTaskOption: {
+  <A, E2, B>(f: (a: A) => TO.TaskOption<B>, onNone: (a: A) => E2): <R, I, E1>(
+    ma: ReaderMiddleware<R, I, I, E1, A>
+  ) => ReaderMiddleware<R, I, I, E1 | E2, A>
+  <R, I, E1, A, E2, B>(
+    ma: ReaderMiddleware<R, I, I, E1, A>,
+    f: (a: A) => TO.TaskOption<B>,
+    onNone: (a: A) => E2
+  ): ReaderMiddleware<R, I, I, E1 | E2, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 2
+    ? (ma: ReaderMiddleware<any, any, any, any, any>) => (tapTaskOption as any)(ma, args[0], args[1])
+    : tapTaskEither(args[0] as any, (a: any) =>
+        TE.fromTaskOption(() => (args[2] as any)(a))((args[1] as any)(a))
+      )) as any
+
+/**
+ * Alias of `chainFirstReaderTaskKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapReaderTask: {
+  <A, R2, B>(f: (a: A) => ReaderTask<R2, B>): <R1, I, E>(
+    ma: ReaderMiddleware<R1, I, I, E, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E, A>
+  <R1, I, E, A, R2, B>(ma: ReaderMiddleware<R1, I, I, E, A>, f: (a: A) => ReaderTask<R2, B>): ReaderMiddleware<
+    R1 & R2,
+    I,
+    I,
+    E,
+    A
+  >
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1
+    ? chainFirstReaderTaskKW(args[0] as any)
+    : chainFirstReaderTaskKW(args[1] as any)(args[0] as any)) as any
+
+/**
+ * Alias of `chainFirstReaderTaskEitherKW`.
+ *
+ * @category sequencing
+ * @since 0.8.0
+ */
+export const tapReaderTaskEither: {
+  <A, R2, E2, B>(f: (a: A) => ReaderTaskEither<R2, E2, B>): <R1, I, E1>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>
+  ) => ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+  <R1, I, E1, A, R2, E2, B>(
+    ma: ReaderMiddleware<R1, I, I, E1, A>,
+    f: (a: A) => ReaderTaskEither<R2, E2, B>
+  ): ReaderMiddleware<R1 & R2, I, I, E1 | E2, A>
+} = /*#__PURE__*/ ((...args: ReadonlyArray<unknown>) =>
+  args.length === 1
+    ? chainFirstReaderTaskEitherKW(args[0] as any)
+    : chainFirstReaderTaskEitherKW(args[1] as any)(args[0] as any)) as any
 
 /**
  * Phantom type can't be infered properly, use [`bindTo`](#bindto) instead.

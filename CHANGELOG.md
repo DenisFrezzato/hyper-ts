@@ -13,6 +13,29 @@
 **Note**: Gaps between patch versions are faulty/broken releases. **Note**: A feature tagged as Experimental is in a
 high state of flux, you're at risk of it changing without notice.
 
+# 0.8.0
+- **New Feature**
+  - `Middleware`
+    - Add `flatMap`, `iflatMap` (dual, alias of `chainW`/`ichainW`) (@DenisFrezzato)
+    - Add `flatMapEither`, `flatMapOption`, `flatMapIO`, `flatMapTask`, `flatMapTaskEither`, `flatMapTaskOption` (dual) (@DenisFrezzato)
+    - Add `tap`, `itap` (dual, alias of `chainFirstW`/`ichainFirstW`) (@DenisFrezzato)
+    - Add `tapIO`, `tapTask`, `tapTaskEither`, `tapTaskOption` (dual) (@DenisFrezzato)
+  - `ReaderMiddleware`
+    - Add `flatMap`, `iflatMap` (dual, alias of `chainW`/`ichainW`) (@DenisFrezzato)
+    - Add `flatMapMiddleware`, `flatMapEither`, `flatMapOption`, `flatMapIO`, `flatMapTask`, `flatMapTaskEither`, `flatMapTaskOption`, `flatMapReader`, `flatMapReaderTask`, `flatMapReaderTaskEither` (dual) (@DenisFrezzato)
+    - Add `tap`, `itap` (dual, alias of `chainFirstW`/`ichainFirstW`) (@DenisFrezzato)
+    - Add `tapIO`, `tapTask`, `tapTaskEither`, `tapTaskOption`, `tapReaderTask`, `tapReaderTaskEither` (dual) (@DenisFrezzato)
+- **Bug Fix**
+  - `ReaderMiddleware`
+    - Fix `pipeStream` to use `never` as default for type parameter `E` (@OliverJAsh)
+- **Breaking Change**
+  - Require `express` `^5` as a peer dependency (@DenisFrezzato)
+  - Bump `fp-ts` peer dependency to `^2.14.0` (introduces `dual`, used to implement the dual `flatMap`/`tap` combinators) (@DenisFrezzato)
+- **Internal**
+  - Migrate type tests from `dtslint` to `tstyche` (@DenisFrezzato)
+  - Upgrade to TypeScript `5`, `@types/node` `22` and `jest` `29` (@DenisFrezzato)
+  - Rewrite build's `FileSystem` on top of `fs/promises` (@DenisFrezzato)
+
 # 0.7.9
 - **New Feature**
   - `Middleware`

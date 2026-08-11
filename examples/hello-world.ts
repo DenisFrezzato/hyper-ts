@@ -6,8 +6,8 @@ import { pipe } from 'fp-ts/function'
 
 const hello: M.Middleware<H.StatusOpen, H.ResponseEnded, never, void> = pipe(
   M.status(H.Status.OK), // writes the response status
-  M.ichain(() => M.closeHeaders()), // tells hyper-ts that we're done with the headers
-  M.ichain(() => M.send('Hello hyper-ts on express!')) // sends the response as text
+  M.iflatMap(() => M.closeHeaders()), // tells hyper-ts that we're done with the headers
+  M.iflatMap(() => M.send('Hello hyper-ts on express!')) // sends the response as text
 )
 
 express()

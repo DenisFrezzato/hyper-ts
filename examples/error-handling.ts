@@ -40,14 +40,14 @@ function loadUser(userId: NonEmptyString): M.Middleware<H.StatusOpen, H.StatusOp
 function sendUser(user: User): M.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> {
   return pipe(
     M.status(H.Status.OK),
-    M.ichain(() => M.json(user, () => JSONError))
+    M.iflatMap(() => M.json(user, () => JSONError))
   )
 }
 
 const getUser: M.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> = pipe(
   getUserId,
-  M.ichain(loadUser),
-  M.ichain(sendUser)
+  M.iflatMap(loadUser),
+  M.iflatMap(sendUser)
 )
 
 //
@@ -57,24 +57,24 @@ const getUser: M.Middleware<H.StatusOpen, H.ResponseEnded, UserError, void> = pi
 function badRequest<E = never>(message: string): M.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
   return pipe(
     M.status(H.Status.BadRequest),
-    M.ichain(() => M.closeHeaders()),
-    M.ichain(() => M.send(message))
+    M.iflatMap(() => M.closeHeaders()),
+    M.iflatMap(() => M.send(message))
   )
 }
 
 function notFound<E = never>(message: string): M.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
   return pipe(
     M.status(H.Status.NotFound),
-    M.ichain(() => M.closeHeaders()),
-    M.ichain(() => M.send(message))
+    M.iflatMap(() => M.closeHeaders()),
+    M.iflatMap(() => M.send(message))
   )
 }
 
 function serverError<E = never>(message: string): M.Middleware<H.StatusOpen, H.ResponseEnded, E, void> {
   return pipe(
     M.status(H.Status.InternalServerError),
-    M.ichain(() => M.closeHeaders()),
-    M.ichain(() => M.send(message))
+    M.iflatMap(() => M.closeHeaders()),
+    M.iflatMap(() => M.send(message))
   )
 }
 
