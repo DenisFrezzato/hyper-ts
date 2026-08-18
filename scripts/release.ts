@@ -1,6 +1,7 @@
 import * as child_process from 'child_process'
 import { left, right } from 'fp-ts/Either'
 import * as TE from 'fp-ts/TaskEither'
+import { parseArgs } from 'util'
 import { run } from './run'
 
 const DIST = 'dist'
@@ -18,7 +19,15 @@ const exec =
       })
     })
 
-export const main = exec('npm publish', {
+const { otp } = parseArgs({
+  options: { otp: { type: 'string' } },
+}).values
+
+if (otp === undefined || !/^[0-9]{6,}$/.test(otp)) {
+  throw new Error('--otp is required and must be a numeric one-time password')
+}
+
+export const main = exec(`npm publish --otp ${otp}`, {
   cwd: DIST,
 })
 
